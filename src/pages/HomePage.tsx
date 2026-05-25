@@ -1,10 +1,25 @@
+import { useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useInfiniteJobs } from '@/hooks/useInfiniteJobs';
 import { parseCompanyType } from '@/types/job';
-import SummaryRow from '@/components/home/SummaryRow';
+import WelcomeCard from '@/components/home/WelcomeCard';
+import DeadlineCard, { type DeadlineItem } from '@/components/home/DeadlineCard';
+import AINewsCard from '@/components/home/AINewsCard';
 import FilterBar from '@/components/home/FilterBar';
 import JobList from '@/components/home/JobList';
 import NoResults from '@/components/home/NoResults';
+import { mockJobs } from '@/data/mockJobs';
+import { mockAINews } from '@/data/mockNews';
+
+const WEEKDAY_KO = ['일', '월', '화', '수', '목', '금', '토'];
+
+function formatExpiresAt(dday: number): string {
+  const target = new Date();
+  target.setDate(target.getDate() + dday);
+  const mm = String(target.getMonth() + 1).padStart(2, '0');
+  const dd = String(target.getDate()).padStart(2, '0');
+  return `${mm}. ${dd} (${WEEKDAY_KO[target.getDay()]})`;
+}
 
 export default function HomePage() {
   const [searchParams] = useSearchParams();
@@ -15,9 +30,30 @@ export default function HomePage() {
   const { data, isLoading, isError } = useInfiniteJobs({ companyType, q });
   const jobs = data?.pages.flatMap((page) => page.jobs) ?? [];
 
+  const deadlineItems = useMemo<DeadlineItem[]>(
+    () =>
+      [...mockJobs]
+        .sort((a, b) => a.dday - b.dday)
+        .slice(0, 3)
+        .map((j) => ({
+          id: j.id,
+          title: j.title,
+          company: j.company,
+          dDay: j.dday,
+          expiresAt: formatExpiresAt(j.dday),
+        })),
+    []
+  );
+
   return (
     <>
-      {!isSearching && <SummaryRow />}
+      {!isSearching && (
+        <section className="mb-9 grid grid-cols-3 gap-4">
+          <WelcomeCard />
+          <DeadlineCard jobs={deadlineItems} />
+          <AINewsCard news={mockAINews} />
+        </section>
+      )}
 
       {!isSearching && (
         <div className="mb-4 flex items-center gap-2">

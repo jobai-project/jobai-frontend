@@ -27,6 +27,10 @@ export default {
           'sans-serif',
         ],
       },
+      backgroundImage: {
+        'card-gradient': 'linear-gradient(135deg, #EFF6FF 0%, #FFFFFF 100%)',
+        'progress-blue': 'linear-gradient(to right, #1E3A8A, #3B82F6)',
+      },
     },
   },
   plugins: [],
