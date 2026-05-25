@@ -6,7 +6,12 @@ interface AINewsCardProps {
 
 export default function AINewsCard({ news }: AINewsCardProps) {
   return (
-    <div className="flex h-full flex-col rounded-xl border border-app-border bg-gradient-to-br from-blue-50 to-white px-5 py-4">
+    <div className="relative flex h-full flex-col rounded-xl border border-app-border bg-gradient-to-br from-blue-50 to-white px-5 py-4">
+      {/* 사진 추가해야함 (디자인팀 일러스트 대기) */}
+      <div
+        aria-hidden="true"
+        className="absolute right-3 top-3 h-10 w-10 rounded-full border border-dashed border-app-border bg-white/40"
+      />
       <div className="mb-3 text-sm font-semibold text-app-text">
         ✨ AI 뉴스 요약
       </div>

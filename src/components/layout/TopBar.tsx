@@ -1,13 +1,12 @@
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import { useAuthStore } from '@/stores/authStore';
 
-interface TopBarProps {
-  userName?: string;
-}
-
-export default function TopBar({ userName = '사용자이름' }: TopBarProps) {
+export default function TopBar() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const location = useLocation();
+  const user = useAuthStore((s) => s.user);
+  const userName = user?.name ?? '게스트';
   const q = searchParams.get('q') ?? '';
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {

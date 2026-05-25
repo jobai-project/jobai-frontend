@@ -37,6 +37,12 @@ export default function Sidebar() {
           </NavLink>
         ))}
       </nav>
+
+      {/* 사진 추가해야함 (디자인팀 캐릭터 일러스트 대기) */}
+      <div
+        aria-hidden="true"
+        className="mx-6 mt-8 h-14 w-14 rounded-2xl border border-dashed border-app-border bg-white/40"
+      />
     </aside>
   );
 }

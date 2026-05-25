@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import BookmarkButton from '@/components/common/BookmarkButton';
 import ScoreGauge from '@/components/common/ScoreGauge';
 import { SOURCE_LABEL, type Job } from '@/types/job';
 
@@ -10,32 +11,36 @@ export default function JobCard({ job }: JobCardProps) {
   return (
     <Link
       to={`/jobs/${job.id}`}
-      className="grid grid-cols-[auto_1fr_auto] items-center gap-6 rounded-xl border border-app-border bg-app-surface px-6 py-5 transition-all hover:border-app-border-strong hover:shadow-[0_2px_8px_rgba(0,0,0,0.04)] focus:outline-none focus:ring-2 focus:ring-app-border-strong"
+      className="relative flex h-full flex-col gap-3 rounded-xl border border-app-border bg-app-surface p-5 transition-all hover:border-app-border-strong hover:shadow-[0_2px_8px_rgba(0,0,0,0.04)] focus:outline-none focus:ring-2 focus:ring-app-border-strong"
     >
-      <ScoreGauge score={job.score} />
+      <BookmarkButton jobId={job.id} className="absolute right-2 top-2" />
 
-      <div className="min-w-0">
-        <div className="mb-1 text-base font-bold text-app-text">{job.title}</div>
-        <div className="mb-2.5 text-[13px] text-app-text-muted">
-          {job.company} · {job.location} · {job.employmentType} · {job.experience}
-        </div>
-        <div className="flex flex-wrap gap-1.5">
-          {job.techStack.map((tech) => (
-            <span
-              key={tech}
-              className="rounded-md border border-app-border bg-app-bg px-2.5 py-1 text-xs text-app-text-muted"
-            >
-              {tech}
-            </span>
-          ))}
-        </div>
+      <div className="pr-8">
+        <h3 className="line-clamp-2 min-h-[2.75rem] text-base font-bold leading-snug text-app-text">
+          {job.title}
+        </h3>
       </div>
 
-      <div className="flex flex-shrink-0 flex-col items-end gap-2.5">
-        <span className="rounded-md border border-app-border bg-app-bg px-2.5 py-1 text-xs text-app-text-muted">
+      <div className="flex items-center gap-2">
+        <span className="truncate text-sm text-app-text-muted">{job.company}</span>
+        <span className="flex-shrink-0 rounded-md bg-red-50 px-1.5 py-0.5 text-xs font-bold text-red-500">
+          D-{job.dday}
+        </span>
+      </div>
+
+      <div className="flex items-center gap-1.5">
+        {job.techStack[0] && (
+          <span className="rounded-md border border-app-border bg-app-bg px-2 py-0.5 text-xs text-app-text-muted">
+            {job.techStack[0]}
+          </span>
+        )}
+        <span className="ml-auto rounded-md border border-app-border bg-app-bg px-2 py-0.5 text-[11px] text-app-text-subtle">
           {SOURCE_LABEL[job.source]}
         </span>
-        <span className="text-sm font-bold text-app-text">D-{job.dday}</span>
+      </div>
+
+      <div className="mt-auto pt-2">
+        <ScoreGauge score={job.score} variant="bar" label="✨ AI 적합도" size="sm" />
       </div>
     </Link>
   );

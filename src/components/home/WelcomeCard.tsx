@@ -38,12 +38,11 @@ export default function WelcomeCard() {
         </div>
       </div>
 
+      {/* 사진 추가해야함 (디자인팀 일러스트 대기) */}
       <div
         aria-hidden="true"
-        className="hidden h-20 w-20 flex-shrink-0 self-center rounded-2xl bg-gradient-to-br from-blue-200/70 to-blue-100/40 sm:flex sm:items-center sm:justify-center text-3xl"
-      >
-        🧑‍💻
-      </div>
+        className="hidden h-20 w-20 flex-shrink-0 self-center rounded-2xl border border-dashed border-app-border bg-white/40 sm:block"
+      />
     </div>
   );
 }
