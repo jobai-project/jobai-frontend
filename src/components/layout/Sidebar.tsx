@@ -15,11 +15,11 @@ const NAV: NavItem[] = [
 
 export default function Sidebar() {
   return (
-    <aside className="sticky top-0 h-screen w-60 border-r border-app-border bg-app-surface py-7">
-      <NavLink to="/" className="block px-6 pb-9 text-[22px] font-bold tracking-tight">
+    <aside className="sticky top-0 h-screen w-60 border-r border-app-border bg-app-surface px-8 py-10">
+      <NavLink to="/" className="block pb-9 text-[22px] font-bold tracking-tight">
         JobA!
       </NavLink>
-      <nav className="flex flex-col gap-1 px-3">
+      <nav className="flex flex-col gap-1">
         {NAV.map((item) => (
           <NavLink
             key={item.to}
@@ -41,7 +41,7 @@ export default function Sidebar() {
       {/* 사진 추가해야함 (디자인팀 캐릭터 일러스트 대기) */}
       <div
         aria-hidden="true"
-        className="mx-6 mt-8 h-14 w-14 rounded-2xl border border-dashed border-app-border bg-white/40"
+        className="mt-8 h-14 w-14 rounded-2xl border border-dashed border-app-border bg-white/40"
       />
     </aside>
   );

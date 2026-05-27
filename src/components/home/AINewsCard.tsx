@@ -6,7 +6,7 @@ interface AINewsCardProps {
 
 export default function AINewsCard({ news }: AINewsCardProps) {
   return (
-    <div className="relative flex h-full flex-col rounded-xl border border-app-border bg-gradient-to-br from-blue-50 to-white px-5 py-4">
+    <div className="relative flex h-[306px] w-[256px] flex-shrink-0 flex-col rounded-xl border border-app-border bg-gradient-to-br from-blue-50 to-white px-5 py-4">
       {/* 사진 추가해야함 (디자인팀 일러스트 대기) */}
       <div
         aria-hidden="true"

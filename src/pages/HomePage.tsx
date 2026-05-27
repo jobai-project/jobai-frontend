@@ -67,7 +67,7 @@ export default function HomePage() {
       {!isSearching && <TrendingScrap items={trendingItems} />}
 
       {!isSearching && (
-        <section className="mb-9 grid grid-cols-3 gap-4">
+        <section className="mb-9 flex gap-8">
           <WelcomeCard />
           <DeadlineCard jobs={deadlineItems} />
           <AINewsCard news={mockAINews} />

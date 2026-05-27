@@ -1,48 +1,45 @@
 import { useNavigate } from 'react-router-dom';
-import { useAuthStore } from '@/stores/authStore';
+import userCardBg from '@/picture/User_card.png';
 
 export default function WelcomeCard() {
   const navigate = useNavigate();
-  const user = useAuthStore((s) => s.user);
 
-  const userName = user?.name ?? '게스트';
-  const jobRole = user?.jobRole ?? '구직자';
+  // 수정 할 부분 : API 연결해야할 부분
+  const userName = '김주훈';
+  const jobRole = '백엔드 개발자';
 
   return (
-    <div className="flex h-full justify-between gap-3 rounded-xl border border-app-border bg-gradient-to-br from-blue-50 to-white px-5 py-4">
-      <div className="flex min-w-0 flex-col">
-        <h2 className="text-lg font-bold text-app-text">
-          {userName} 님 안녕하세요 👋
+    <div
+      className="relative flex h-[306px] w-[440px] flex-shrink-0 flex-col justify-between overflow-hidden rounded-[20px] p-10"
+      style={{
+        backgroundImage: `url(${userCardBg})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+        boxShadow: '0 8px 24px rgba(99, 70, 220, 0.15)',
+      }}
+    >
+      <div className="flex flex-col gap-3">
+        <h2 className="text-[24px] font-bold leading-[1.4] text-white">
+          {userName} 님,
+          <br />
+          오늘도 잘하고 있어요
         </h2>
-        <div className="mt-1.5">
-          <span className="inline-block rounded-full bg-white/70 px-2.5 py-0.5 text-xs font-medium text-app-text-muted">
+        <div>
+          <span className="inline-block rounded-full bg-white/20 px-3.5 py-1.5 text-[13px] font-medium text-white backdrop-blur-md">
             {jobRole}
           </span>
         </div>
-
-        <div className="mt-auto flex flex-wrap gap-2 pt-4">
-          <button
-            type="button"
-            onClick={() => navigate('/resumes')}
-            className="rounded-lg border border-app-border bg-white px-3 py-1.5 text-xs font-semibold text-app-text transition hover:border-app-border-strong hover:bg-app-hover"
-          >
-            ✏️ 이력서 관리
-          </button>
-          <button
-            type="button"
-            onClick={() => navigate('/profile')}
-            className="rounded-lg border border-app-border bg-white px-3 py-1.5 text-xs font-semibold text-app-text transition hover:border-app-border-strong hover:bg-app-hover"
-          >
-            ⚙️ 회원정보 수정
-          </button>
-        </div>
       </div>
 
-      {/* 사진 추가해야함 (디자인팀 일러스트 대기) */}
-      <div
-        aria-hidden="true"
-        className="hidden h-20 w-20 flex-shrink-0 self-center rounded-2xl border border-dashed border-app-border bg-white/40 sm:block"
-      />
+      <button
+        type="button"
+        onClick={() => navigate('/resumes')}
+        className="inline-flex items-center gap-2 self-start rounded-xl bg-white/25 px-5 py-3 text-sm font-medium text-white backdrop-blur-md transition hover:bg-white/35"
+      >
+        <span aria-hidden="true">✏️</span>
+        이력서 관리
+      </button>
     </div>
   );
 }

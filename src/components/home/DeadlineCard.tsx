@@ -16,7 +16,7 @@ export default function DeadlineCard({ jobs }: DeadlineCardProps) {
   const navigate = useNavigate();
 
   return (
-    <div className="flex h-full flex-col rounded-xl border border-app-border bg-gradient-to-br from-blue-50 to-white px-5 py-4">
+    <div className="flex h-[306px] w-[348px] flex-shrink-0 flex-col rounded-xl border border-app-border bg-gradient-to-br from-blue-50 to-white px-5 py-4">
       <button
         type="button"
         onClick={() => navigate('/deadline')}
