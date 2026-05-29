@@ -1,4 +1,6 @@
-type Variant = 'circle' | 'bar';
+import { useId } from 'react';
+
+type Variant = 'circle' | 'bar' | 'semicircle';
 type Size = 'sm' | 'md' | 'lg';
 
 interface ScoreGaugeProps {
@@ -54,6 +56,46 @@ export default function ScoreGauge({
 }: ScoreGaugeProps) {
   const clamped = Math.max(0, Math.min(100, score));
   const color = scoreColor(clamped);
+  const gradientId = useId();
+
+  if (variant === 'semicircle') {
+    const radius = 28;
+    const circumference = Math.PI * radius;
+    const offset = circumference * (1 - clamped / 100);
+
+    return (
+      <div className="relative h-14 w-20 flex-shrink-0">
+        <svg viewBox="0 0 80 50" className="h-full w-full">
+          <defs>
+            <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="#A78BFA" />
+              <stop offset="100%" stopColor="#7C3AED" />
+            </linearGradient>
+          </defs>
+          <path
+            d="M 12 40 A 28 28 0 0 1 68 40"
+            fill="none"
+            stroke="#E5E7EB"
+            strokeWidth="6"
+            strokeLinecap="round"
+          />
+          <path
+            d="M 12 40 A 28 28 0 0 1 68 40"
+            fill="none"
+            stroke={`url(#${gradientId})`}
+            strokeWidth="6"
+            strokeLinecap="round"
+            strokeDasharray={circumference}
+            strokeDashoffset={offset}
+          />
+        </svg>
+        <div className="absolute inset-x-0 bottom-0 flex items-baseline justify-center">
+          <span className="text-base font-bold text-app-text">{clamped}</span>
+          <span className="ml-0.5 text-[10px] text-app-text-muted">점</span>
+        </div>
+      </div>
+    );
+  }
 
   if (variant === 'bar') {
     const s = BAR_SIZE[size];

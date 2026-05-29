@@ -16,14 +16,17 @@ export default function DeadlineCard({ jobs }: DeadlineCardProps) {
   const navigate = useNavigate();
 
   return (
-    <div className="flex h-[306px] w-[348px] flex-shrink-0 flex-col rounded-xl border border-app-border bg-gradient-to-br from-blue-50 to-white px-5 py-4">
+    <div className="flex h-[306px] w-[348px] flex-shrink-0 flex-col rounded-xl border border-app-primary-soft bg-card-gradient px-5 py-4 shadow-[0_8px_24px_rgba(71,65,255,0.04)]">
       <button
         type="button"
         onClick={() => navigate('/deadline')}
         className="mb-3 flex items-center justify-between text-left transition hover:opacity-80"
       >
-        <span className="text-sm font-semibold text-app-text">
-          🕐 마감 기한이 얼마 남지 않았어요
+        <span className="inline-flex items-center gap-2 text-sm font-semibold text-app-text">
+          <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-app-primary text-[11px] text-white">
+            ◔
+          </span>
+          곧 마감되는 스크랩 공고
         </span>
         <span aria-hidden="true" className="text-lg text-app-text-subtle">
           ›
@@ -46,7 +49,7 @@ export default function DeadlineCard({ jobs }: DeadlineCardProps) {
                   {job.company} · {job.expiresAt}
                 </div>
               </div>
-              <span className="flex-shrink-0 rounded-md bg-red-50 px-1.5 py-0.5 text-xs font-bold text-red-500">
+              <span className="flex-shrink-0 rounded-md bg-[#FFF0F1] px-1.5 py-0.5 text-xs font-bold text-[#FF4545]">
                 D-{job.dDay}
               </span>
             </button>

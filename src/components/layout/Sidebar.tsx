@@ -16,7 +16,7 @@ const NAV: NavItem[] = [
 export default function Sidebar() {
   return (
     <aside className="sticky top-0 h-screen w-60 border-r border-app-border bg-app-surface px-8 py-10">
-      <NavLink to="/" className="block pb-9 text-[22px] font-bold tracking-tight">
+      <NavLink to="/" className="block pb-9 text-[22px] font-bold text-app-sidebar-logo">
         JobA!
       </NavLink>
       <nav className="flex flex-col gap-1">
@@ -26,14 +26,27 @@ export default function Sidebar() {
             to={item.to}
             end={item.to === '/'}
             className={({ isActive }) =>
-              'flex w-full items-center gap-3 rounded-lg px-3.5 py-2.5 text-left text-sm transition-colors ' +
+              'group flex w-full items-center gap-3 rounded-lg px-3.5 py-2.5 text-left text-sm transition-colors ' +
               (isActive
-                ? 'bg-app-active font-semibold text-app-text'
-                : 'text-app-text-muted hover:bg-app-hover hover:text-app-text')
+                ? 'bg-app-sidebar-active font-semibold text-app-sidebar-active-text'
+                : 'text-app-sidebar-muted hover:bg-app-hover hover:text-app-text')
             }
           >
-            <span className="w-[18px] text-center text-base">{item.icon}</span>
-            {item.label}
+            {({ isActive }) => (
+              <>
+                <span
+                  className={
+                    'w-[18px] text-center text-base transition-colors ' +
+                    (isActive
+                      ? 'text-app-sidebar-active-text'
+                      : 'text-app-sidebar-icon-muted group-hover:text-app-text')
+                  }
+                >
+                  {item.icon}
+                </span>
+                {item.label}
+              </>
+            )}
           </NavLink>
         ))}
       </nav>
@@ -41,7 +54,7 @@ export default function Sidebar() {
       {/* 사진 추가해야함 (디자인팀 캐릭터 일러스트 대기) */}
       <div
         aria-hidden="true"
-        className="mt-8 h-14 w-14 rounded-2xl border border-dashed border-app-border bg-white/40"
+        className="mt-8 h-14 w-14 rounded-2xl border border-dashed border-app-sidebar-icon-muted bg-white/40"
       />
     </aside>
   );
