@@ -110,8 +110,11 @@ export default function JobDetailPage() {
             </div>
           </div>
 
-        <div className="w-[348px] flex-shrink-0 mt-[120px]">
-          <ScoreBox score={job.score} />
+        <div className="w-[348px] flex-shrink-0">
+          <div className="fixed right-[calc((100vw-1400px)/2)] top-1/3 -translate-y-1/2 w-[348px] z-50">
+            <ScoreBox score={job.score} />
+          </div>
+
         </div>
       </div>
     </div>

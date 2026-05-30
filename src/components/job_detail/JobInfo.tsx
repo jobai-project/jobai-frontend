@@ -37,22 +37,6 @@ function JobInfo({ job }: JobInfoProps) {
         <div className="text-app-text-muted">고용형태</div>
         <div className="text-app-text font-medium">{job.employmentType ?? '정규직'}</div>
 
-        <div className="text-app-text-muted">접수방법</div>
-        <div className="font-medium">
-        {job.applyUrl ? (
-            <a 
-            href={job.applyUrl} 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="text-blue-500 underline hover:text-blue-600 transition-colors"
-            >
-            홈페이지
-            </a>
-        ) : (
-            <span className="text-app-text-muted">홈페이지 (정보 없음)</span>
-        )}
-        </div>
-
         <div className="text-app-text-muted">근무지역</div>
         <div className="text-app-text font-medium">{job.location ?? '서울 중구 을지로'}</div>
 

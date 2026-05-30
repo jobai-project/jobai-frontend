@@ -6,7 +6,7 @@ interface ScoreGauge2Props {
 
 function ScoreGauge2({ score }: ScoreGauge2Props) {
   const radius = 40;
-  const strokeWidth = 6;
+  const strokeWidth = 15;
   const normalizedRadius = radius - strokeWidth / 2;
   const circumference = normalizedRadius * 2 * Math.PI;
   const strokeDashoffset = circumference - (score / 100) * circumference;
@@ -14,7 +14,14 @@ function ScoreGauge2({ score }: ScoreGauge2Props) {
 
   return (
     <div className="relative inline-flex items-center justify-center">
-      <svg width={svgSize} height={svgSize} className="-rotate-90">
+      <svg width={svgSize} height={svgSize} className="-rotate-90 scale-y-[-1]">
+        <defs>
+          <linearGradient id="gaugeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#9C83FF" />
+            <stop offset="100%" stopColor="#3344FF" />
+          </linearGradient>
+        </defs>
+
         <circle
           stroke="#E6E8EB"
           fill="transparent"
@@ -24,7 +31,7 @@ function ScoreGauge2({ score }: ScoreGauge2Props) {
           cy={radius}
         />
         <circle
-          stroke="#4741FF"
+          stroke="url(#gaugeGradient)"
           fill="transparent"
           strokeWidth={strokeWidth}
           strokeDasharray={`${circumference} ${circumference}`}
@@ -36,9 +43,11 @@ function ScoreGauge2({ score }: ScoreGauge2Props) {
           className="transition-all duration-500"
         />
       </svg>
-      <span className="absolute font-bold text-lg text-app-text">
-        {score}
-      </span>
+
+      <div className="absolute flex items-baseline justify-center text-app-text">
+        <span className="text-lg font-bold">{score}</span>
+        <span className="text-sm font-medium ml-0.5">점</span>
+      </div>
     </div>
   );
 }
