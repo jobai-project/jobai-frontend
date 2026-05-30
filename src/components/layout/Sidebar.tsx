@@ -92,7 +92,7 @@ export default function Sidebar() {
             to={item.to}
             end={item.to === '/'}
             className={({ isActive }) =>
-              'group flex h-14 w-full items-center gap-5 rounded-lg px-5 text-left text-sm transition-colors ' +
+              'group flex h-12 w-full items-center gap-5 rounded-lg px-3 py-3 text-left text-sm transition-colors ' +
               (isActive
                 ? 'bg-app-sidebar-active font-semibold text-app-sidebar-active-text'
                 : 'text-app-sidebar-muted hover:bg-app-hover hover:text-app-text')

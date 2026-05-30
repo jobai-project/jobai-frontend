@@ -32,13 +32,16 @@ export default function DeadlineCard({ jobs }: DeadlineCardProps) {
         </span>
       </button>
 
-      <ul className="flex flex-col divide-y divide-app-border/70">
-        {jobs.map((job) => (
-          <li key={job.id}>
+      <ul className="flex flex-col items-center">
+        {jobs.map((job, index) => (
+          <li
+            key={job.id}
+            className={index < jobs.length - 1 ? 'border-b-[0.7px] border-app-border/70' : ''}
+          >
             <button
               type="button"
               onClick={() => navigate(`/jobs/${job.id}`)}
-              className="flex w-full items-center justify-between gap-2 py-2 text-left transition hover:bg-white/50"
+              className="flex h-[49px] w-[276px] items-start justify-between gap-2 px-4 py-3 text-left transition hover:bg-white/50"
             >
               <div className="min-w-0 flex-1">
                 <div className="truncate text-[13px] font-medium text-app-text">
