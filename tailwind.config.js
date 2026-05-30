@@ -27,15 +27,36 @@ export default {
           gauge: '#2E2E2E',
           'gauge-track': '#E6E8EB',
         },
+        purple: {
+          50: '#F5F5FF',
+          500: '#4741FF',
+          600: '#3C36E3',
+        },
+        success: {
+          base: '#10B981',
+        },
+        error: {
+          base: '#EF4444',
+        },
       },
       fontFamily: {
         sans: [
+          'Pretendard',
           'Apple SD Gothic Neo',
           'Noto Sans KR',
           '-apple-system',
           'BlinkMacSystemFont',
           'sans-serif',
         ],
+      },
+      borderRadius: {
+        base: '8px',
+        md: '12px',
+        lg: '16px',
+      },
+      boxShadow: {
+        card: '0 2px 8px rgba(0, 0, 0, 0.04)',
+        'card-hover': '0 4px 12px rgba(0, 0, 0, 0.08)',
       },
       backgroundImage: {
         'card-gradient': 'linear-gradient(135deg, #F5F5FF 0%, #FFFFFF 100%)',

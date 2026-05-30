@@ -13,6 +13,7 @@ import JobList from '@/components/home/JobList';
 import NoResults from '@/components/home/NoResults';
 import { mockJobs } from '@/data/mockJobs';
 import { mockAINews } from '@/data/mockNews';
+import TopBar from '@/components/layout/TopBar';
 
 const WEEKDAY_KO = ['일', '월', '화', '수', '목', '금', '토'];
 
@@ -64,6 +65,8 @@ export default function HomePage() {
 
   return (
     <>
+      <TopBar />
+      
       {!isSearching && <TrendingScrap items={trendingItems} />}
 
       {!isSearching && (

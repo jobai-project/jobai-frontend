@@ -1,6 +1,14 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css');
+ 
+:root {
+  --color-primary: #4741ff;
+  --color-text: #172129;
+  --color-border: #d0d6dd;
+  --letter-spacing: -0.02em;
+}
 
 html,
 body,
@@ -8,8 +16,75 @@ body,
   height: 100%;
 }
 
+/* 자간 정의 */
+* {
+  letter-spacing: var(--letter-spacing);
+}
+
+/* 폰트 정의 */
 body {
   @apply bg-app-bg text-app-text antialiased;
+  font-family: 'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', -apple-system,
+    BlinkMacSystemFont, sans-serif;
   font-size: 14px;
   line-height: 1.5;
+  margin: 0;
+  padding: 0;
+}
+
+a {
+  @apply text-app-primary transition-colors hover:opacity-90;
+  text-decoration: none;
+}
+
+button {
+  @apply transition-all cursor-pointer;
+  font-family: inherit;
+  font-size: inherit;
+}
+
+input,
+textarea,
+select {
+  font-family: inherit;
+  font-size: inherit;
+}
+ 
+input:focus,
+textarea:focus,
+select:focus {
+  @apply outline-none;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  @apply font-bold m-0 p-0;
+}
+
+p {
+  @apply m-0 p-0;
+}
+
+.flex-center {
+  @apply flex items-center justify-center;
+}
+ 
+.flex-between {
+  @apply flex items-center justify-between;
+}
+ 
+.btn {
+  @apply inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed;
+}
+ 
+.btn-primary {
+  @apply bg-app-primary text-white hover:opacity-90;
+}
+ 
+.btn-secondary {
+  @apply bg-app-bg text-app-text border border-app-border hover:bg-app-hover;
 }
