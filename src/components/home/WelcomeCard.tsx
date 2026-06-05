@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import userCardBg from '@/picture/User_card.png';
+import userCardBg from '/user_card.png';
 
 export default function WelcomeCard() {
   const navigate = useNavigate();

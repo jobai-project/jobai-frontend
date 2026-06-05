@@ -27,7 +27,7 @@ function DetailContent({ job }: DetailContentProps) {
   return (
     <div>
       <div className="mb-4 flex items-center gap-2">
-        <h3 className="text-base font-bold text-app-text">공고 요약</h3>
+        <h3 className="text-base font-bold text-app-text">공고 상세</h3>
       </div>
 
       <div className="rounded-lg border border-app-border bg-app-bg p-5">
