@@ -6,7 +6,6 @@ import ScrapTabNavigation from '@/components/scrap/ScrapTabNavigation';
 
 type TabType = 'all' | 'ongoing' | 'deadline';
 
-// dday를 deadline 문자열로 변환
 const formatDeadline = (dday: number): string => {
   if (dday === 0) return '오늘 마감';
   if (dday < 0) return `마감`;
@@ -19,7 +18,6 @@ export default function ScrapPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [sortAsc, setSortAsc] = useState(true);
 
-  // BookmarkStore에서 북마크된 ID들 가져오기
   const bookmarkedIds = useBookmarkStore((s) => s.bookmarkedIds);
   const toggle = useBookmarkStore((s) => s.toggle);
 
@@ -42,14 +40,11 @@ export default function ScrapPage() {
     }));
 
     if (activeTab === 'ongoing') {
-      // 진행중: dday가 양수 (남은 일자가 있음)
       filtered = filtered.filter((item) => item.dday > 0);
     } else if (activeTab === 'deadline') {
-      // 마감: dday가 음수 또는 0 (마감됨)
       filtered = filtered.filter((item) => item.dday <= 0);
     }
 
-    // 정렬
     if (sortAsc) {
       filtered.sort((a, b) => a.dday - b.dday); // 마감 임박 순
     } else {
@@ -81,7 +76,6 @@ export default function ScrapPage() {
   };
 
   const handleRemove = (id: string) => {
-    // BookmarkStore에서 스크랩 해제
     toggle(id);
   };
 
@@ -91,7 +85,6 @@ export default function ScrapPage() {
 
   return (
     <div className="pt-12">
-      {/* 헤더 */}
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-app-text mb-2">스크랩</h1>
         <p className="text-sm text-app-text-muted">
@@ -99,12 +92,10 @@ export default function ScrapPage() {
         </p>
       </div>
 
-      {/* 탭 네비게이션 */}
       <ScrapTabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
 
       <div className="h-6" />
 
-      {/* 테이블 */}
       <ScrapTable
         data={paginatedData}
         selectedItems={selectedItems}
@@ -115,7 +106,6 @@ export default function ScrapPage() {
         onSortToggle={handleSortToggle}
       />
 
-      {/* 페이지네이션 */}
       {filteredData.length > 0 && (
         <div className="flex items-center justify-center gap-2 mt-8">
           <button

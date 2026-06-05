@@ -35,7 +35,6 @@ function ScrapTable({
 
   return (
     <div className="border border-app-border rounded-lg overflow-hidden bg-white">
-      {/* 마감기한순 행 */}
       <div className="flex items-center justify-end px-6 h-[70px] bg-white">
         <div 
           className="flex items-center gap-1.5 cursor-pointer hover:opacity-80 transition-opacity"
@@ -50,12 +49,10 @@ function ScrapTable({
         </div>
       </div>
 
-      {/* 구분선 */}
       <div className="grid grid-cols-[40px_2.5fr_1.2fr_1.2fr_1.2fr_40px] gap-3 px-6">
         <div className="col-span-6 border-b border-app-border"></div>
       </div>
       
-      {/* 테이블 헤더 */}
       <div className="grid grid-cols-[40px_2.5fr_1.2fr_1.2fr_1.2fr_70px] items-center gap-3 px-6 h-[70px] bg-app-bg font-semibold text-sm text-app-text">
         <div className="flex items-center justify-center h-full">
           <input
@@ -83,12 +80,10 @@ function ScrapTable({
         <div className="col-span-6 border-b border-app-border"></div>
       </div>
 
-      {/* 테이블 바디 */}
       {data.length > 0 ? (
         data.map((item) => (
           <div key={item.id}>
             <div className="grid grid-cols-[40px_2.5fr_1.2fr_1.2fr_1.2fr_70px] gap-3 px-6 py-1.5 items-center hover:bg-app-bg transition-colors">
-              {/* 체크박스 */}
               <div className="flex items-center justify-center">
                 <input
                   type="checkbox"
@@ -98,7 +93,6 @@ function ScrapTable({
                 />
               </div>
 
-              {/* 공고 제목 + 카테고리 */}
               <div className="min-w-0">
                 <div className="font-semibold text-app-text text-sm truncate">
                   {item.title}
@@ -106,20 +100,16 @@ function ScrapTable({
                 <div className="text-xs text-app-text-muted">{item.category}</div>
               </div>
 
-              {/* 모집 유형 */}
               <div className="text-sm text-app-text text-center">{item.type}</div>
 
-              {/* 마감 기한 */}
               <div className="text-sm text-app-text text-center">{item.deadline}</div>
 
-              {/* 점수 */}
               <div className="flex items-center justify-center">
                 <div className="transform scale-75 origin-center"> 
                   <ScoreGauge2 score={item.score} />
                 </div>
               </div>
 
-              {/* 제거 버튼 */}
               <button
                 type="button"
                 onClick={() => onRemove(item.id)}
@@ -135,7 +125,6 @@ function ScrapTable({
               </button>
             </div>
             
-            {/* 각 행 밑의 구분선 */}
             <div className="grid grid-cols-[40px_2.5fr_1.2fr_1.2fr_1.2fr_40px] gap-3 px-6">
               <div className="col-span-6 border-b border-app-border"></div>
             </div>
