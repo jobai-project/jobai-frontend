@@ -9,8 +9,7 @@ function ScoreGauge2({ score }: ScoreGauge2Props) {
   const strokeWidth = 15;
   const normalizedRadius = radius - strokeWidth / 2;
   const circumference = normalizedRadius * 2 * Math.PI;
-  const adjustedScore = score > 0 ? (score / 100) * 0.92 : 0; 
-  const strokeDashoffset = circumference - (adjustedScore * circumference);
+  const strokeDashoffset = circumference - (score / 100) * circumference;
   const svgSize = radius * 2;
 
   return (

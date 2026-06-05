@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import timeIcon from '/mingcute_time-fill.svg';
+import timeIcon from '@/picture/mingcute_time-fill.svg';
 
 export interface DeadlineItem {
   id: string;

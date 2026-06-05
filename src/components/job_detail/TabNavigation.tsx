@@ -22,14 +22,14 @@ function TabNavigation({ activeTab, onTabChange }: TabNavigationProps) {
           onClick={() => onTabChange(tab.id)}
           className={`relative flex-1 px-8 py-4 text-sm font-semibold transition-colors ${
             activeTab === tab.id
-              ? 'text-app-primary'
+              ? 'text-app-text'
               : 'text-app-text-muted hover:bg-app-hover hover:text-app-text'
           }`}
           aria-current={activeTab === tab.id ? 'page' : undefined}
         >
           {tab.label}
           {activeTab === tab.id && (
-            <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-app-primary" />
+            <span className="absolute bottom-0 left-0 right-0 h-1 bg-app-primary" />
           )}
         </button>
       ))}
