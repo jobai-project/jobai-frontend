@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 import MainLayout from './components/layout/MainLayout';
 import HomePage from './pages/HomePage';
 import JobDetailPage from './pages/JobDetailPage';
+import ScrapPage from '@/pages/ScrapPage';
 import PlaceholderPage from './pages/PlaceholderPage';
 
 export default function App() {
@@ -16,7 +17,7 @@ export default function App() {
           path="/application"
           element={<PlaceholderPage icon="▤" title="지원 현황" />}
         />
-        <Route path="/scrap" element={<PlaceholderPage icon="♡" title="스크랩" />} />
+        <Route path="/scrap" element={<ScrapPage />} />
         <Route path="/profile" element={<PlaceholderPage icon="○" title="프로필" />} />
         <Route
           path="/deadline"

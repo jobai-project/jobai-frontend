@@ -1,29 +1,30 @@
 import { memo } from 'react';
 
-type TabType = 'detail' | 'qualification';
+type TabType = 'all' | 'ongoing' | 'deadline';
 
-interface TabNavigationProps {
+interface ScrapTabNavigationProps {
   activeTab: TabType;
   onTabChange: (tab: TabType) => void;
 }
 
 const tabs = [
-  { id: 'detail' as const, label: '상세내용' },
-  { id: 'qualification' as const, label: '지원자격' },
+  { id: 'all' as const, label: '전체' },
+  { id: 'ongoing' as const, label: '진행중' },
+  { id: 'deadline' as const, label: '마감' },
 ] as const;
 
-function TabNavigation({ activeTab, onTabChange }: TabNavigationProps) {
+function ScrapTabNavigation({ activeTab, onTabChange }: ScrapTabNavigationProps) {
   return (
-    <div className="flex border-b border-app-border">
+    <div className="inline-flex border-b border-app-border">
       {tabs.map((tab) => (
         <button
           key={tab.id}
           type="button"
           onClick={() => onTabChange(tab.id)}
-          className={`relative flex-1 px-8 py-4 text-sm font-semibold transition-colors ${
+          className={`relative px-16 py-4 text-sm font-semibold transition-colors ${
             activeTab === tab.id
               ? 'text-app-primary'
-              : 'text-app-text-muted hover:bg-app-hover hover:text-app-text'
+              : 'text-app-text-muted hover:text-app-text'
           }`}
           aria-current={activeTab === tab.id ? 'page' : undefined}
         >
@@ -37,4 +38,4 @@ function TabNavigation({ activeTab, onTabChange }: TabNavigationProps) {
   );
 }
 
-export default memo(TabNavigation);
+export default memo(ScrapTabNavigation);
