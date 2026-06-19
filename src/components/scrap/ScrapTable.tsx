@@ -83,7 +83,7 @@ function ScrapTable({
       {data.length > 0 ? (
         data.map((item) => (
           <div key={item.id}>
-            <div className="grid grid-cols-[40px_2.5fr_1.2fr_1.2fr_1.2fr_70px] gap-3 px-6 py-1.5 items-center hover:bg-app-bg transition-colors">
+            <div className="grid grid-cols-[40px_2.5fr_1.2fr_1.2fr_1.2fr_70px] gap-3 px-6 py-1.5 items-center hover:bg-app-bg transition-colors" >
               <div className="flex items-center justify-center">
                 <input
                   type="checkbox"
@@ -94,7 +94,8 @@ function ScrapTable({
               </div>
 
               <div className="min-w-0">
-                <div className="font-semibold text-app-text text-sm truncate">
+                {/* onClick={() => navigate('/scrap')} */}
+                <div className="font-semibold text-app-text text-sm truncate"> 
                   {item.title}
                 </div>
                 <div className="text-xs text-app-text-muted">{item.category}</div>

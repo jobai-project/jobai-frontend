@@ -10,7 +10,10 @@
   --letter-spacing: -0.02em;
 }
 
-html,
+html {
+  overflow-y: scroll;
+}
+
 body,
 #root {
   height: 100%;

@@ -20,7 +20,7 @@ export default function DeadlineCard({ jobs }: DeadlineCardProps) {
     <div className="flex h-[306px] w-[348px] flex-shrink-0 flex-col rounded-xl border border-app-primary-soft bg-card-gradient px-5 py-4 shadow-[0_10px_28px_rgba(71,65,255,0.14)]">
       <button
         type="button"
-        onClick={() => navigate('/deadline')}
+        onClick={() => navigate('/scrap')}
         className="mb-3 flex items-center justify-between text-left transition hover:opacity-80"
       >
         <span className="inline-flex items-center gap-2 text-sm font-semibold text-app-text">
