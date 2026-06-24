@@ -1,5 +1,5 @@
 import type { AINewsItem } from '@/data/mockNews';
-import newsIcon from '@/picture/iconamoon_news-fill.svg';
+import newsIcon from '/iconamoon_news-fill.svg';
 
 interface AINewsCardProps {
   news: AINewsItem[];
