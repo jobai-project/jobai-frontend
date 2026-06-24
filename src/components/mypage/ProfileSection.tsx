@@ -37,15 +37,17 @@ export default function ProfileSection({
       <div className="border border-app-border rounded-lg p-6 bg-white">
         <h2 className="font-semibold text-app-text mb-6">프로필</h2>
 
-        <div className="flex items-start gap-4 mb-6 pb-6 border-b border-app-border">
-          <img src="/profile_icon.png" alt="프로필" className="w-12 h-12 rounded-full" />
+        <div className="flex items-start gap-4 mb-6 pb-6">
+          <img src="/profile-icon.png" alt="프로필" className="w-16 h-16 rounded-full" />
           <div className="flex-1 space-y-4">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center">
               <div className="flex items-center gap-4">
                 <div className="text-xs text-app-text-muted min-w-12">이름</div>
-                <div className="text-sm font-medium text-app-text">{user.name}</div>
+                <div className="flex items-center gap-0">
+                  <div className="text-sm font-medium text-app-text">{user.name}</div>
+                  <EditableField value={user.name} onSave={onNameChange} label="이름" iconSrc="/edit-icon.png" />
+                </div>
               </div>
-              <EditableField value={user.name} onSave={onNameChange} label="이름" />
             </div>
             <div className="flex items-center gap-4">
               <div className="text-xs text-app-text-muted min-w-12">이메일</div>
@@ -58,13 +60,15 @@ export default function ProfileSection({
       {/* 공고 조건 설정 */}
       <div className="border border-app-border rounded-lg p-6 bg-white">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="font-semibold text-app-text">공고 조건 설정</h2>
-          <button
-            onClick={() => setEditingJobConditions(!editingJobConditions)}
-            className="text-xs font-semibold text-app-primary hover:opacity-80"
-          >
-            수정
-          </button>
+          <div className="flex items-center gap-1.5">
+            <h2 className="font-semibold text-app-text">공고 조건 설정</h2>
+            <button
+              onClick={() => setEditingJobConditions(!editingJobConditions)}
+              className="p-0 hover:opacity-80"
+            >
+              <img src="/edit-icon.png" alt="수정" className="w-5 h-5" />
+            </button>
+          </div>
         </div>
  
         {editingJobConditions ? (
@@ -118,16 +122,19 @@ export default function ProfileSection({
 
       {/* 이력서 관리 */}
       <div className="border border-app-border rounded-lg p-6 bg-white">
-        <h2 className="font-semibold text-app-text mb-6">이력서 관리</h2>
+        <div className="flex items-center gap-1.5 mb-6">
+          <h2 className="font-semibold text-app-text">이력서 관리</h2>
+          <img src="/edit-icon.png" alt="수정" className="w-5 h-5" />
+        </div>
 
         <div className="space-y-3">
           {user.resumes.map((resume) => (
-            <div className="flex items-center justify-between py-3 border-b border-app-border last:border-b-0">
+            <div className="flex items-center justify-between py-2">
               <div className="flex items-center gap-3">
                 {resume.status === 'primary' ? (
-                  <img src="/등록_아이콘.png" alt="등록" className="w-5 h-5" />
+                  <img src="/submit-icon.png" alt="활성" className="w-8 h-8" />
                 ) : (
-                  <img src="/미등록_아이콘.png" alt="미등록" className="w-5 h-5" />
+                  <img src="/submit-no-icon.png" alt="비활성" className="w-8 h-8" />
                 )}
                 <div>
                   <div className="text-sm font-medium text-app-text">{resume.name}</div>
@@ -136,16 +143,17 @@ export default function ProfileSection({
               </div>
               
               {resume.status === 'primary' ? (
-                <span className="text-xs font-semibold text-app-primary">등록</span>
+                <span className="text-xs font-semibold text-app-primary">활성</span>
               ) : (
-                <span className="text-xs font-semibold text-app-text-muted">미등록</span>
+                <span className="text-xs font-semibold text-app-text-muted">비활성</span>
               )}
             </div>
           ))}
         </div>
 
-        <button className="w-full mt-4 py-2 border border-dashed border-app-border rounded text-sm text-app-text-muted hover:bg-app-bg transition-colors">
-          + PDF 업로드
+        <button className="flex items-center justify-center gap-2 w-full mt-4 py-2 border border-dashed border-app-border rounded text-sm text-app-text-muted hover:bg-app-bg transition-colors">
+          <img src="/upload-icon.png" alt="업로드" className="w-3 h-3" />
+          <span>PDF 업로드</span>
         </button>
       </div>
     </div>

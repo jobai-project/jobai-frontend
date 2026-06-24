@@ -4,9 +4,10 @@ interface EditableFieldProps {
   value: string;
   onSave: (value: string) => void;
   label: string;
+  iconSrc: string;
 }
 
-export default function EditableField({ value, onSave, label }: EditableFieldProps) {
+export default function EditableField({ value, onSave, label, iconSrc }: EditableFieldProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [tempValue, setTempValue] = useState(value);
 
@@ -47,9 +48,13 @@ export default function EditableField({ value, onSave, label }: EditableFieldPro
       ) : (
         <button
           onClick={() => setIsEditing(true)}
-          className="px-3 py-1.5 text-xs font-semibold text-app-primary hover:opacity-80"
+          className="p-1.5 hover:opacity-80"
         >
-          수정
+          {iconSrc ? (
+            <img src={iconSrc} alt="수정" className="w-5 h-5" />
+          ) : (
+            <span className="text-xs font-semibold text-app-primary">수정</span>
+          )}
         </button>
       )}
     </>

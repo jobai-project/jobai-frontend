@@ -1,4 +1,6 @@
 import { memo } from 'react';
+import { useRef } from 'react';
+import { useEffect } from 'react';
 
 interface ApplicationItem {
   id: string;
@@ -38,8 +40,26 @@ function ApplicationStatusTable({
   onDeleteItem,
   stageColors,
 }: ApplicationStatusTableProps) {
+  const tableRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (tableRef.current && !tableRef.current.contains(e.target as Node)) {
+        onEditingChange(null);
+      }
+    };
+
+    if (editingId) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [editingId, onEditingChange]);
+
   return (
-    <div className="border border-app-border rounded-lg overflow-hidden bg-white">
+    <div ref={tableRef} className="border border-app-border rounded-lg overflow-hidden bg-white">
       {/* 테이블 헤더 */}
       <div className="grid grid-cols-[150px_150px_120px_120px_120px_150px] gap-0 px-6 py-4 bg-app-bg font-semibold text-sm text-app-text border-b border-app-border">
         <div>기업</div>
@@ -63,6 +83,7 @@ function ApplicationStatusTable({
                 type="text"
                 value={item.company}
                 onChange={(e) => onUpdateItem(item.id, 'company', e.target.value)}
+                onBlur={() => onEditingChange(null)}
                 className="px-2 py-1 border border-app-border rounded text-sm"
               />
             ) : (
@@ -80,6 +101,7 @@ function ApplicationStatusTable({
                 type="text"
                 value={item.position}
                 onChange={(e) => onUpdateItem(item.id, 'position', e.target.value)}
+                onBlur={() => onEditingChange(null)}
                 className="px-2 py-1 border border-app-border rounded text-sm"
               />
             ) : (
@@ -96,6 +118,7 @@ function ApplicationStatusTable({
               <select
                 value={item.stage}
                 onChange={(e) => onUpdateItem(item.id, 'stage', e.target.value)}
+                onBlur={() => onEditingChange(null)}
                 className="px-2 py-1 border border-app-border rounded text-sm text-center"
               >
                 <option value="">선택</option>

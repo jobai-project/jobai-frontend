@@ -59,15 +59,12 @@ export default function MyPage() {
 
   return (
     <div className="pt-12">
-      {/* 헤더 */}
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-app-text mb-1">마이페이지</h1>
       </div>
 
-      {/* 탭 네비게이션 */}
       <MyPageTabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
 
-      {/* 탭 콘텐츠 */}
       {activeTab === 'profile' ? (
         <ProfileSection
           user={user}

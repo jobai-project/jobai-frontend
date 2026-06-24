@@ -30,9 +30,9 @@ export default function NotificationSettings() {
 
         <div className="space-y-4">
           {/* 이메일 */}
-          <div className="flex items-center justify-between pb-4 border-b border-app-border">
+          <div className="flex items-center justify-between pb-4">
             <div className="flex items-center gap-3">
-              <img src="/등록_아이콘.png" alt="등록" className="w-5 h-5" />
+              <img src="/mail-icon.png" alt="등록" className="w-5 h-5" />
               <div>
                 <div className="text-sm font-medium text-app-text">이메일</div>
                 <div className="text-xs text-app-text-muted">juhoonkim22@gmail.com</div>
@@ -53,9 +53,9 @@ export default function NotificationSettings() {
           </div>
 
           {/* Slack */}
-          <div className="flex items-center justify-between pb-4 border-b border-app-border">
+          <div className="flex items-center justify-between pb-4">
             <div className="flex items-center gap-3">
-              <img src="/등록_아이콘.png" alt="등록" className="w-5 h-5" />
+              <img src="/slack-icon.png" alt="등록" className="w-5 h-5" />
               <div>
                 <div className="text-sm font-medium text-app-text">Slack</div>
                 <div className="text-xs text-app-text-muted">연결 중</div>
@@ -78,7 +78,7 @@ export default function NotificationSettings() {
           {/* Discord */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <img src="/등록_아이콘.png" alt="등록" className="w-5 h-5" />
+              <img src="/discord-icon.png" alt="등록" className="w-5 h-5" />
               <div>
                 <div className="text-sm font-medium text-app-text">Discord</div>
                 <div className="text-xs text-app-text-muted">미 연결되었어요</div>
@@ -102,14 +102,14 @@ export default function NotificationSettings() {
 
       {/* 알림 기준 점수 */}
       <div className="border border-app-border rounded-lg p-6 bg-white">
-        <h2 className="font-semibold text-app-text mb-6">알림 기준 점수</h2>
+        <h2 className="font-semibold text-lg text-app-text mb-6">알림 기준 점수</h2>
 
-        <div>
-          <div className="text-xs text-app-text-muted mb-4">
+        <div className="flex items-center gap-4">
+          <div className="text-xs text-app-text-muted min-w-max">
             이 점수 이상 공고만 알림
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 flex-1">
             <input
               type="range"
               min="0"
