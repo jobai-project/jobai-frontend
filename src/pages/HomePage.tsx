@@ -70,7 +70,7 @@ export default function HomePage() {
       {!isSearching && <TrendingScrap items={trendingItems} />}
 
       {!isSearching && (
-        <section className="mb-9 flex gap-5">
+        <section className="mb-9 flex gap-[20px]">
           <WelcomeCard />
           <DeadlineCard jobs={deadlineItems} />
           <AINewsCard news={mockAINews} />
@@ -110,7 +110,9 @@ export default function HomePage() {
       ) : jobs.length === 0 ? (
         <NoResults query={isSearching ? q : undefined} />
       ) : (
-        <JobList jobs={jobs} />
+        <section className="w-full max-w-[1164px]">
+          <JobList jobs={jobs} />
+        </section>
       )}
     </>
   );

@@ -7,14 +7,11 @@ interface ScoreBoxProps {
  
 function ScoreBox({ score }: ScoreBoxProps) {
   return (
-    <div className="flex flex-col rounded-2xl border h-[198px] border-[#EBECFF]/90 bg-white p-6 shadow-[0_15px_50px_rgba(124,119,255,0.15)]">
-        <div className="flex items-center gap-2 mb-2">
-          <img 
-            src="/star-icon.png"
-            alt="" 
-            width="20" 
-            height="20" 
-          />
+    <div className="flex flex-col rounded-2xl border border-[#EBECFF]/90 bg-white p-6 shadow-[0_15px_50px_rgba(124,119,255,0.15)]">
+        <div className="flex items-center gap-2 mb-6">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="text-[#4741FF]">
+            <path d="M12 2L14.8 9.2L22 12L14.8 14.8L12 22L9.2 14.8L2 12L9.2 9.2L12 2Z" fill="currentColor" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
           <h4 className="text-lg font-bold text-app-text">AI 공고 점수</h4>
         </div>
 

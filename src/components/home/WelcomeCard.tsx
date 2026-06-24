@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import userCardBg from '/user_card.png';
+import userCardBg from '/User_card.png';
 
 export default function WelcomeCard() {
   const navigate = useNavigate();
@@ -10,7 +10,7 @@ export default function WelcomeCard() {
 
   return (
     <div
-      className="relative flex h-[306px] w-[440px] flex-shrink-0 flex-col justify-between overflow-hidden rounded-[20px] p-10"
+      className="relative flex h-[306px] w-[348px] flex-shrink-0 flex-col justify-between overflow-hidden rounded-[20px] p-10"
       style={{
         backgroundImage: `url(${userCardBg})`,
         backgroundSize: 'cover',

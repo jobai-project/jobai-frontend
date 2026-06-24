@@ -17,7 +17,7 @@ export default function DeadlineCard({ jobs }: DeadlineCardProps) {
   const navigate = useNavigate();
 
   return (
-    <div className="flex h-[306px] w-[348px] flex-shrink-0 flex-col rounded-xl border border-app-primary-soft bg-card-gradient px-5 py-4 shadow-[0_10px_28px_rgba(71,65,255,0.14)]">
+    <div className="flex h-[306px] w-[256px] flex-shrink-0 flex-col rounded-xl border border-app-primary-soft bg-card-gradient px-5 py-4 shadow-[0_10px_28px_rgba(71,65,255,0.14)]">
       <button
         type="button"
         onClick={() => navigate('/scrap')}
@@ -41,7 +41,7 @@ export default function DeadlineCard({ jobs }: DeadlineCardProps) {
             <button
               type="button"
               onClick={() => navigate(`/jobs/${job.id}`)}
-              className="flex h-[49px] w-[276px] items-start justify-between gap-2 px-4 py-3 text-left transition hover:bg-white/50"
+              className="flex h-[49px] w-[216px] items-start justify-between gap-2 px-2 py-3 text-left transition hover:bg-white/50"
             >
               <div className="min-w-0 flex-1">
                 <div className="truncate text-[13px] font-medium text-app-text">
