@@ -1,6 +1,4 @@
-import { memo } from 'react';
-import { useRef } from 'react';
-import { useEffect } from 'react';
+import { memo, useRef, useEffect, useState } from 'react';
 
 interface ApplicationItem {
   id: string;
@@ -32,6 +30,11 @@ const STAGE_OPTIONS = [
   '최종합격',
 ];
 
+interface EditingState {
+  itemId: string | null;
+  field: keyof ApplicationItem | null;
+}
+
 function ApplicationStatusTable({
   data,
   editingId,
@@ -41,25 +44,106 @@ function ApplicationStatusTable({
   stageColors,
 }: ApplicationStatusTableProps) {
   const tableRef = useRef<HTMLDivElement>(null);
+  const [editing, setEditing] = useState<EditingState>({ itemId: null, field: null });
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (tableRef.current && !tableRef.current.contains(e.target as Node)) {
+        setEditing({ itemId: null, field: null });
         onEditingChange(null);
       }
     };
 
-    if (editingId) {
+    if (editing.itemId) {
       document.addEventListener('mousedown', handleClickOutside);
     }
 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [editingId, onEditingChange]);
+  }, [editing.itemId, onEditingChange]);
+
+  const EditableCell = ({
+    item,
+    field,
+    value,
+    onChange,
+  }: {
+    item: ApplicationItem;
+    field: keyof ApplicationItem;
+    value: string;
+    onChange: (value: string) => void;
+  }) => {
+    const isEditing = editing.itemId === item.id && editing.field === field;
+
+    if (isEditing && field === 'stage') {
+      return (
+        <select
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          onBlur={() => setEditing({ itemId: null, field: null })}
+          autoFocus
+          className="w-full px-3 py-2 bg-white border-none rounded text-sm text-center"
+        >
+          <option value="">선택</option>
+          {STAGE_OPTIONS.map((stage) => (
+            <option key={stage} value={stage}>
+              {stage}
+            </option>
+          ))}
+        </select>
+      );
+    }
+
+    if (isEditing) {
+      return (
+        <input
+          type="text"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          onBlur={() => setEditing({ itemId: null, field: null })}
+          autoFocus
+          className={`w-full px-3 py-2 bg-white border-none rounded text-sm ${
+            field === 'stage' || field === 'appliedDate' || field === 'nextSchedule'
+              ? 'text-center'
+              : ''
+          }`}
+        />
+      );
+    }
+
+    return (
+      <div
+        onClick={() => {
+          setEditing({ itemId: item.id, field });
+          onEditingChange(item.id);
+        }}
+        className={`px-2 py-1 rounded cursor-text hover:bg-app-primary/5 ${
+          field === 'stage' || field === 'appliedDate' || field === 'nextSchedule'
+            ? 'text-center'
+            : ''
+        }`}
+      >
+        {field === 'stage' ? (
+          <span
+            className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${
+              stageColors[value] || 'bg-gray-100 text-gray-700'
+            }`}
+          >
+            {value}
+          </span>
+        ) : (
+          <span className="text-sm text-app-text">{value}</span>
+        )}
+      </div>
+    );
+  };
 
   return (
-    <div ref={tableRef} className="border border-app-border rounded-lg overflow-hidden bg-white">
+    <div
+      ref={tableRef}
+      className="border border-app-border rounded-lg overflow-hidden bg-white"
+    >
       {/* 테이블 헤더 */}
       <div className="grid grid-cols-[150px_150px_120px_120px_120px_150px] gap-0 px-6 py-4 bg-app-bg font-semibold text-sm text-app-text border-b border-app-border">
         <div>기업</div>
@@ -75,122 +159,58 @@ function ApplicationStatusTable({
         data.map((item) => (
           <div
             key={item.id}
-            className="group grid grid-cols-[150px_150px_120px_120px_120px_150px] gap-0 px-6 py-4 border-b border-app-border items-center hover:bg-app-bg transition-colors"
+            className={`group grid grid-cols-[150px_150px_120px_120px_120px_150px] gap-0 px-6 py-4 border-b border-app-border items-center transition-colors ${
+              editing.itemId === item.id ? 'bg-blue-50' : 'hover:bg-app-bg'
+            }`}
           >
             {/* 기업 */}
-            {editingId === item.id ? (
-              <input
-                type="text"
-                value={item.company}
-                onChange={(e) => onUpdateItem(item.id, 'company', e.target.value)}
-                onBlur={() => onEditingChange(null)}
-                className="px-2 py-1 border border-app-border rounded text-sm"
-              />
-            ) : (
-              <div
-                className="text-sm text-app-text cursor-text hover:bg-app-primary/10 px-2 py-1 rounded"
-                onClick={() => onEditingChange(item.id)}
-              >
-                {item.company}
-              </div>
-            )}
+            <EditableCell
+              item={item}
+              field="company"
+              value={item.company}
+              onChange={(value) => onUpdateItem(item.id, 'company', value)}
+            />
 
             {/* 직무 */}
-            {editingId === item.id ? (
-              <input
-                type="text"
-                value={item.position}
-                onChange={(e) => onUpdateItem(item.id, 'position', e.target.value)}
-                onBlur={() => onEditingChange(null)}
-                className="px-2 py-1 border border-app-border rounded text-sm"
-              />
-            ) : (
-              <div
-                className="text-sm text-app-text cursor-text hover:bg-app-primary/10 px-2 py-1 rounded"
-                onClick={() => onEditingChange(item.id)}
-              >
-                {item.position}
-              </div>
-            )}
+            <EditableCell
+              item={item}
+              field="position"
+              value={item.position}
+              onChange={(value) => onUpdateItem(item.id, 'position', value)}
+            />
 
             {/* 단계 */}
-            {editingId === item.id ? (
-              <select
-                value={item.stage}
-                onChange={(e) => onUpdateItem(item.id, 'stage', e.target.value)}
-                onBlur={() => onEditingChange(null)}
-                className="px-2 py-1 border border-app-border rounded text-sm text-center"
-              >
-                <option value="">선택</option>
-                {STAGE_OPTIONS.map((stage) => (
-                  <option key={stage} value={stage}>
-                    {stage}
-                  </option>
-                ))}
-              </select>
-            ) : (
-              <div className="text-center">
-                <span
-                  className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${
-                    stageColors[item.stage] || 'bg-gray-100 text-gray-700'
-                  }`}
-                >
-                  {item.stage}
-                </span>
-              </div>
-            )}
+            <EditableCell
+              item={item}
+              field="stage"
+              value={item.stage}
+              onChange={(value) => onUpdateItem(item.id, 'stage', value)}
+            />
 
             {/* 지원일 */}
-            {editingId === item.id ? (
-              <input
-                type="text"
-                value={item.appliedDate}
-                onChange={(e) => onUpdateItem(item.id, 'appliedDate', e.target.value)}
-                className="px-2 py-1 border border-app-border rounded text-sm text-center"
-              />
-            ) : (
-              <div
-                className="text-sm text-app-text text-center cursor-text hover:bg-app-primary/10 px-2 py-1 rounded"
-                onClick={() => onEditingChange(item.id)}
-              >
-                {item.appliedDate}
-              </div>
-            )}
+            <EditableCell
+              item={item}
+              field="appliedDate"
+              value={item.appliedDate}
+              onChange={(value) => onUpdateItem(item.id, 'appliedDate', value)}
+            />
 
             {/* 다음 일정 */}
-            {editingId === item.id ? (
-              <input
-                type="text"
-                value={item.nextSchedule}
-                onChange={(e) => onUpdateItem(item.id, 'nextSchedule', e.target.value)}
-                className="px-2 py-1 border border-app-border rounded text-sm text-center"
-              />
-            ) : (
-              <div
-                className="text-sm text-app-text text-center cursor-text hover:bg-app-primary/10 px-2 py-1 rounded"
-                onClick={() => onEditingChange(item.id)}
-              >
-                {item.nextSchedule}
-              </div>
-            )}
+            <EditableCell
+              item={item}
+              field="nextSchedule"
+              value={item.nextSchedule}
+              onChange={(value) => onUpdateItem(item.id, 'nextSchedule', value)}
+            />
 
             {/* 메모 */}
             <div className="flex items-center justify-between">
-              {editingId === item.id ? (
-                <input
-                  type="text"
-                  value={item.memo}
-                  onChange={(e) => onUpdateItem(item.id, 'memo', e.target.value)}
-                  className="flex-1 px-2 py-1 border border-app-border rounded text-sm"
-                />
-              ) : (
-                <div
-                  className="flex-1 text-sm text-app-text cursor-text hover:bg-app-primary/10 px-2 py-1 rounded"
-                  onClick={() => onEditingChange(item.id)}
-                >
-                  {item.memo}
-                </div>
-              )}
+              <EditableCell
+                item={item}
+                field="memo"
+                value={item.memo}
+                onChange={(value) => onUpdateItem(item.id, 'memo', value)}
+              />
 
               {/* 삭제 버튼 */}
               <button
@@ -211,7 +231,7 @@ function ApplicationStatusTable({
         ))
       ) : (
         <div className="px-6 py-12 text-center text-app-text-muted">
-          지원 현황이 없습니다
+          지원 현황이 없습니다.
         </div>
       )}
     </div>

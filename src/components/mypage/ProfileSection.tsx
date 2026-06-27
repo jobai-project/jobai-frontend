@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import EditableField from '@/components/mypage/EditableField';
 import JobConditionsEditor from '@/components/mypage/JobConditionsEditor';
 
@@ -22,14 +22,25 @@ interface ProfileSectionProps {
   user: UserProfile;
   onNameChange: (name: string) => void;
   onJobConditionsChange: (conditions: UserProfile['jobConditions']) => void;
+  onSetPrimaryResume: (id: string) => void;
 }
 
 export default function ProfileSection({
   user,
   onNameChange,
   onJobConditionsChange,
+  onSetPrimaryResume,
 }: ProfileSectionProps) {
   const [editingJobConditions, setEditingJobConditions] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      console.log('업로드된 파일:', file.name);
+      // 파일 처리 로직 추가
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -129,7 +140,7 @@ export default function ProfileSection({
 
         <div className="space-y-3">
           {user.resumes.map((resume) => (
-            <div className="flex items-center justify-between py-2">
+            <div key={resume.id} className="flex items-center justify-between py-2">
               <div className="flex items-center gap-3">
                 {resume.status === 'primary' ? (
                   <img src="/submit-icon.png" alt="활성" className="w-8 h-8" />
@@ -142,19 +153,35 @@ export default function ProfileSection({
                 </div>
               </div>
               
-              {resume.status === 'primary' ? (
-                <span className="text-xs font-semibold text-app-primary">활성</span>
-              ) : (
-                <span className="text-xs font-semibold text-app-text-muted">비활성</span>
-              )}
+              <button
+                onClick={() => onSetPrimaryResume(resume.id)}
+                className={`px-3 py-1.5 text-xs font-semibold rounded transition-colors ${
+                  resume.status === 'primary'
+                    ? 'bg-app-primary text-white hover:opacity-90'
+                    : 'bg-app-bg text-app-text-muted border border-app-border hover:bg-app-hover'
+                }`}
+              >
+                {resume.status === 'primary' ? '활성' : '비활성'}
+              </button>
             </div>
           ))}
         </div>
 
-        <button className="flex items-center justify-center gap-2 w-full mt-4 py-2 border border-dashed border-app-border rounded text-sm text-app-text-muted hover:bg-app-bg transition-colors">
+        <button 
+          onClick={() => fileInputRef.current?.click()}
+          className="flex items-center justify-center gap-2 w-full mt-4 py-2 border border-dashed border-app-border rounded text-sm text-app-text-muted hover:bg-app-bg transition-colors"
+        >
           <img src="/upload-icon.png" alt="업로드" className="w-3 h-3" />
           <span>PDF 업로드</span>
         </button>
+
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".pdf"
+          onChange={handleFileUpload}
+          className="hidden"
+        />
       </div>
     </div>
   );

@@ -69,6 +69,16 @@ export default function MyPage() {
     setCondition(editableToCondition(conditions, condition?.scoreThreshold ?? 70));
   };
 
+  const handleSetPrimaryResume = (id: string) => {
+    setUser({
+      ...user,
+      resumes: user.resumes.map((resume) => ({
+        ...resume,
+        status: resume.id === id ? (resume.status === 'primary' ? 'secondary' : 'primary') : 'secondary',
+      })),
+    });
+  };
+
   return (
     <div className="pt-12">
       <div className="mb-8">
@@ -82,6 +92,7 @@ export default function MyPage() {
           user={{ ...user, jobConditions }}
           onNameChange={handleNameChange}
           onJobConditionsChange={handleJobConditionsChange}
+          onSetPrimaryResume={handleSetPrimaryResume}
         />
       ) : (
         <NotificationSettings />
