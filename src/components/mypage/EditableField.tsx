@@ -47,7 +47,7 @@ export default function EditableField({ value, onSave, iconSrc }: EditableFieldP
       ) : (
         <button
           onClick={() => setIsEditing(true)}
-          aria-label={`${label} 수정`}
+          aria-label={`${value} 수정`}
           className="p-1.5 hover:opacity-80"
         >
           {iconSrc ? (

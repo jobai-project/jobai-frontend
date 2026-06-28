@@ -37,7 +37,6 @@ interface EditingState {
 
 function ApplicationStatusTable({
   data,
-  editingId,
   onEditingChange,
   onUpdateItem,
   onDeleteItem,
