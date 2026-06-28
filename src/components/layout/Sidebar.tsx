@@ -1,4 +1,5 @@
 import { NavLink } from 'react-router-dom';
+import { handleLogout } from '@/api/auth';
 
 interface NavItem {
   to: string;
@@ -129,6 +130,9 @@ export default function Sidebar() {
         </button>
         <button
           type="button"
+          onClick={() => {
+            void handleLogout();
+          }}
           className="flex h-10 items-center gap-5 px-5 text-left text-sm font-medium text-app-sidebar-muted hover:text-app-text"
         >
           <span className="flex h-5 w-5 items-center justify-center text-app-sidebar-icon-muted">

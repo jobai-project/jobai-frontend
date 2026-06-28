@@ -8,6 +8,7 @@ import {
 interface OnboardingState {
   onboarded: boolean; // React가 추적하는 진실값
   complete: () => void; // 완료: 상태 + localStorage 동시 갱신
+  setOnboarded: (onboarded: boolean) => void; // 서버 user.onboarded 동기화
   reset: () => void; // 개발용 초기화
 }
 
@@ -21,6 +22,12 @@ export const useOnboardingStore = create<OnboardingState>((set) => ({
   complete: () => {
     persistOnboarded(); // localStorage "true" (영속화)
     set({ onboarded: true }); // React 상태 갱신 → 구독 컴포넌트 자동 리렌더
+  },
+
+  setOnboarded: (onboarded) => {
+    if (onboarded) persistOnboarded();
+    else clearOnboarded();
+    set({ onboarded });
   },
 
   reset: () => {

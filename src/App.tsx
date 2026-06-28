@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import MainLayout from './components/layout/MainLayout';
 import HomePage from './pages/HomePage';
@@ -7,42 +8,63 @@ import ApplicationStatusPage from '@/pages/ApplicationStatusPage';
 import MyPage from '@/pages/MyPage';
 import PlaceholderPage from './pages/PlaceholderPage';
 import OnboardingPage from '@/pages/Onboarding/OnboardingPage';
-import { useOnboardingGate } from '@/hooks/useOnboardingGate';
+import LoginPage from '@/pages/Auth/LoginPage';
+import OAuthCallback from '@/pages/Auth/OAuthCallback';
+import { useAuthStore } from '@/stores/authStore';
+import { useOnboardingStore } from '@/stores/onboardingStore';
+import { getMe } from '@/api/auth';
 import BookmarkToast from '@/components/common/BookmarkToast';
+import ProtectedRoute from '@/components/auth/ProtectedRoute';
+import OnboardingGate from '@/components/auth/OnboardingGate';
 
 export default function App() {
-  // 게이트는 라우트 최상단에서 1회 평가한다. (본 화면 내부에 두면 이미 홈이
-  // 렌더된 뒤라 리다이렉트 타이밍을 놓친다.)
-  const { needsOnboarding } = useOnboardingGate();
+  const setUser = useAuthStore((s) => s.setUser);
+  const clearUser = useAuthStore((s) => s.clearUser);
+  const setOnboarded = useOnboardingStore((s) => s.setOnboarded);
+  const resetOnboarding = useOnboardingStore((s) => s.reset);
+
+  // 앱 진입 시 세션 복구: 쿠키가 남아 있으면 /auth/me 한 번으로 자동 로그인 복구.
+  // 온보딩 완료 여부가 user.onboarded로 오면 서버 값을 우선한다.
+  useEffect(() => {
+    getMe()
+      .then((user) => {
+        setUser(user);
+        if (typeof user.onboarded === 'boolean') setOnboarded(user.onboarded);
+      })
+      .catch(() => {
+        clearUser();
+        resetOnboarding();
+      });
+  }, [setUser, clearUser, setOnboarded, resetOnboarding]);
 
   return (
     <>
       <Routes>
-        {/* 온보딩은 사이드바/탑바 없는 전체화면 — MainLayout 밖에 둔다. */}
-        <Route path="/onboarding" element={<OnboardingPage />} />
+        {/* 인증 화면은 사이드바/탑바 없는 전체화면 — MainLayout 밖. 보호하지 않는다. */}
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/oauth/callback" element={<OAuthCallback />} />
 
-        <Route element={<MainLayout />}>
-          <Route
-            path="/"
-            element={
-              needsOnboarding ? (
-                <Navigate to="/onboarding" replace />
-              ) : (
-                <HomePage />
-              )
-            }
-          />
-          <Route path="/jobs/:id" element={<JobDetailPage />} />
+        <Route element={<ProtectedRoute />}>
+          {/* 온보딩은 인증만 필요하고, 온보딩 게이트는 적용하지 않는다. */}
+          <Route path="/onboarding" element={<OnboardingPage />} />
 
-          {/* // 추가해야함 라우트 */}
-          <Route path="/application" element={<ApplicationStatusPage />} />
-          <Route path="/scrap" element={<ScrapPage />} />
-          <Route path="/profile" element={<MyPage />} />
-          <Route
-            path="/insight"
-            element={<PlaceholderPage icon="📊" title="시장 인사이트" />}
-          />
+          <Route element={<OnboardingGate />}>
+            <Route element={<MainLayout />}>
+              <Route path="/" element={<HomePage />} />
+              <Route path="/jobs/:id" element={<JobDetailPage />} />
+
+              {/* // 추가해야함 라우트 */}
+              <Route path="/application" element={<ApplicationStatusPage />} />
+              <Route path="/scrap" element={<ScrapPage />} />
+              <Route path="/profile" element={<MyPage />} />
+              <Route
+                path="/insight"
+                element={<PlaceholderPage icon="📊" title="시장 인사이트" />}
+              />
+            </Route>
+          </Route>
         </Route>
+
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
 
