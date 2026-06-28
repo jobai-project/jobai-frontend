@@ -43,6 +43,7 @@ export default function App() {
         {/* 인증 화면은 사이드바/탑바 없는 전체화면 — MainLayout 밖. 보호하지 않는다. */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/oauth/callback" element={<OAuthCallback />} />
+        <Route path="/oauth2/redirect" element={<OAuthCallback />} />
 
         <Route element={<ProtectedRoute />}>
           {/* 온보딩은 인증만 필요하고, 온보딩 게이트는 적용하지 않는다. */}
