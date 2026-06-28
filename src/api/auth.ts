@@ -20,10 +20,6 @@ export async function getGoogleLoginUrl(): Promise<string> {
     '/api/v1/auth/login/google',
     {
       withCredentials: false,
-      headers: {
-        'Cache-Control': 'no-cache',
-        Pragma: 'no-cache',
-      },
       params: {
         t: Date.now(),
       },
