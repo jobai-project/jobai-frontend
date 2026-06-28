@@ -1,7 +1,7 @@
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css');
  
 :root {
   --color-primary: #4741ff;
@@ -10,7 +10,10 @@
   --letter-spacing: -0.02em;
 }
 
-html,
+html {
+  overflow-y: scroll;
+}
+
 body,
 #root {
   height: 100%;

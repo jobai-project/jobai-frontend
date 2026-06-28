@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
-import timeIcon from '@/picture/mingcute_time-fill.svg';
+import timeIcon from '/mingcute_time-fill.svg';
+import EmptyScrap from '@/components/common/EmptyScrap';
 
 export interface DeadlineItem {
   id: string;
@@ -16,11 +17,18 @@ interface DeadlineCardProps {
 export default function DeadlineCard({ jobs }: DeadlineCardProps) {
   const navigate = useNavigate();
 
+  // 빈 상태 버튼: 같은 홈 화면의 "딱 맞는 공고" 섹션으로 부드럽게 스크롤
+  const handleGoToScrap = () => {
+    document
+      .getElementById('recommended-jobs')
+      ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
   return (
-    <div className="flex h-[306px] w-[348px] flex-shrink-0 flex-col rounded-xl border border-app-primary-soft bg-card-gradient px-5 py-4 shadow-[0_10px_28px_rgba(71,65,255,0.14)]">
+    <div className="flex h-[306px] flex-col rounded-xl border border-app-primary-soft bg-card-gradient px-5 py-4 shadow-[0_10px_28px_rgba(71,65,255,0.14)]">
       <button
         type="button"
-        onClick={() => navigate('/deadline')}
+        onClick={() => navigate('/scrap')}
         className="mb-3 flex items-center justify-between text-left transition hover:opacity-80"
       >
         <span className="inline-flex items-center gap-2 text-sm font-semibold text-app-text">
@@ -32,7 +40,10 @@ export default function DeadlineCard({ jobs }: DeadlineCardProps) {
         </span>
       </button>
 
-      <ul className="flex flex-col items-center">
+      {jobs.length === 0 ? (
+        <EmptyScrap onAction={handleGoToScrap} className="flex-1" />
+      ) : (
+      <ul className="flex flex-col">
         {jobs.map((job, index) => (
           <li
             key={job.id}
@@ -41,7 +52,7 @@ export default function DeadlineCard({ jobs }: DeadlineCardProps) {
             <button
               type="button"
               onClick={() => navigate(`/jobs/${job.id}`)}
-              className="flex h-[49px] w-[276px] items-start justify-between gap-2 px-4 py-3 text-left transition hover:bg-white/50"
+              className="flex h-[49px] w-full items-start justify-between gap-2 px-2 py-3 text-left transition hover:bg-white/50"
             >
               <div className="min-w-0 flex-1">
                 <div className="truncate text-[13px] font-medium text-app-text">
@@ -58,6 +69,7 @@ export default function DeadlineCard({ jobs }: DeadlineCardProps) {
           </li>
         ))}
       </ul>
+      )}
     </div>
   );
 }

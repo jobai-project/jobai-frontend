@@ -81,7 +81,7 @@ const NAV: NavItem[] = [
 
 export default function Sidebar() {
   return (
-    <aside className="sticky top-0 flex h-screen w-[276px] flex-col border-r border-app-border bg-app-surface px-8 py-10">
+    <aside className="sticky top-0 flex h-screen w-[276px] flex-col border-r border-app-border bg-app-surface px-[32px] py-[40px]">
       <NavLink to="/" className="block text-[22px] font-bold text-app-sidebar-logo">
         JobA!
       </NavLink>

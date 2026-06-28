@@ -1,16 +1,17 @@
 import { useNavigate } from 'react-router-dom';
-import userCardBg from '@/picture/User_card.png';
+import { useConditionStore } from '@/stores/conditionStore';
+import userCardBg from '/User_card.png';
 
 export default function WelcomeCard() {
   const navigate = useNavigate();
 
-  // 수정 할 부분 : API 연결해야할 부분
-  const userName = '김주훈';
-  const jobRole = '백엔드 개발자';
+  // 온보딩에서 고른 관심 직무를 모두 칩으로 표시. 없으면 안내 칩 하나.
+  const jobTypes = useConditionStore((s) => s.condition?.jobTypes);
+  const roleChips = jobTypes?.length ? jobTypes : ['관심 직무를 설정해보세요'];
 
   return (
     <div
-      className="relative flex h-[306px] w-[440px] flex-shrink-0 flex-col justify-between overflow-hidden rounded-[20px] p-10"
+      className="relative flex h-[306px] flex-col justify-between overflow-hidden rounded-[20px] p-10"
       style={{
         backgroundImage: `url(${userCardBg})`,
         backgroundSize: 'cover',
@@ -21,14 +22,17 @@ export default function WelcomeCard() {
     >
       <div className="flex flex-col gap-3">
         <h2 className="text-[24px] font-bold leading-[1.4] text-white">
-          {userName} 님,
-          <br />
           오늘도 잘하고 있어요
         </h2>
-        <div>
-          <span className="inline-block rounded-full bg-white/20 px-3.5 py-1.5 text-[13px] font-medium text-white backdrop-blur-md">
-            {jobRole}
-          </span>
+        <div className="flex flex-wrap gap-2">
+          {roleChips.map((role) => (
+            <span
+              key={role}
+              className="inline-block rounded-full bg-white/20 px-3.5 py-1.5 text-[13px] font-medium text-white backdrop-blur-md"
+            >
+              {role}
+            </span>
+          ))}
         </div>
       </div>
 

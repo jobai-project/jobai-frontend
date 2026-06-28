@@ -1,4 +1,5 @@
 import { useBookmarkStore, useIsBookmarked } from '@/stores/bookmarkStore';
+import { useToastStore } from '@/stores/toastStore';
 
 interface BookmarkButtonProps {
   jobId: string;
@@ -12,7 +13,13 @@ export default function BookmarkButton({ jobId, className = '' }: BookmarkButton
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
+    const willAdd = !isBookmarked; // 토글 전 상태로 추가/해제 판별
     toggle(jobId);
+    // 추가할 때만 토스트 노출 (해제 시에는 띄우지 않음 — 확정 사항)
+    if (willAdd) {
+      // TODO(문구 첫 글자 확인 필요): 이미지 가림으로 '선택한…' 잠정 확정 (Figma 텍스트 레이어 확인)
+      useToastStore.getState().showToast('선택한 공고를 스크랩 목록에 추가했어요');
+    }
   };
 
   return (

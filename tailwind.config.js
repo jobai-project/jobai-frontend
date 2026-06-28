@@ -63,6 +63,15 @@ export default {
           'BlinkMacSystemFont',
           'sans-serif',
         ],
+        // 토스트 등 Pretendard 확정 컴포넌트용 별칭 (전역 기본은 sans 유지).
+        pretendard: [
+          'Pretendard',
+          'Apple SD Gothic Neo',
+          'Noto Sans KR',
+          '-apple-system',
+          'BlinkMacSystemFont',
+          'sans-serif',
+        ],
       },
       borderRadius: {
         base: '8px',
@@ -82,9 +91,21 @@ export default {
           '0%': { opacity: '0', transform: 'translateY(6px)' },
           '100%': { opacity: '1', transform: 'translateY(0)' },
         },
+        // 토스트 진입: 살짝 위로 슬라이드 + 페이드인 (가로 중앙 정렬 유지)
+        'toast-in': {
+          '0%': { opacity: '0', transform: 'translateX(-50%) translateY(8px)' },
+          '100%': { opacity: '1', transform: 'translateX(-50%) translateY(0)' },
+        },
+        // 토스트 퇴장: 페이드아웃 + 살짝 아래로 슬라이드
+        'toast-out': {
+          '0%': { opacity: '1', transform: 'translateX(-50%) translateY(0)' },
+          '100%': { opacity: '0', transform: 'translateX(-50%) translateY(8px)' },
+        },
       },
       animation: {
         'fade-up': 'fade-up 300ms ease-out',
+        'toast-in': 'toast-in 220ms ease-out',
+        'toast-out': 'toast-out 200ms ease-in forwards',
       },
     },
   },

@@ -1,5 +1,5 @@
 import type { AINewsItem } from '@/data/mockNews';
-import newsIcon from '@/picture/iconamoon_news-fill.svg';
+import newsIcon from '/iconamoon_news-fill.svg';
 
 interface AINewsCardProps {
   news: AINewsItem[];
@@ -7,7 +7,7 @@ interface AINewsCardProps {
 
 export default function AINewsCard({ news }: AINewsCardProps) {
   return (
-    <div className="relative flex h-[306px] w-[256px] flex-shrink-0 flex-col rounded-xl border border-app-primary-soft bg-card-gradient px-5 py-4 shadow-[0_10px_28px_rgba(71,65,255,0.14)]">
+    <div className="relative flex h-[306px] flex-col rounded-xl border border-app-primary-soft bg-card-gradient px-5 py-4 shadow-[0_10px_28px_rgba(71,65,255,0.14)]">
       <div className="mb-3 flex items-center justify-between">
         <div className="inline-flex items-center gap-2 text-sm font-semibold text-app-text">
           <img src={newsIcon} alt="" className="h-6 w-6 flex-shrink-0" />

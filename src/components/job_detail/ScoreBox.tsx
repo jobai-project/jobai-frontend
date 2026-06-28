@@ -15,12 +15,12 @@ function ScoreBox({ score }: ScoreBoxProps) {
           <h4 className="text-lg font-bold text-app-text">AI 공고 점수</h4>
         </div>
 
-        <div className="flex items-center gap-7">
+        <div className="flex items-center gap-7 h-full min-h-0 pl-4">
             <div className="flex-shrink-0">
                 <ScoreGauge2 score={score} />
             </div>
 
-            <div className="flex-1 space-y-2.5 text-[13px] font-medium text-slate-600 leading-relaxed">
+            <div className="flex-1 space-y-2 text-[13px] font-medium text-slate-600 leading-tight">
                 <div className="flex items-start gap-1">
                   <span className="text-slate-400">·</span>
                   <span>기술 스택 Python, Django, AWS 일치 (매칭 3/5개)</span>
