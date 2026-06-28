@@ -4,7 +4,7 @@ import { useBookmarkStore } from '@/stores/bookmarkStore';
 import { mockJobs } from '@/data/mockJobs';
 import ScrapTable from '@/components/scrap/ScrapTable';
 import EmptyScrap from '@/components/common/EmptyScrap';
-//import ScrapTabNavigation from '@/components/scrap/ScrapTabNavigation';
+import ScrapTabNavigation from '@/components/scrap/ScrapTabNavigation';
 
 type TabType = 'all' | 'ongoing' | 'deadline';
 
@@ -17,7 +17,7 @@ const formatDeadline = (dday: number): string => {
 export default function ScrapPage() {
   const navigate = useNavigate();
   // ScrapTabNavigation 활성화 시 setter를 다시 추가한다.
-  const [activeTab] = useState<TabType>('all');
+  const [activeTab, setActiveTab] = useState<TabType>('all');
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [sortAsc, setSortAsc] = useState(true);
@@ -95,9 +95,9 @@ export default function ScrapPage() {
           관심 있는 공고를 저장하고 한눈에 확인해보세요.
         </p>
       </div>
-      {/*
+      
       <ScrapTabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
-      */}
+     
       <div className="h-6" />
 
       {bookmarkedJobs.length === 0 ? (
