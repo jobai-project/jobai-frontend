@@ -6,6 +6,15 @@ interface RegionMultiSelectProps {
   onChange: (next: RegionCode[]) => void;
 }
 
+// 체크박스 한 칸: 선택 시 check.svg(파란 체크), 미선택 시 회색 테두리 빈 박스.
+function CheckBox({ checked }: { checked: boolean }) {
+  return checked ? (
+    <img src="/check.svg" alt="" aria-hidden className="h-5 w-5" />
+  ) : (
+    <span className="h-5 w-5 rounded-[2px] border border-[#AFB8C2]" />
+  );
+}
+
 export default function RegionMultiSelect({
   selected,
   onChange,
@@ -22,73 +31,68 @@ export default function RegionMultiSelect({
     }
   };
 
+  // TODO(백엔드 연동 필요): "전체"의 인코딩 방식(단일 토큰 vs 전 지역 배열)을
+  // BE A와 합의 전까지 프론트에서 전 지역 배열로 처리한다.
   const toggleAll = () => {
     onChange(allSelected ? [] : [...REGION_OPTIONS]);
   };
 
   return (
-    <div className="space-y-3">
-      {/* 선택 칩 */}
-      {selected.length > 0 && (
-        <div className="flex gap-2 flex-wrap">
-          {selected.map((region) => (
-            <span
-              key={region}
-              className="inline-flex items-center gap-2 px-3 py-1 bg-app-primary text-white text-xs rounded-full"
-            >
-              {region}
-              <button
-                type="button"
-                onClick={() => toggleRegion(region)}
-                className="hover:opacity-80"
-                aria-label={`${region} 제거`}
-              >
-                ×
-              </button>
-            </span>
-          ))}
-        </div>
-      )}
-
-      {/* 드롭다운 토글 */}
+    <div className="flex flex-col gap-2 self-stretch">
+      {/* 드롭다운 트리거: placeholder 좌측, 셰브론(graycheck.svg) 우측 */}
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="w-full flex items-center justify-between px-4 py-2 border border-app-border rounded-lg text-sm text-app-text hover:bg-app-bg"
+        className="flex items-center gap-1 self-stretch rounded-lg border border-[#AFB8C2] px-3 py-2.5 text-left"
       >
-        <span className={selected.length ? 'text-app-text' : 'text-app-text-muted'}>
-          {selected.length ? `${selected.length}개 지역 선택됨` : '지역 선택'}
+        <span
+          className={`flex-1 font-pretendard text-[15px] ${
+            selected.length ? 'text-[#303D4C]' : 'text-[#AFB8C2]'
+          }`}
+        >
+          {selected.length ? `${selected.length}개 지역 선택됨` : '지역을 선택해주세요'}
         </span>
-        <span className="text-app-text-muted">{open ? '▲' : '▼'}</span>
+        {/* 접힘 = ∨, 펼침 = rotate(180deg) → ^ */}
+        <img
+          src="/graycheck.svg"
+          alt=""
+          aria-hidden
+          className={`h-4 w-4 shrink-0 transition-transform ${open ? 'rotate-180' : ''}`}
+        />
       </button>
 
-      {/* 체크박스 목록 (2열) */}
+      {/* 펼침 상태 = 2열 체크박스 그리드 (전체 + 지역들) */}
       {open && (
-        <div className="border border-app-border rounded-lg p-4">
-          <label className="flex items-center gap-2 pb-3 mb-3 border-b border-app-border text-sm font-medium text-app-text cursor-pointer">
+        <div className="rounded-lg border border-[#AFB8C2] p-4">
+          <label className="mb-3 flex cursor-pointer items-center gap-2 border-b border-[#AFB8C2] pb-3 font-pretendard text-[15px] font-medium text-[#303D4C]">
             <input
               type="checkbox"
               checked={allSelected}
               onChange={toggleAll}
-              className="accent-app-primary"
+              className="sr-only"
             />
+            <CheckBox checked={allSelected} />
             전체
           </label>
-          <div className="grid grid-cols-2 gap-x-4 gap-y-2">
-            {REGION_OPTIONS.map((region) => (
-              <label
-                key={region}
-                className="flex items-center gap-2 text-sm text-app-text cursor-pointer"
-              >
-                <input
-                  type="checkbox"
-                  checked={selected.includes(region)}
-                  onChange={() => toggleRegion(region)}
-                  className="accent-app-primary"
-                />
-                {region}
-              </label>
-            ))}
+          <div className="grid grid-cols-2 gap-x-4 gap-y-3">
+            {REGION_OPTIONS.map((region) => {
+              const checked = selected.includes(region);
+              return (
+                <label
+                  key={region}
+                  className="flex cursor-pointer items-center gap-2 font-pretendard text-[15px] text-[#303D4C]"
+                >
+                  <input
+                    type="checkbox"
+                    checked={checked}
+                    onChange={() => toggleRegion(region)}
+                    className="sr-only"
+                  />
+                  <CheckBox checked={checked} />
+                  {region}
+                </label>
+              );
+            })}
           </div>
         </div>
       )}
