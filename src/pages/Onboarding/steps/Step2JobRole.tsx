@@ -68,11 +68,12 @@ export default function Step2JobRole({ state, dispatch }: StepProps) {
               onClick={() => select(role.key)}
               // 카드 내부: 아이콘 → 라벨 세로 스택, 가운데 정렬, gap 12.271px (§5 확정).
               // border-radius/overflow 클리핑 없음 — 기울어진 카드가 잘려 깨짐 방지(§2).
-              className="absolute flex flex-col items-center justify-center gap-[12.271px] bg-contain bg-center bg-no-repeat transition-[transform,opacity] duration-200 ease-out"
+              className="absolute flex flex-col items-center justify-center gap-[12.271px] bg-cover bg-center bg-no-repeat transition-[transform,opacity] duration-200 ease-out"
               style={{
                 ...layout.pos,
                 // spec §3.1 확정 크기 (팬 배치라 px 고정 — 그리드 카드 아님).
-                // 배경 PNG(912×612)와 카드 비율(76/51)이 같아 contain으로 왜곡 없음.
+                // 배경 = center/cover (spec §5/§6). 원본(912×612)과 카드 비율(76/51)이
+                // 같아 cover로 잘림 없음. cover 누락 시 원본이 삐져나와 깨짐.
                 width: '317.84px',
                 height: '213.287px',
                 aspectRatio: '76 / 51',

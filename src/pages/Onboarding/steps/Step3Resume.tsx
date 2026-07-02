@@ -10,6 +10,12 @@ interface StepProps {
 
 const MAX_SIZE = 5 * 1024 * 1024; // 5MB
 
+// 업로드 날짜 표기용 yyyy.MM.dd (spec §5.1).
+const formatYmd = (d: Date): string =>
+  `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(
+    d.getDate(),
+  ).padStart(2, '0')}`;
+
 export default function Step3Resume({ state, dispatch }: StepProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [progress, setProgress] = useState(0);
@@ -77,24 +83,30 @@ export default function Step3Resume({ state, dispatch }: StepProps) {
       />
 
       {isUploaded ? (
-        // 업로드 완료 항목 (spec §1 #8~#11): p12/20, gap24, radius12, bg blue-100 #EBECFF
-        <div className="flex items-center gap-6 self-stretch rounded-xl bg-blue-100 px-5 py-3">
-          <img src="/afterpdf.svg" alt="" aria-hidden className="h-10 w-10 shrink-0" />
-          <div className="flex min-w-0 flex-1 flex-col">
-            {/* 파일명 18px (#10) */}
-            <div className="truncate font-pretendard text-[18px] font-medium text-[#171F29]">
-              {state.resumeFileName}
-            </div>
-            {/* 날짜 14px (#10). TODO(백엔드 연동 필요): 업로드 날짜는 서버 응답값으로 교체 */}
-            <div className="font-pretendard text-sm text-[#687685]">
-              {new Date().toLocaleDateString('ko-KR')}
+        <div className="flex flex-col gap-4 self-stretch">
+          {/* 파일 항목 §5.1: p12/20, gap24, radius12, bg blue-100 #EBECFF */}
+          <div className="flex items-center gap-6 self-stretch rounded-xl bg-blue-100 px-5 py-3">
+            {/* 완료 아이콘 afterpdf.svg ~24px (§5.1) */}
+            <img src="/afterpdf.svg" alt="" aria-hidden className="h-6 w-6 shrink-0" />
+            <div className="flex min-w-0 flex-1 flex-col">
+              {/* 파일명 18px / 600 / gray-900 (§5.2 ⚠️ 굵기·색상은 가정) */}
+              <div className="truncate font-pretendard text-[18px] font-semibold text-[#171F29]">
+                {state.resumeFileName}
+              </div>
+              {/* 업로드 날짜 14px / 400 / gray-600 (§5.2 ⚠️).
+                  TODO(백엔드 연동 필요): 날짜는 서버 응답값 사용. 지금은 클라이언트 현재일. */}
+              <div className="font-pretendard text-sm font-normal text-[#687685]">
+                업로드 날짜: {formatYmd(new Date())}
+              </div>
             </div>
           </div>
+          {/* 하단 액션 §5.3: 업로드 아이콘 + "다시 업로드하기" */}
           <button
             type="button"
             onClick={() => inputRef.current?.click()}
-            className="shrink-0 font-pretendard text-sm font-semibold text-app-primary hover:opacity-80"
+            className="inline-flex items-center gap-2 self-start font-pretendard text-sm font-semibold text-app-primary hover:opacity-80"
           >
+            <img src="/upload-icon.png" alt="" aria-hidden className="h-4 w-4" />
             다시 업로드하기
           </button>
         </div>
@@ -112,8 +124,14 @@ export default function Step3Resume({ state, dispatch }: StepProps) {
             dragActive ? 'bg-blue-100/60' : 'bg-white/70'
           }`}
         >
-          {/* 빈 드롭존 아이콘 — pdf.svg (시스템 이모지 금지, #4) */}
-          <img src="/pdf.svg" alt="" aria-hidden className="h-12 w-12" />
+          {/* 빈 드롭존 아이콘 — pdf.svg, 크기 확정 82.468×103.75px (spec §2.1) */}
+          <img
+            src="/pdf.svg"
+            alt=""
+            aria-hidden
+            className="object-contain"
+            style={{ width: '82.468px', height: '103.75px' }}
+          />
           {/* 안내 텍스트 — PDF 업로드 (#5) */}
           <p className="font-pretendard text-sm font-medium text-[#303D4C]">
             {isUploading ? '업로드 중...' : 'PDF 업로드'}
