@@ -71,9 +71,9 @@ export default function OnboardingPage() {
                 type="button"
                 onClick={handleFinish}
                 disabled={submit.isPending}
-                className="flex h-11 w-[103px] items-center justify-center gap-2.5 rounded-lg bg-[#4741FF] px-2.5 py-2 font-pretendard text-sm font-semibold text-white hover:opacity-90 disabled:opacity-50"
+                className="flex h-11 items-center justify-center gap-2.5 rounded-lg bg-[#4741FF] px-4 py-2 font-pretendard text-sm font-semibold text-white hover:opacity-90 disabled:opacity-50"
               >
-                {submit.isPending ? '완료 중...' : '완료'}
+                {submit.isPending ? '시작하는 중...' : '시작하기 →'}
               </button>
             ) : (
               <button
