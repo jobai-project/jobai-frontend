@@ -10,6 +10,9 @@ export interface UserCondition {
   experience: string;
   jobTypes: string[];
   scoreThreshold: number;
+  // 온보딩 Step 2 팬 카드에서 고른 희망 직무. 홈 히어로 카드 이미지/태그 분기용.
+  // (온보딩 타입과 분리 유지 위해 문자열 유니온으로 보관)
+  jobRole?: 'developer' | 'designer' | 'planner' | null;
 }
 
 export function loadCondition(): UserCondition | null {

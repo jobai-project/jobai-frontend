@@ -65,8 +65,14 @@ export default function MyPage() {
   };
 
   const handleJobConditionsChange = (conditions: UserProfile['jobConditions']) => {
-    // scoreThreshold는 편집기에 없으므로 기존값(없으면 70) 보존
-    setCondition(editableToCondition(conditions, condition?.scoreThreshold ?? 70));
+    // scoreThreshold·jobRole은 편집기에 없으므로 기존값 보존
+    setCondition(
+      editableToCondition(
+        conditions,
+        condition?.scoreThreshold ?? 70,
+        condition?.jobRole,
+      ),
+    );
   };
 
   const handleSetPrimaryResume = (id: string) => {

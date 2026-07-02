@@ -32,6 +32,10 @@ export function useSubmitOnboarding() {
         experience: s.experience,
         jobTypes: s.jobTypes,
         scoreThreshold: s.scoreThreshold,
+        // 홈 히어로 카드가 역할별 이미지/태그를 고르는 소스. (spec §1.2 ⚠️)
+        // TODO(확인 필요): 이 역할을 온보딩 selectedRole 재사용으로 확정할지,
+        // 별도 사용자 프로파일 값으로 둘지 디자이너/BE 확인 후 결정.
+        jobRole: s.jobRole,
       });
       // 완료 표시는 스토어 complete() 단일 진입점으로. (localStorage 영속화 +
       // React 상태 갱신이 함께 일어나므로 navigate 시점에 게이트가 새 값을 본다.)

@@ -51,17 +51,6 @@ function UserIcon() {
   );
 }
 
-function HelpIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true" className="h-5 w-5">
-      <path
-        fill="currentColor"
-        d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18Zm-.08 13.5a1.1 1.1 0 1 1 0 2.2 1.1 1.1 0 0 1 0-2.2ZM12 6.25c2 0 3.5 1.21 3.5 2.95 0 1.32-.78 2.05-1.83 2.8-.76.54-.92.86-.92 1.5v.25a.75.75 0 0 1-1.5 0v-.34c0-1.33.66-1.94 1.54-2.56.86-.61 1.21-.94 1.21-1.65 0-.85-.78-1.45-1.96-1.45-1.03 0-1.76.44-2.13 1.29a.75.75 0 1 1-1.38-.58C9.14 7.05 10.39 6.25 12 6.25Z"
-      />
-    </svg>
-  );
-}
-
 function LogoutIcon() {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true" className="h-5 w-5">
@@ -119,15 +108,6 @@ export default function Sidebar() {
       </nav>
 
       <div className="mt-auto flex flex-col gap-5 pb-2">
-        <button
-          type="button"
-          className="flex h-10 items-center gap-5 px-5 text-left text-sm font-medium text-app-sidebar-muted hover:text-app-text"
-        >
-          <span className="flex h-5 w-5 items-center justify-center text-app-sidebar-icon-muted">
-            <HelpIcon />
-          </span>
-          도움말
-        </button>
         <button
           type="button"
           onClick={() => {

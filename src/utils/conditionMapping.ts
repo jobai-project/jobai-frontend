@@ -33,17 +33,19 @@ export function conditionToEditable(c: UserCondition | null): EditableConditions
 
 /**
  * 편집기 형태 → conditionStore.
- * 경력은 enum 단일이라 experiences[0]만 사용. scoreThreshold는 편집기에
- * 없으므로 기존값을 그대로 보존한다.
+ * 경력은 enum 단일이라 experiences[0]만 사용. scoreThreshold·jobRole은 편집기에
+ * 없으므로 기존값을 그대로 보존한다(누락 시 홈 히어로 역할이 지워지는 것 방지).
  */
 export function editableToCondition(
   e: EditableConditions,
   scoreThreshold: number,
+  jobRole?: UserCondition['jobRole'],
 ): UserCondition {
   return {
     jobTypes: e.positions,
     locations: e.locations,
     experience: LABEL_TO_ENUM[e.experiences[0]] ?? 'NEW',
     scoreThreshold,
+    jobRole,
   };
 }
