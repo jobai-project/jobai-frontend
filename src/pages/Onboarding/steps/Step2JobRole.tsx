@@ -31,8 +31,8 @@ export default function Step2JobRole({ state, dispatch }: StepProps) {
 
   return (
     <div className="flex flex-col items-start gap-8 self-stretch">
-      {/* 헤더 — Step1 메인 제목과 동일한 Title1 스타일 적용.
-          TODO(디자이너 확인 — spec §10.5): 헤더 폰트 크기/굵기 미확정(본문 14px과 다름). */}
+      {/* 헤더 — Title 1 확정값 (spec §4.0): 28/600/140%/-0.56px/gray-900 #171F29.
+          Figma frame width 784px는 반응형 카드(max 555px)라 미적용. */}
       <h2 className="font-pretendard text-[28px] font-semibold leading-[140%] tracking-[-0.56px] text-[#171F29]">
         희망하는 직무를
         <br />
@@ -71,7 +71,7 @@ export default function Step2JobRole({ state, dispatch }: StepProps) {
                 opacity: anySelected && !isSelected ? UNSELECTED_OPACITY : 1,
                 zIndex: isSelected ? 3 : geom.z,
                 // 배경 = 카드 배경 PNG (한글 파일명 절대경로, spec §2). 전경 아이콘은
-                // 아래 <img>로 오버레이 (배경/전경 합성 방식은 spec §10.7 확인 필요).
+                // 아래 <img>로 오버레이 (배경/전경 합성 방식은 spec §10.6 확인 필요).
                 backgroundImage: `url("${role.bg}")`,
               }}
             >
@@ -82,7 +82,7 @@ export default function Step2JobRole({ state, dispatch }: StepProps) {
                 className="pointer-events-none h-[112px] w-[112px] object-contain"
               />
               {/* 라벨: 배경/전경 PNG에 텍스트가 없어 오버레이로 렌더.
-                  TODO(디자이너 확인 §10.7): 라벨 위치/색상. 보라 배경 대비 흰색 잠정. */}
+                  TODO(디자이너 확인 §10.6): 라벨 위치/색상. 보라 배경 대비 흰색 잠정. */}
               <span className="pointer-events-none mt-1 font-pretendard text-sm font-medium leading-[150%] tracking-[-0.28px] text-white">
                 {role.label}
               </span>
