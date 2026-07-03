@@ -83,7 +83,9 @@ export default function Step3Resume({ state, dispatch }: StepProps) {
       />
 
       {isUploaded ? (
-        <div className="flex flex-col gap-4 self-stretch">
+        // 업로드 후 §5.0: 점선 박스는 업로드 전/후 공통 유지(현재 버그 수정 — 내부 내용만 교체).
+        // 빈 상태(§2)와 동일 컨테이너이며 정렬만 center → space-between (파일 항목 위 / "다시 업로드하기" 아래).
+        <div className="flex h-[226px] flex-col items-center justify-between self-stretch rounded-xl border-2 border-dashed border-blue-500 bg-white/70 px-4 py-5">
           {/* 파일 항목 §5.1: p12/20, gap24, radius12, bg blue-100 #EBECFF */}
           <div className="flex items-center gap-6 self-stretch rounded-xl bg-blue-100 px-5 py-3">
             {/* 완료 아이콘 afterpdf.svg ~24px (§5.1) */}

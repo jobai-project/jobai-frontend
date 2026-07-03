@@ -1,102 +1,93 @@
-import { CSSProperties, Dispatch } from 'react';
+import { Dispatch, useEffect } from 'react';
 import { OnboardingState, ROLES, Role } from '../types';
 import { OnboardingAction } from '../onboardingReducer';
+
+// 카드 이미지는 import로만 참조(spec §2.3). 번들러가 한글 파일명을 안전한 해시
+// 파일명으로 변환 → URL 인코딩 이슈 원천 차단 + 빌드 산출물에 포함.
+import devSolid from '@/assets/onboarding/개발자카드.png';
+import devTrans from '@/assets/onboarding/개발자투명카드.png';
+import dsnSolid from '@/assets/onboarding/디자이너카드.png';
+import dsnTrans from '@/assets/onboarding/디자이너투명카드.png';
+import plnSolid from '@/assets/onboarding/기획자카드.png';
+import plnTrans from '@/assets/onboarding/기획자투명카드.png';
+
+// 역할별 solid/투명 카드 (선택=solid, 미선택=투명). 회전·카드 모양·아이콘·라벨은
+// 모두 PNG 안에 그려져 있으므로 CSS 회전/오버레이 없이 이미지만 교체한다(spec §1·§5).
+const CARD_IMAGES: Record<Role, { solid: string; transparent: string }> = {
+  developer: { solid: devSolid, transparent: devTrans },
+  designer: { solid: dsnSolid, transparent: dsnTrans },
+  planner: { solid: plnSolid, transparent: plnTrans },
+};
+
+// 부채꼴 배치 — 위치(left/top/width)와 겹침 순서(z)만 제어(spec §1·§5).
+// z = 눈에 보이는 앞뒤 순서와 일치: 가운데(앞)를 가장 높게. 투명 PNG도 요소는
+// 직사각형 박스라, z 높은 박스가 이웃 카드 그림 위 클릭을 가로챈다(spec §5-2).
+// ⚠️ left/top/width는 추정값. Figma Dev Mode 실측 후 확정(spec §6.3).
+const CARD_LAYOUT: Record<Role, { pos: string; z: number }> = {
+  developer: { pos: 'left-[2%]  top-[12%] w-[38%]', z: 10 }, // 왼쪽·뒤
+  designer: { pos: 'left-[31%] top-[4%]  w-[38%]', z: 30 }, // 가운데·앞
+  planner: { pos: 'left-[60%] top-[12%] w-[38%]', z: 10 }, // 오른쪽·뒤
+};
 
 interface StepProps {
   state: OnboardingState;
   dispatch: Dispatch<OnboardingAction>;
 }
 
-// 부채꼴 배치 (spec §6). 회전·카드 모양은 배경 PNG에 이미 포함되어 있으므로
-// CSS rotate/border-radius는 쓰지 않고, 절대 위치 + z-index로만 겹침을 만든다.
-//   pos     : 절대 위치(컨테이너 기준). centered=true면 left:50% + translateX(-50%).
-//   centered: 중앙 카드(가로 중앙 정렬) 여부.
-//   z       : 기본 z-index(선택 시 3으로 덮어씀).
-// ⚠️ top/left는 "일단 그려지게 하는 근사 시작값"이며 Figma 명시값 없음 → 육안 조정 필요
-//    (TODO 디자이너 확인 — spec §10.1~2).
-const CARD_LAYOUT: Record<
-  Role,
-  { pos: CSSProperties; centered: boolean; z: number }
-> = {
-  developer: { pos: { left: 0, top: 12 }, centered: false, z: 1 },
-  designer: { pos: { left: '50%', top: 0 }, centered: true, z: 2 },
-  planner: { pos: { right: 0, top: 12 }, centered: false, z: 1 },
-};
-
-// 선택 상태 강조 수치 (spec §7 — ⚠️ 근사, Figma 검증 필수 §10.3).
-const SELECTED_SCALE = 1.05;
-const SELECTED_LIFT = -8; // translateY(px)
-const UNSELECTED_OPACITY = 0.4;
-
 export default function Step2JobRole({ state, dispatch }: StepProps) {
   const select = (role: Role) =>
     dispatch({ type: 'SET_FIELD', key: 'jobRole', value: role });
 
+  // 6장 프리로드: solid는 선택 전까지 렌더되지 않으므로, 첫 클릭 시 늦게 떠서
+  // 깜빡이는 현상 방지(spec §5-3).
+  useEffect(() => {
+    Object.values(CARD_IMAGES).forEach(({ solid, transparent }) => {
+      new Image().src = solid;
+      new Image().src = transparent;
+    });
+  }, []);
+
   return (
     <div className="flex flex-col items-start gap-8 self-stretch">
-      {/* 헤더 — Title 1 확정값 (spec §4.0): 28/600/140%/-0.56px/gray-900 #171F29.
-          Figma frame width 784px는 반응형 카드(max 555px)라 미적용. */}
+      {/* 헤더 — Title 1 확정값(spec §4.0): 28/600/140%/-0.56px/gray-900 #171F29. */}
       <h2 className="font-pretendard text-[28px] font-semibold leading-[140%] tracking-[-0.56px] text-[#171F29]">
         희망하는 직무를
         <br />
         선택해주세요.
       </h2>
 
-      {/* 팬 카드 컨테이너 — 겹침 위해 relative + 카드 absolute. 선택 시 확대·상승이
-          넘치도록 overflow-visible. 회전은 배경 이미지에 포함(§6). */}
-      <div className="relative h-[260px] w-full self-stretch overflow-visible">
-        {ROLES.map((role) => {
-          // 아무 카드도 선택 안 된 초기 상태에서는 세 장 모두 선명해야 한다(§7).
-          // 다른 카드가 선택된 경우에만 이 카드를 흐리게.
-          const isSelected = state.jobRole === role.key;
-          const isDimmed = state.jobRole !== null && !isSelected;
-          const layout = CARD_LAYOUT[role.key];
-
-          // 회전 없음(배경 PNG에 포함). 중앙 정렬 translateX(-50%)에 선택 확대·상승을
-          // transform으로 한 번에 합성 (spec §7: transform 합성 허용).
-          const parts: string[] = [];
-          if (layout.centered) parts.push('translateX(-50%)');
-          if (isSelected) parts.push(`scale(${SELECTED_SCALE})`, `translateY(${SELECTED_LIFT}px)`);
-          const transform = parts.length ? parts.join(' ') : undefined;
+      {/* 팬 카드 컨테이너 — 카드 절대 위치 기준. top-% 가 의미를 가지도록 aspect 고정.
+          선택 카드가 살짝 넘쳐도 잘리지 않게 overflow-visible. */}
+      <div className="relative w-full self-stretch aspect-[520/360] overflow-visible">
+        {ROLES.map(({ key, label }) => {
+          const isSelected = state.jobRole === key;
+          // 아무 카드도 선택 안 된 초기 상태(jobRole===null)에서는 셋 다 투명 =
+          // "골라주세요" 신호(spec §6.2 후보 A). ⚠️ 초기 선택 상태는 미확정 TODO.
+          const src = isSelected
+            ? CARD_IMAGES[key].solid
+            : CARD_IMAGES[key].transparent;
+          const { pos, z } = CARD_LAYOUT[key];
 
           return (
             <button
-              key={role.key}
+              key={key}
               type="button"
+              onClick={() => select(key)}
               aria-pressed={isSelected}
-              aria-label={`${role.label} 선택`}
-              onClick={() => select(role.key)}
-              // 카드 내부: 아이콘 → 라벨 세로 스택, 가운데 정렬, gap 12.271px (§5 확정).
-              // border-radius/overflow 클리핑 없음 — 기울어진 카드가 잘려 깨짐 방지(§2).
-              className="absolute flex flex-col items-center justify-center gap-[12.271px] bg-cover bg-center bg-no-repeat transition-[transform,opacity] duration-200 ease-out"
-              style={{
-                ...layout.pos,
-                // spec §3.1 확정 크기 (팬 배치라 px 고정 — 그리드 카드 아님).
-                // 배경 = center/cover (spec §5/§6). 원본(912×612)과 카드 비율(76/51)이
-                // 같아 cover로 잘림 없음. cover 누락 시 원본이 삐져나와 깨짐.
-                width: '317.84px',
-                height: '213.287px',
-                aspectRatio: '76 / 51',
-                transform,
-                opacity: isDimmed ? UNSELECTED_OPACITY : 1,
-                zIndex: isSelected ? 3 : layout.z,
-                // 배경 = 카드 배경 PNG (회전·카드 모양 포함, 한글 파일명 절대경로 §2).
-                backgroundImage: `url("${role.bg}")`,
-              }}
+              aria-label={`${label} 선택`}
+              // 클릭은 바깥 button이 받도록 img는 pointer-events-none.
+              className={`absolute ${pos} cursor-pointer border-0 bg-transparent p-0 transition-transform focus-visible:outline focus-visible:outline-2`}
+              // 선택 카드를 맨 앞으로 끌어올려 뒤 카드에 가려지지 않게(spec §5-2).
+              style={{ zIndex: isSelected ? 40 : z }}
             >
-              {/* 전경 아이콘: 정면(회전 없음), 카드 중앙 오버레이(§2).
-                  ⚠️ 아이콘 크기(내부 118×160 박스가 아이콘만인지 묶음인지) 확인 필요 §10.4. */}
+              {/* solid/투명 캔버스 비율이 미묘하게 달라(특히 디자이너 §6.1) 고정 박스 안에서
+                  object-contain으로 비율 유지. 이미지가 장식이라 alt="". */}
               <img
-                src={role.icon}
+                src={src}
                 alt=""
-                aria-hidden
-                className="pointer-events-none h-[112px] w-[112px] object-contain"
+                draggable={false}
+                className="pointer-events-none h-full w-full select-none object-contain"
               />
-              {/* 라벨: 배경/전경 PNG에 텍스트가 없어 오버레이. 보라 배경 대비 흰색.
-                  본문 폰트 §4.1 (14/500/150%/-0.28px). ⚠️ 라벨 색상 확인 필요 §10. */}
-              <span className="pointer-events-none font-pretendard text-sm font-medium leading-[150%] tracking-[-0.28px] text-white">
-                {role.label}
-              </span>
             </button>
           );
         })}

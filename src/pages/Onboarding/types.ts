@@ -29,13 +29,15 @@ export const REGION_OPTIONS = [
 export type RegionCode = (typeof REGION_OPTIONS)[number];
 
 // step2 희망 직무 (온보딩 팬 카드 — spec §8). 사용자 노출 문자열은 한국어,
-// 코드 식별자는 영어. public/ 한글 파일명은 import 인코딩 이슈를 피해 절대경로 참조.
+// 코드 식별자는 영어. 카드 이미지(solid/투명 각 3장)는 Step2JobRole에서 한글
+// 파일명 인코딩 이슈를 피해 import로 참조한다(spec §2.3).
 export type Role = 'developer' | 'designer' | 'planner';
 
-export const ROLES: { key: Role; label: string; icon: string; bg: string }[] = [
-  { key: 'developer', label: '개발자', icon: '/개발자.png', bg: '/개발자배경.png' },
-  { key: 'designer', label: '디자이너', icon: '/디자이너.png', bg: '/디자이너배경.png' },
-  { key: 'planner', label: '기획자', icon: '/기획자.png', bg: '/기획자배경.png' },
+// 표시 순서(왼쪽→오른쪽)와 사용자 노출 라벨만 유지. 카드 이미지 매핑은 컴포넌트 소유.
+export const ROLES: { key: Role; label: string }[] = [
+  { key: 'developer', label: '개발자' },
+  { key: 'designer', label: '디자이너' },
+  { key: 'planner', label: '기획자' },
 ];
 
 // 이력서 업로드 상태
