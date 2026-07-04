@@ -38,29 +38,46 @@ export default function WelcomeCard() {
         boxShadow: '0 8px 24px rgba(99, 70, 220, 0.15)',
       }}
     >
-      {/* 우측 3D 일러스트 (역할별) */}
+      {/* 우측 3D 일러스트 (역할별) — 크기·위치 Figma 실측 확정(spec §5):
+          232×234, absolute, right:-95, bottom:-11.
+          ⚠️ overflow 정책 미확정(spec §1 ❓): 음수 위치라 컨테이너 overflow-hidden에
+          일부 잘림. Figma상 "카드 안에 담겨" 보이고, 미허용 시 이웃 카드로 삐져나오는
+          것이 명백한 버그라 잘림(=담김) 쪽을 잠정 채택. TODO(확인 필요) 확정 후 조정. */}
       <img
         src={hero.illustration}
         alt=""
         aria-hidden
-        className="pointer-events-none absolute bottom-0 right-4 h-[240px] w-auto object-contain"
+        className="pointer-events-none absolute bottom-[-11px] right-[-95px] h-[234px] w-[232px] object-contain"
       />
 
       <div className="relative z-10 flex flex-col gap-3">
-        <h2 className="text-[24px] font-bold leading-[1.4] text-white">
-          {name ?? '회원'} 님, 오늘도 잘하고 있어요
+        {/* 인사 2행 — weight가 달라 반드시 행 분리(spec §7). 28/-0.56px/140%/#FFF 공통,
+            1행 SemiBold(600) · 2행 Medium(500) (spec §2 ✅). */}
+        <h2 className="text-white">
+          <span className="block font-pretendard text-[28px] font-semibold leading-[140%] tracking-[-0.56px]">
+            {name ?? '회원'} 님,
+          </span>
+          <span className="block font-pretendard text-[28px] font-medium leading-[140%] tracking-[-0.56px]">
+            오늘도 잘하고 있어요
+          </span>
         </h2>
-        <span className="inline-block self-start rounded-full bg-white/20 px-3.5 py-1.5 text-[13px] font-medium text-white backdrop-blur-md">
+        {/* 직무 배지 — p8/14, gap4, pill(radius 100px), bg white/10, blur 2px (spec §3 ✅).
+            텍스트 14/500/150%/-0.28px는 SubBody 추정(spec §3 ⚠️·§6.2). */}
+        <span className="inline-flex items-center gap-1 self-start rounded-full bg-white/10 px-[14px] py-2 font-pretendard text-[14px] font-medium leading-[150%] tracking-[-0.28px] text-white backdrop-blur-[2px]">
           {hero.tag}
         </span>
       </div>
 
+      {/* 이력서 관리 버튼 — p 10/28/10/24(좌우 비대칭), gap10, radius16, bg white/10 (spec §4 ✅).
+          아이콘: spec은 mingcute:pencil-fill 24×24 #FFF. 프로젝트에 아이콘 라이브러리가
+          없어 형제 카드와 동일한 public 에셋 방식으로 edit-icon.png 사용.
+          TODO(확인 필요): mingcute:pencil-fill 도입 여부 및 아이콘 흰색 여부. */}
       <button
         type="button"
         onClick={() => navigate('/resumes')}
-        className="relative z-10 inline-flex items-center gap-2 self-start rounded-xl bg-white/25 px-5 py-3 text-sm font-medium text-white backdrop-blur-md transition hover:bg-white/35"
+        className="relative z-10 inline-flex items-center gap-2.5 self-start rounded-2xl bg-white/10 py-2.5 pl-6 pr-7 font-pretendard text-[14px] font-medium leading-[150%] tracking-[-0.28px] text-white transition hover:bg-white/20"
       >
-        <span aria-hidden="true">✏️</span>
+        <img src="/edit-icon.png" alt="" aria-hidden className="h-6 w-6" />
         이력서 관리
       </button>
     </div>
