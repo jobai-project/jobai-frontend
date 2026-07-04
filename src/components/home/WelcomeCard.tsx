@@ -1,16 +1,26 @@
 import { useNavigate } from 'react-router-dom';
 import { useConditionStore } from '@/stores/conditionStore';
 import { useAuthStore } from '@/stores/authStore';
-import userCardBg from '/User_card.png';
 
-// 역할별 히어로 변형 (spec §1.2). 이미지는 public/ 한글 파일명 → 절대경로 참조.
+// 카드 배경 — 일러스트가 합성되지 않은 순수 그라데이션+노이즈 (그림자 재현용 클린 배경).
+// (겹침 진단 결과: 기존 User_card.png 배경에 개발자 `</>` 일러스트가 박혀 있어, 다른
+//  직무에서 배경 일러스트 + 오버레이 일러스트가 동시에 보였음. 클린 배경으로 교체.)
+// 프로젝트 규칙(dist 금지)에 따라 src/assets/ 에 두고 import.
+import devBg from '@/assets/home/개발자배경.png';
+import dsnBg from '@/assets/home/디자이너배경.png';
+import plnBg from '@/assets/home/기획자배경.png';
+
+// 역할별 히어로 변형 (spec §1.2). 일러스트는 public/ 영문 파일명 → 절대경로 참조(오버레이).
 // ⚠️ 태그 텍스트가 역할 고정 라벨인지 사용자 직무 데이터인지 미확정 (spec §8.6):
 // 일단 역할별 고정 라벨로 구현. TODO(확인 필요) 확정 후 교체.
 type HeroRole = 'developer' | 'designer' | 'planner';
-const ROLE_HERO: Record<HeroRole, { illustration: string; tag: string }> = {
-  developer: { illustration: '/개발자홈화면.png', tag: '백엔드 개발자' },
-  designer: { illustration: '/디자이너홈화면.png', tag: '프로덕트 디자이너' },
-  planner: { illustration: '/기획자홈화면.png', tag: '서비스 기획자' },
+const ROLE_HERO: Record<
+  HeroRole,
+  { illustration: string; background: string; tag: string }
+> = {
+  developer: { illustration: '/dev-hero.png', background: devBg, tag: '백엔드 개발자' },
+  designer: { illustration: '/designer-hero.png', background: dsnBg, tag: '프로덕트 디자이너' },
+  planner: { illustration: '/planner-hero.png', background: plnBg, tag: '서비스 기획자' },
 };
 
 export default function WelcomeCard() {
@@ -26,12 +36,12 @@ export default function WelcomeCard() {
   const hero = ROLE_HERO[(jobRole as HeroRole) ?? 'developer'] ?? ROLE_HERO.developer;
 
   return (
-    // ⚠️ 이미지 범위 미확정(spec §8.5): *홈화면.png 를 "우측 일러스트"로 가정하고
-    // 카드 배경(User_card.png) 위에 오버레이. 카드 전체 배경이면 Figma 확인 후 교체.
+    // ⚠️ 이미지 범위 미확정(spec §8.5): *-hero.png 를 "우측 일러스트"로 가정하고
+    // 클린 배경(*배경.png) 위에 오버레이. 카드 전체 배경이면 Figma 확인 후 교체.
     <div
       className="relative flex h-[306px] flex-col justify-between overflow-hidden rounded-[20px] p-10"
       style={{
-        backgroundImage: `url(${userCardBg})`,
+        backgroundImage: `url(${hero.background})`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',
