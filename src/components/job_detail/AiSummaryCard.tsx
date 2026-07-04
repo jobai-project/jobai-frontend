@@ -9,9 +9,16 @@ export default function AiSummaryCard() {
   };
 
   return (
-    // B-1 카드 컨테이너 ✅: p20, gap24(헤더그룹↔버튼), column, items-start, stretch.
-    // ❓ 배경/보더/radius 미확정 → 확정 후 추가(spec TODO 2).
-    <div className="flex w-full flex-col items-start gap-6 self-stretch p-5">
+    // B-1 카드 컨테이너 ✅(v0.1 확정): p20, gap16(헤더그룹↔버튼, 24→16 변경), column,
+    // items-start, stretch, radius16, border 1px blue-100(#EBECFF 토큰), 홈카드이펙트 shadow.
+    // radial-gradient+#FFF 는 배경 shorthand로 정확히 레이어(Tailwind bg-[..]만으론 #FFF 베이스 누락).
+    <div
+      className="flex w-full flex-col items-start gap-4 self-stretch rounded-2xl border border-blue-100 p-5 shadow-[0_0_15.2px_0_rgba(118,85,255,0.12)]"
+      style={{
+        background:
+          'radial-gradient(37.08% 60.83% at 96.7% 14.54%, rgba(115,84,255,0.07) 2.34%, rgba(255,255,255,0.07) 100%), #FFF',
+      }}
+    >
       {/* B-2 헤더 그룹. ❓ 제목–부제 세로 간격 미확정 → 잠정 8px(spec TODO 3). */}
       <div className="flex flex-col items-start gap-2 self-stretch">
         {/* 제목행: star.svg + "AI 공고 요약". ❓ 아이콘–제목 간격 미확정 → 잠정 8px. */}
