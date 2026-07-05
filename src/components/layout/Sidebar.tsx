@@ -72,8 +72,10 @@ const NAV: NavItem[] = [
 ];
 
 // NavLink/버튼 공용 클래스 — 활성/비활성 스타일을 한 곳에서 관리.
+// 공용 탭 규격 (round2 §3 실측): w 212(컨테이너 212=276-32×2), padding 12, gap 16,
+// align center, radius 8, height 48(24+12+12). 회원·게스트·로그인/로그아웃 공통(중복 정의 금지).
 const ITEM_BASE =
-  'group flex h-12 w-full items-center gap-5 rounded-lg px-3 py-3 text-left text-sm transition-colors ';
+  'group flex h-12 w-full items-center gap-4 rounded-lg px-3 py-3 text-left text-sm transition-colors ';
 const ITEM_ACTIVE = 'bg-app-sidebar-active font-semibold text-app-sidebar-active-text';
 const ITEM_INACTIVE = 'text-app-sidebar-muted hover:bg-app-hover hover:text-app-text';
 const ICON_BASE = 'flex h-5 w-5 items-center justify-center transition-colors ';
@@ -131,15 +133,15 @@ export default function Sidebar({ guest = false }: SidebarProps) {
         })}
       </nav>
 
-      <div className="mt-auto flex flex-col gap-5 pb-2">
-        {/* 게스트: 좌하단 '로그인'(→/login). 회원: '로그아웃'. (spec §3) */}
+      <div className="mt-auto flex flex-col pb-2">
+        {/* 게스트: 좌하단 '로그인'(→/login). 회원: '로그아웃'. 공용 탭 규격 재사용(round2 §3). */}
         {guest ? (
           <button
             type="button"
             onClick={() => navigate('/login')}
-            className="flex h-10 items-center gap-5 px-5 text-left text-sm font-medium text-app-sidebar-muted hover:text-app-text"
+            className={ITEM_BASE + ITEM_INACTIVE}
           >
-            <span className="flex h-5 w-5 items-center justify-center text-app-sidebar-icon-muted">
+            <span className={ICON_BASE + ICON_INACTIVE}>
               <LogoutIcon />
             </span>
             로그인
@@ -150,9 +152,9 @@ export default function Sidebar({ guest = false }: SidebarProps) {
             onClick={() => {
               void handleLogout();
             }}
-            className="flex h-10 items-center gap-5 px-5 text-left text-sm font-medium text-app-sidebar-muted hover:text-app-text"
+            className={ITEM_BASE + ITEM_INACTIVE}
           >
-            <span className="flex h-5 w-5 items-center justify-center text-app-sidebar-icon-muted">
+            <span className={ICON_BASE + ICON_INACTIVE}>
               <LogoutIcon />
             </span>
             로그아웃

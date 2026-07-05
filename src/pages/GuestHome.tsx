@@ -88,8 +88,8 @@ export default function GuestHome() {
           </button>
         </div>
 
-        {/* §3 사이드 카드 2개 — 302×306, 카드 간 gap ⚠️~16~20 미측정 → 20 잠정(TODO) */}
-        <div className="flex flex-col gap-5">
+        {/* §3 정보 카드 2개 — 302×306. round2 §1 정정: 세로 스택이 아니라 히어로와 같은 top
+            가로 배치(부모 section이 flex row). 열 간 gap ❓ 미측정 → 20 잠정(TODO). */}
           {/* §3.1 곧 마감되는 스크랩 공고 — 게스트 빈 상태 */}
           <div className="flex h-[306px] w-[302px] flex-col items-start gap-5 rounded-2xl border border-app-border bg-app-surface p-5">
             <span className="text-sm font-bold text-app-text">곧 마감되는 스크랩 공고</span>
@@ -116,7 +116,6 @@ export default function GuestHome() {
               ))}
             </ul>
           </div>
-        </div>
       </section>
 
       {/* §4 섹션 타이틀 — 20/600/140%/-0.4px/#000 */}
