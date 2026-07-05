@@ -60,6 +60,9 @@ export async function handleLogout(): Promise<void> {
   } finally {
     useAuthStore.getState().clearUser();
     useOnboardingStore.getState().reset();
-    window.location.href = '/login';
+    // replace로 이동: 로그아웃한 인증 페이지를 히스토리에 남기지 않아 뒤로가기 재진입 방지
+    // (spec 2-2 replace:true 의도). 모듈 함수라 useNavigate 대신 location 사용 → 전체
+    // 리로드로 메모리 스토어까지 확실히 초기화.
+    window.location.replace('/login');
   }
 }
