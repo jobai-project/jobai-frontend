@@ -1,10 +1,12 @@
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { handleLogout } from '@/api/auth';
 
 interface NavItem {
   to: string;
   label: string;
   icon: () => JSX.Element;
+  // 보호 탭 여부 — 게스트가 클릭하면 /login으로 유도 (spec §3). 홈(/)만 비보호.
+  protected?: boolean;
 }
 
 function HomeIcon() {
@@ -64,62 +66,98 @@ function LogoutIcon() {
 
 const NAV: NavItem[] = [
   { to: '/', label: '홈', icon: HomeIcon },
-  { to: '/application', label: '지원 현황', icon: DocumentIcon },
-  { to: '/scrap', label: '스크랩', icon: BookmarkIcon },
-  { to: '/profile', label: '마이페이지', icon: UserIcon },
+  { to: '/application', label: '지원 현황', icon: DocumentIcon, protected: true },
+  { to: '/scrap', label: '스크랩', icon: BookmarkIcon, protected: true },
+  { to: '/profile', label: '마이페이지', icon: UserIcon, protected: true },
 ];
 
-export default function Sidebar() {
+// NavLink/버튼 공용 클래스 — 활성/비활성 스타일을 한 곳에서 관리.
+const ITEM_BASE =
+  'group flex h-12 w-full items-center gap-5 rounded-lg px-3 py-3 text-left text-sm transition-colors ';
+const ITEM_ACTIVE = 'bg-app-sidebar-active font-semibold text-app-sidebar-active-text';
+const ITEM_INACTIVE = 'text-app-sidebar-muted hover:bg-app-hover hover:text-app-text';
+const ICON_BASE = 'flex h-5 w-5 items-center justify-center transition-colors ';
+const ICON_ACTIVE = 'text-app-sidebar-active-text';
+const ICON_INACTIVE = 'text-app-sidebar-icon-muted group-hover:text-app-text';
+
+interface SidebarProps {
+  guest?: boolean;
+}
+
+export default function Sidebar({ guest = false }: SidebarProps) {
+  const navigate = useNavigate();
+
   return (
     <aside className="sticky top-0 flex h-screen w-[276px] flex-col border-r border-app-border bg-app-surface px-[32px] py-[40px]">
       <NavLink to="/" className="block text-[22px] font-bold text-app-sidebar-logo">
         JobA!
       </NavLink>
       <nav className="mt-24 flex flex-col gap-4">
-        {NAV.map((item) => (
-          <NavLink
-            key={item.to}
-            to={item.to}
-            end={item.to === '/'}
-            className={({ isActive }) =>
-              'group flex h-12 w-full items-center gap-5 rounded-lg px-3 py-3 text-left text-sm transition-colors ' +
-              (isActive
-                ? 'bg-app-sidebar-active font-semibold text-app-sidebar-active-text'
-                : 'text-app-sidebar-muted hover:bg-app-hover hover:text-app-text')
-            }
-          >
-            {({ isActive }) => (
-              <>
-                <span
-                  className={
-                    'flex h-5 w-5 items-center justify-center transition-colors ' +
-                    (isActive
-                      ? 'text-app-sidebar-active-text'
-                      : 'text-app-sidebar-icon-muted group-hover:text-app-text')
-                  }
-                >
-                  {item.icon()}
-                </span>
+        {NAV.map((item) => {
+          // 게스트 + 보호 탭 → NavLink 대신 버튼으로 /login 유도 (spec §3).
+          if (guest && item.protected) {
+            return (
+              <button
+                key={item.to}
+                type="button"
+                onClick={() => navigate('/login')}
+                className={ITEM_BASE + ITEM_INACTIVE}
+              >
+                <span className={ICON_BASE + ICON_INACTIVE}>{item.icon()}</span>
                 {item.label}
-              </>
-            )}
-          </NavLink>
-        ))}
+              </button>
+            );
+          }
+
+          return (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              end={item.to === '/'}
+              className={({ isActive }) =>
+                ITEM_BASE + (isActive ? ITEM_ACTIVE : ITEM_INACTIVE)
+              }
+            >
+              {({ isActive }) => (
+                <>
+                  <span className={ICON_BASE + (isActive ? ICON_ACTIVE : ICON_INACTIVE)}>
+                    {item.icon()}
+                  </span>
+                  {item.label}
+                </>
+              )}
+            </NavLink>
+          );
+        })}
       </nav>
 
       <div className="mt-auto flex flex-col gap-5 pb-2">
-        <button
-          type="button"
-          onClick={() => {
-            void handleLogout();
-          }}
-          className="flex h-10 items-center gap-5 px-5 text-left text-sm font-medium text-app-sidebar-muted hover:text-app-text"
-        >
-          <span className="flex h-5 w-5 items-center justify-center text-app-sidebar-icon-muted">
-            <LogoutIcon />
-          </span>
-          로그아웃
-        </button>
+        {/* 게스트: 좌하단 '로그인'(→/login). 회원: '로그아웃'. (spec §3) */}
+        {guest ? (
+          <button
+            type="button"
+            onClick={() => navigate('/login')}
+            className="flex h-10 items-center gap-5 px-5 text-left text-sm font-medium text-app-sidebar-muted hover:text-app-text"
+          >
+            <span className="flex h-5 w-5 items-center justify-center text-app-sidebar-icon-muted">
+              <LogoutIcon />
+            </span>
+            로그인
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={() => {
+              void handleLogout();
+            }}
+            className="flex h-10 items-center gap-5 px-5 text-left text-sm font-medium text-app-sidebar-muted hover:text-app-text"
+          >
+            <span className="flex h-5 w-5 items-center justify-center text-app-sidebar-icon-muted">
+              <LogoutIcon />
+            </span>
+            로그아웃
+          </button>
+        )}
       </div>
     </aside>
   );

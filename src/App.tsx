@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import MainLayout from './components/layout/MainLayout';
-import HomePage from './pages/HomePage';
+import HomeEntry from './pages/HomeEntry';
 import JobDetailPage from './pages/JobDetailPage';
 import ScrapPage from '@/pages/ScrapPage';
 import ApplicationStatusPage from '@/pages/ApplicationStatusPage';
@@ -45,13 +45,16 @@ export default function App() {
         <Route path="/oauth/callback" element={<OAuthCallback />} />
         <Route path="/oauth2/redirect" element={<OAuthCallback />} />
 
+        {/* / 는 공개 진입점. 게스트/회원/온보딩 분기는 HomeEntry가 담당 (spec §1). */}
+        <Route path="/" element={<HomeEntry />} />
+
         <Route element={<ProtectedRoute />}>
           {/* 온보딩은 인증만 필요하고, 온보딩 게이트는 적용하지 않는다. */}
           <Route path="/onboarding" element={<OnboardingPage />} />
 
           <Route element={<OnboardingGate />}>
             <Route element={<MainLayout />}>
-              <Route path="/" element={<HomePage />} />
+              {/* / 는 HomeEntry로 이동됨. 나머지 보호 라우트는 그대로. */}
               <Route path="/jobs/:id" element={<JobDetailPage />} />
 
               {/* // 추가해야함 라우트 */}
