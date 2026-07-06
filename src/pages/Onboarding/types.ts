@@ -56,8 +56,8 @@ export interface OnboardingState {
   // TODO(백엔드 연동 필요): jobRole → 제출 payload/conditions.keywords 매핑.
   // BE 협의 전까지 jobTypes는 기존 파이프라인 호환용으로 유지(현재 미입력 → []).
   jobTypes: string[];
-  // step3
-  resumeId: string | null;
+  // step3 — resumeId 는 백엔드 Long → number (업로드 응답값)
+  resumeId: number | null;
   resumeFileName: string | null;
   resumeStatus: ResumeStatus;
   // step4

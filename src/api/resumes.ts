@@ -1,41 +1,54 @@
 import { apiClient } from './axios';
+import type { ApiEnvelope, ResumeItem } from '@/types/resume';
 
-// 업로드 응답 (BE 스펙 확정 시 조정)
-export interface ResumeUploadResponse {
-  id: string;
-  fileName: string;
-  status: 'PENDING' | 'DONE' | 'FAIL';
-}
+// 이력서 API — 공통 응답 봉투(result) 를 각 함수가 직접 벗긴다.
+// (axios 인터셉터는 봉투를 벗기지 않음 — axios.ts:38-39, auth.ts 선례)
 
-const USE_MOCK = import.meta.env.VITE_USE_MOCK !== 'false';
+// 목록 조회 — result 는 객체 { resumes: ResumeItem[] }
+export const getResumes = async (): Promise<ResumeItem[]> => {
+  const res = await apiClient.get<ApiEnvelope<{ resumes: ResumeItem[] }>>(
+    '/api/v1/members/resumes',
+  );
+  return res.data.result.resumes;
+};
 
 /**
- * 이력서 PDF 업로드 (multipart).
+ * 이력서 PDF 업로드 (multipart). 성공 시 새 이력서가 자동 활성화되고
+ * 기존 활성 이력서는 자동 비활성화된다.
  * @param onProgress 0~100 업로드 진행률 콜백 (LinearProgress용)
+ * @returns 생성된 resumeId (number)
  */
 export const uploadResume = async (
   file: File,
   onProgress?: (percent: number) => void,
-): Promise<ResumeUploadResponse> => {
-  // 개발용 목업: VITE_USE_MOCK 이 'false' 가 아니면 기본 동작.
-  if (USE_MOCK) {
-    for (let p = 0; p <= 100; p += 25) {
-      await new Promise((resolve) => setTimeout(resolve, 100));
-      onProgress?.(p);
-    }
-    return { id: `mock-resume-${Date.now()}`, fileName: file.name, status: 'PENDING' };
-  }
-
+): Promise<number> => {
   const form = new FormData();
   form.append('file', file);
 
-  const { data } = await apiClient.post<ResumeUploadResponse>('/resumes', form, {
-    headers: { 'Content-Type': 'multipart/form-data' },
-    onUploadProgress: (e) => {
-      if (onProgress && e.total) {
-        onProgress(Math.round((e.loaded / e.total) * 100));
-      }
+  // Content-Type 은 수동 지정하지 않는다. 브라우저가 multipart boundary 를
+  // 포함해 자동 설정하게 둔다(수동 지정 시 boundary 누락으로 서버 파싱 실패).
+  const res = await apiClient.post<ApiEnvelope<{ resumeId: number }>>(
+    '/api/v1/members/resumes',
+    form,
+    {
+      onUploadProgress: (e) => {
+        if (onProgress && e.total) {
+          onProgress(Math.round((e.loaded / e.total) * 100));
+        }
+      },
     },
-  });
-  return data;
+  );
+  return res.data.result.resumeId;
+};
+
+// 활성화 — 기존 활성 이력서는 자동 비활성화된다.
+// result 는 안내 문자열이라 파싱하지 않는다. 성공 후 목록 refetch 로 isActive 갱신.
+export const activateResume = async (resumeId: number): Promise<void> => {
+  await apiClient.patch(`/api/v1/members/resumes/${resumeId}/activate`);
+};
+
+// 삭제 — 복구 불가(S3 파일 동반 삭제). 호출 전 확인 모달은 컴포넌트 책임.
+// result 는 안내 문자열이라 파싱하지 않는다.
+export const deleteResume = async (resumeId: number): Promise<void> => {
+  await apiClient.delete(`/api/v1/members/resumes/${resumeId}`);
 };

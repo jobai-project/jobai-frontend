@@ -43,10 +43,12 @@ export default function Step3Resume({ state, dispatch }: StepProps) {
     setProgress(0);
     setField('resumeStatus', 'UPLOADING');
     upload.mutate(file, {
-      onSuccess: (res) => {
-        setField('resumeId', res.id);
-        setField('resumeFileName', res.fileName);
-        setField('resumeStatus', res.status);
+      onSuccess: (resumeId) => {
+        // 업로드 API 는 resumeId(number)만 반환한다. 파일명은 로컬 File 에서,
+        // 상태는 성공이므로 DONE 으로 세팅.
+        setField('resumeId', resumeId);
+        setField('resumeFileName', file.name);
+        setField('resumeStatus', 'DONE');
       },
       onError: () => {
         setError('업로드에 실패했어요. 다시 시도해 주세요.');

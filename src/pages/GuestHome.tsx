@@ -43,11 +43,12 @@ export default function GuestHome() {
 
       {/* §1 히어로(좌 461) + §3 사이드 카드 2개(우 302 스택) */}
       <section className="mb-9 flex gap-5">
-        {/* §1 히어로 배너 — 461×309.355(aspect 76/51), relative(일러스트 absolute 기준).
-            배경 /비로그인화면.png center/cover. border-radius ⚠️~20px 추정(§1), 좌측 padding ❓ → p-10 잠정.
-            ⚠️ 한글 public 경로 — 필요 시 영문 리네임(§0/§7 TODO). */}
+        {/* §1 히어로 배너 — 461×309.355, relative(내부 요소 absolute 프레임 기준, round3).
+            배경 /비로그인화면.png center/cover. border-radius ⚠️~20px 추정 → rounded-[20px](§6 TODO).
+            요소는 flex 흐름이 아니라 프레임 절대좌표 배치 → 제목-일러스트 겹침 구현 + 순서 충돌 해소(round3).
+            ⚠️ 한글 public 경로 — 필요 시 영문 리네임(§6 TODO). */}
         <div
-          className="relative flex h-[309.355px] w-[461px] flex-shrink-0 flex-col justify-between overflow-hidden rounded-[20px] p-10"
+          className="relative h-[309.355px] w-[461px] flex-shrink-0 overflow-hidden rounded-[20px]"
           style={{
             backgroundImage: 'url(/비로그인화면.png)',
             backgroundSize: 'cover',
@@ -55,7 +56,7 @@ export default function GuestHome() {
             backgroundRepeat: 'no-repeat',
           }}
         >
-          {/* §1.4 3D 일러스트 — absolute top48/right17, 208×227 */}
+          {/* §3.3 일러스트 — top48/right17, 208×227 (제목 아래 레이어) */}
           <img
             src="/비로그인화면컴포넌트.png"
             alt=""
@@ -64,24 +65,23 @@ export default function GuestHome() {
             className="pointer-events-none absolute right-[17px] top-[48px] h-[227px] w-[208px] select-none object-contain"
           />
 
-          {/* 내부 순서: 펠 → 제목 → 버튼 (이미지1 기준, spec §1 ⚠️ 기본값) */}
-          <div className="relative z-10 flex flex-col items-start gap-3">
-            {/* §1.1 펠 — p8/14, gap4, text 12/400/130%/-0.24px. ⚠️ 배경/radius ❓ → 반투명 pill 잠정 */}
-            <span className="inline-flex items-center justify-center gap-1 rounded-full bg-white/15 px-[14px] py-2 text-center font-pretendard text-[12px] font-normal leading-[130%] tracking-[-0.24px] text-white backdrop-blur-[2px]">
-              IT 공고 매칭 서비스
-            </span>
-            {/* §1.2 제목 — 28/600(⚠️ 600·500 충돌→600 기본)/140%/-0.56px, 2줄 강제 개행 */}
-            <h2 className="font-pretendard text-[28px] font-semibold leading-[140%] tracking-[-0.56px] text-white">
-              AI가 24시간
-              <br />
-              공고를 찾아드려요
-            </h2>
-          </div>
-          {/* §1.3 버튼 → /login — p10/24, gap10, radius16, bg white/10, text 14/500/150%/-0.28px + 화살표 */}
+          {/* §3.1 제목 — top42/left28, z-10로 일러스트 위 겹침. 28/600(⚠️ 600·500→600)/140%/-0.56px, 2줄 */}
+          <h2 className="absolute left-[28px] top-[42px] z-10 font-pretendard text-[28px] font-semibold leading-[140%] tracking-[-0.56px] text-white">
+            AI가 24시간
+            <br />
+            공고를 찾아드려요
+          </h2>
+
+          {/* §3.2 펠 — top136/left28. 내부 p8/14, gap4, text 12/400/130%/-0.24px. ⚠️ 배경/radius ❓ → 반투명 pill 잠정 */}
+          <span className="absolute left-[28px] top-[136px] z-10 inline-flex items-center justify-center gap-1 rounded-full bg-white/15 px-[14px] py-2 text-center font-pretendard text-[12px] font-normal leading-[130%] tracking-[-0.24px] text-white backdrop-blur-[2px]">
+            IT 공고 매칭 서비스
+          </span>
+
+          {/* §3.4 버튼 → /login — top220/left28. p10/24, gap10, radius16, bg white/10, text 14/500/150%/-0.28px + 화살표 */}
           <button
             type="button"
             onClick={goLogin}
-            className="inline-flex items-center gap-2.5 self-start rounded-2xl bg-white/10 px-6 py-2.5 font-pretendard text-[14px] font-medium leading-[150%] tracking-[-0.28px] text-white transition hover:bg-white/20"
+            className="absolute left-[28px] top-[220px] z-10 inline-flex items-center gap-2.5 rounded-2xl bg-white/10 px-6 py-2.5 font-pretendard text-[14px] font-medium leading-[150%] tracking-[-0.28px] text-white transition hover:bg-white/20"
           >
             지금 시작하기
             <span aria-hidden="true">→</span>
