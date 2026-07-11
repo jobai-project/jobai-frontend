@@ -1,9 +1,12 @@
 import { useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useInfiniteJobs } from '@/hooks/useInfiniteJobs';
-import { useConditionStore } from '@/stores/conditionStore';
+import { useRecommendedJobs } from '@/hooks/useInfiniteJobList';
+import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import { useBookmarkStore } from '@/stores/bookmarkStore';
-import { parseCompanyType } from '@/types/job';
+import { useAuthStore } from '@/stores/authStore';
+import { parseCompanyType, type Job } from '@/types/job';
+import type { JobSummary } from '@/types/jobApi';
 import WelcomeCard from '@/components/home/WelcomeCard';
 import DeadlineCard, { type DeadlineItem } from '@/components/home/DeadlineCard';
 import AINewsCard from '@/components/home/AINewsCard';
@@ -27,20 +30,43 @@ function formatExpiresAt(dday: number): string {
   return `${mm}. ${dd} (${WEEKDAY_KO[target.getDay()]})`;
 }
 
+// 검색(q) 경로의 mock Job → JobSummary 임시 브릿지. 검색 API 연동(후속 명세) 시 제거.
+const mockJobToSummary = (j: Job): JobSummary => ({
+  id: Number(j.id),
+  source: j.companyType,
+  company: j.company,
+  title: j.title,
+  matchScore: j.score,
+  dDay: j.dday,
+  location: j.location,
+  employmentType: j.employmentType,
+});
+
 export default function HomePage() {
   const [searchParams] = useSearchParams();
   const companyType = parseCompanyType(searchParams.get('companyType'));
   const q = searchParams.get('q')?.trim() ?? '';
   const isSearching = q.length > 0;
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
 
-  // 검색 중에는 개인 맞춤 조건을 끄고 검색 결과를 우선한다.
-  const condition = useConditionStore((s) => s.condition);
-  const { data, isLoading, isError } = useInfiniteJobs({
-    companyType,
-    q,
-    condition: isSearching ? null : condition,
-  });
-  const jobs = data?.pages.flatMap((page) => page.jobs) ?? [];
+  // 기본 목록(비검색) → recommended-jobs API. 개인화(희망직무/지역)는 서버가 처리.
+  const filters = { companyTypes: companyType ? [companyType] : undefined };
+  const recommended = useRecommendedJobs(filters, isAuthenticated && !isSearching);
+
+  // 검색(q) 경로는 별도 명세 범위 밖 → 기존 mock 훅을 임시 유지(q 없을 땐 결과 미사용).
+  const search = useInfiniteJobs({ companyType, q, condition: null });
+
+  // 표시 목록: 검색 결과(mock Job)는 카드가 요구하는 JobSummary 로 임시 브릿지 변환.
+  const jobs: JobSummary[] = isSearching
+    ? (search.data?.pages.flatMap((p) => p.jobs) ?? []).map(mockJobToSummary)
+    : (recommended.data?.pages.flatMap((p) => p.jobs) ?? []);
+
+  const active = isSearching ? search : recommended;
+  const { isLoading, isError } = active;
+
+  const loadMoreRef = useInfiniteScroll(() => {
+    if (active.hasNextPage && !active.isFetchingNextPage) active.fetchNextPage();
+  }, !!active.hasNextPage);
 
   // "곧 마감되는 스크랩 공고" 카드는 실제 스크랩(북마크)된 공고만 노출한다.
   // TODO(API 연동): 북마크 store 대신 실제 스크랩 목록 API로 교체.
@@ -124,6 +150,7 @@ export default function HomePage() {
       ) : (
         <section className="w-full max-w-[1164px]">
           <JobList jobs={jobs} />
+          <div ref={loadMoreRef} className="h-8" />
         </section>
       )}
     </>

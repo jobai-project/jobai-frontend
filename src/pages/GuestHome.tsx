@@ -1,11 +1,15 @@
 import { useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import TopBar from '@/components/layout/TopBar';
 import FilterBar from '@/components/home/FilterBar';
 import JobList from '@/components/home/JobList';
+import NoResults from '@/components/home/NoResults';
 import TrendingScrap, {
   type TrendingScrapItem,
 } from '@/components/home/TrendingScrap';
+import { useLatestJobs } from '@/hooks/useInfiniteJobList';
+import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
+import { parseCompanyType } from '@/types/job';
 import { mockJobs } from '@/data/mockJobs';
 
 // 게스트 마케팅용 정적 콘텐츠 (spec §3.2 ⚠️ 더미 기본값).
@@ -21,6 +25,7 @@ export default function GuestHome() {
   const goLogin = () => navigate('/login');
 
   // §2 실시간 순위 — 회원 홈과 동일한 TrendingScrap 재사용. 게스트 전용 분기 없음.
+  // (실시간 순위는 이번 명세 범위 밖 → mockJobs 유지)
   const trendingItems = useMemo<TrendingScrapItem[]>(
     () =>
       [...mockJobs]
@@ -30,9 +35,17 @@ export default function GuestHome() {
     []
   );
 
-  // 게스트 공고 그리드 — 더미(mockJobs) 6장, 점수 마스킹 (spec §5 유지).
-  // TODO(API 확인): 비인증 공개 공고 API 확정 시 교체.
-  const jobs = mockJobs.slice(0, 6);
+  // 게스트 공고 그리드 — latest-jobs API. matchScore 필드 없음 → 정규화에서 null → 카드 블러.
+  const [searchParams] = useSearchParams();
+  const companyType = parseCompanyType(searchParams.get('companyType'));
+  const filters = { companyTypes: companyType ? [companyType] : undefined };
+  const { data, isLoading, isError, hasNextPage, isFetchingNextPage, fetchNextPage } =
+    useLatestJobs(filters);
+  const jobs = data?.pages.flatMap((p) => p.jobs) ?? [];
+
+  const loadMoreRef = useInfiniteScroll(() => {
+    if (hasNextPage && !isFetchingNextPage) fetchNextPage();
+  }, !!hasNextPage);
 
   return (
     <>
@@ -127,9 +140,28 @@ export default function GuestHome() {
 
       <FilterBar />
 
-      <section className="w-full max-w-[1164px]">
-        <JobList jobs={jobs} masked />
-      </section>
+      {isError ? (
+        <NoResults
+          title="공고를 불러오지 못했습니다"
+          description="잠시 후 다시 시도해 주세요."
+        />
+      ) : isLoading ? (
+        <div className="grid grid-cols-3 gap-[16px]">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div
+              key={i}
+              className="h-[220px] animate-pulse rounded-2xl border border-app-border bg-app-surface"
+            />
+          ))}
+        </div>
+      ) : jobs.length === 0 ? (
+        <NoResults />
+      ) : (
+        <section className="w-full max-w-[1164px]">
+          <JobList jobs={jobs} masked />
+          <div ref={loadMoreRef} className="h-8" />
+        </section>
+      )}
     </>
   );
 }
