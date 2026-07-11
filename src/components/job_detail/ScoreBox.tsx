@@ -17,7 +17,7 @@ function ScoreBox({ score }: ScoreBoxProps) {
 
         <div className="flex items-center gap-7 h-full min-h-0 pl-4">
             <div className="flex-shrink-0">
-                <ScoreGauge2 score={70}>
+                <ScoreGauge2 score={score}>
                   <div className="text-center">
                     <span className="text-lg font-bold">70</span>
                     <span className="text-sm font-medium">점</span>
