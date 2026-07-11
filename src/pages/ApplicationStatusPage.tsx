@@ -109,11 +109,12 @@ export default function ApplicationStatusPage() {
     setData(data.filter((item) => item.id !== id));
   };
 
-  const progressPercentage = Math.round(
-    (data.filter((item) => 
-      ['지원완료', '서류합격', '면접합격', '최종합격'].includes(item.stage)
-    ).length / data.length) * 100
-  ) || 0;
+  //TODO UI랑 연결 해야함 
+  // const progressPercentage = Math.round(
+  //   (data.filter((item) => 
+  //     ['지원완료', '서류합격', '면접합격', '최종합격'].includes(item.stage)
+  //   ).length / data.length) * 100
+  // ) || 0;
 
   return (
     <div className="pt-12 grid grid-cols-[808px_240px] gap-4">
