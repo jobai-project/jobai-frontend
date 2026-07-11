@@ -91,7 +91,7 @@ export default function ScrapPage() {
     <div className="pt-12">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-app-text mb-2">스크랩</h1>
-        <p className="text-sm text-app-text-muted">
+        <p className="text-sm text-app-text">
           관심 있는 공고를 저장하고 한눈에 확인해보세요.
         </p>
       </div>
@@ -120,27 +120,19 @@ export default function ScrapPage() {
             type="button"
             disabled={currentPage === 1}
             onClick={() => setCurrentPage(currentPage - 1)}
-            className="p-2 hover:bg-app-hover disabled:opacity-50 rounded"
+            className="flex items-center justify-center disabled:opacity-50"
           >
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path
-                d="M10 12L4 8L10 4"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
+            <img src="/arrowL-icon.png" alt="이전" className="w-16 h-16 object-contain"/>
           </button>
 
           {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
             <button
               key={page}
               onClick={() => setCurrentPage(page)}
-              className={`w-8 h-8 rounded text-sm font-semibold ${
+              className={`w-8 h-8 text-[16px] font-semibold ${
                 currentPage === page
-                  ? 'bg-app-primary text-white'
-                  : 'text-app-text hover:bg-app-hover'
+                  ? 'text-app-text'
+                  : 'text-gray-300'
               }`}
             >
               {page}
@@ -151,17 +143,9 @@ export default function ScrapPage() {
             type="button"
             disabled={currentPage === totalPages}
             onClick={() => setCurrentPage(currentPage + 1)}
-            className="p-2 hover:bg-app-hover disabled:opacity-50 rounded"
+            className="flex items-center justify-center disabled:opacity-50"
           >
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path
-                d="M6 12L12 8L6 4"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
+            <img src="/arrowR-icon.png" alt="다음" className="w-16 h-16 object-contain"/>
           </button>
         </div>
       )}

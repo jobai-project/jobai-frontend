@@ -24,7 +24,7 @@ function ScrapTabNavigation({ activeTab, onTabChange }: ScrapTabNavigationProps)
           className={`relative px-16 py-4 text-sm font-semibold transition-colors ${
             activeTab === tab.id
               ? 'text-app-primary'
-              : 'text-app-text-muted hover:text-app-text'
+              : 'text-gray-500 hover:text-app-text'
           }`}
           aria-current={activeTab === tab.id ? 'page' : undefined}
         >

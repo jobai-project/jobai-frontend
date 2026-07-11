@@ -21,7 +21,7 @@ const MOCK_DATA: ApplicationItem[] = [
     id: '1',
     company: '네이버',
     position: '백엔드 개발자',
-    stage: '지원해석',
+    stage: '지원예정',
     appliedDate: '2026.05.16',
     nextSchedule: '2026.05.20',
     memo: '코테 준비',
@@ -47,17 +47,20 @@ const MOCK_DATA: ApplicationItem[] = [
 ];
 
 const STAGE_COLORS: Record<string, string> = {
-  '지원해석': 'bg-yellow-100 text-yellow-700',
-  '지원완료': 'bg-blue-100 text-blue-700',
-  '면접합격': 'bg-red-100 text-red-700',
-  '서류합격': 'bg-green-100 text-green-700',
-  '면접중': 'bg-purple-100 text-purple-700',
+  '지원예정': 'bg-[#FFF5E5] text-[#E49735]',
+  '지원완료': 'bg-[#F3F3FC] text-[#5C69FF]',
+  '서류합격': 'bg-[#E8F8F1] text-[#35A97A]',
+  '면접합격': 'bg-[#E8F8F1] text-[#35A97A]',
+  '최종합격': 'bg-[#E8F8F1] text-[#35A97A]',
+  '서류탈락': 'bg-[#FDE7E9] text-[#F36975]',
+  '면접탈락': 'bg-[#FDE7E9] text-[#F36975]',
 };
 
 export default function ApplicationStatusPage() {
   const [activeTab, setActiveTab] = useState<TabType>('all');
   const [data, setData] = useState<ApplicationItem[]>(MOCK_DATA);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [newlyAddedId, setNewlyAddedId] = useState<string | null>(null);
 
   const filteredData = useMemo(() => {
     let filtered = data;
@@ -66,10 +69,12 @@ export default function ApplicationStatusPage() {
       filtered = filtered.filter((item) => item.stage === '지원예정');
     } else if (activeTab === 'ongoing') {
       filtered = filtered.filter((item) => 
-        ['지원해석', '지원완료', '면접중'].includes(item.stage)
+        ['지원예정', '지원완료', '서류합격', '면접합격'].includes(item.stage)
       );
     } else if (activeTab === 'rejected') {
-      filtered = filtered.filter((item) => item.stage === '탈락');
+      filtered = filtered.filter((item) => 
+        ['서류탈락', '면접탈락'].includes(item.stage)
+      );
     } else if (activeTab === 'passed') {
       filtered = filtered.filter((item) => item.stage === '최종합격');
     }
@@ -87,7 +92,9 @@ export default function ApplicationStatusPage() {
       nextSchedule: '',
       memo: '',
     };
+
     setData([...data, newItem]);
+    setNewlyAddedId(newItem.id);
   };
 
   const handleUpdateItem = (id: string, field: keyof ApplicationItem, value: string) => {
@@ -104,23 +111,21 @@ export default function ApplicationStatusPage() {
 
   const progressPercentage = Math.round(
     (data.filter((item) => 
-      ['지원완료', '면접중', '최종합격'].includes(item.stage)
+      ['지원완료', '서류합격', '면접합격', '최종합격'].includes(item.stage)
     ).length / data.length) * 100
   ) || 0;
 
   return (
-    <div className="pt-12 grid grid-cols-[1fr_240px] gap-4">
+    <div className="pt-12 grid grid-cols-[808px_240px] gap-4">
       <div>
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-app-text">입사 지원 현황</h1>
         </div>
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex-1">
-            <ApplicationStatusTabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
-          </div>
+        <div className="w-[808px] flex justify-between items-end gap-4 mb-6">
+          <ApplicationStatusTabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
           <button
             onClick={handleAddRow}
-            className="flex items-center gap-2 bg-app-primary text-white px-4 py-2 rounded-lg font-semibold hover:opacity-90 transition-colors whitespace-nowrap"
+            className="w-[103px] h-[37px] flex items-center gap-2 bg-app-primary text-white px-4 py-2 rounded-[12px] font-semibold text-[14px] hover:opacity-90 transition-colors whitespace-nowrap"
           >
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
               <path d="M9 4V14M4 9H14" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
@@ -136,10 +141,13 @@ export default function ApplicationStatusPage() {
           onUpdateItem={handleUpdateItem}
           onDeleteItem={handleDeleteItem}
           stageColors={STAGE_COLORS}
+          newlyAddedId={newlyAddedId}
+          onNewlyAddedHandled={() => setNewlyAddedId(null)}
+          activeTab={activeTab}
         />
       </div>
 
-      <div className="space-y-6">
+      <div className="space-y-5 mt-[130px]">
         <ApplicationStatusCard
           title="다가오는 일정"
           iconSrc="/calendar-icon.png"
@@ -150,19 +158,25 @@ export default function ApplicationStatusPage() {
           ]}
         />
 
-        <div className="border border-app-border rounded-lg p-6 bg-white">
+        <div className="w-[256px] h-[260px] flex flex-col rounded-[14px] border border-[#EBECFF]/90 bg-white pt-4 px-6 pb-5 shadow-[0_4px_12px_rgba(124,119,255,0.08)]">
           <div className="flex items-center gap-2 mb-4">
             <img src="/percent-icon.png" alt="지원 현황" className="w-5 h-5"/>
-            <h3 className="font-semibold text-app-text">지원 현황 요약</h3>
+            <h3 style={{ fontSize: '15px' }} className="font-semibold text-app-text">지원 현황 요약</h3>
           </div>
 
-          <div className="flex justify-center mt-10 mb-6">
-            <div className="scale-150">
-              <ScoreGauge2 score={progressPercentage} />
+          <div className="flex justify-center mt-11 mb-6">
+            <div className="scale-[2]">
+              <ScoreGauge2 score={70}>
+                <div className="text-center">
+                  <span style={{ fontSize: '16px' }} className="font-bold">70</span>
+                  <span style={{ fontSize: '10px' }}>%</span>
+                  <div style={{ fontSize: '8px' }} className="text-app-text-muted -mt-0.5">진행 중</div>
+                </div>
+              </ScoreGauge2>
             </div>
           </div>
 
-          <div className="text-center text-xs text-app-text-muted">
+          <div className="text-center text-[12px] text-gray-500 mt-5">
             총 지원 {data.length}건
           </div>
         </div>

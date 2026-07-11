@@ -20,15 +20,15 @@ function ApplicationStatusTabNavigation({
   onTabChange,
 }: ApplicationStatusTabNavigationProps) {
   return (
-    <div className="inline-flex gap-0 border-b border-app-border mb-6">
+    <div className="inline-flex gap-0 border-b border-app-border">
       {TABS.map((tab) => (
         <button
           key={tab.id}
           onClick={() => onTabChange(tab.id as TabType)}
-          className={`relative px-6 py-4 font-semibold text-sm transition-colors ${
+          className={`relative px-6 py-4 text-sm transition-colors ${
             activeTab === tab.id
-              ? 'text-app-primary'
-              : 'text-app-text-muted hover:text-app-text'
+              ? 'font-semibold text-app-primary'
+              : 'font-medium text-[#AFB8C2] hover:text-app-text'
           }`}
         >
           {tab.label}

@@ -25,7 +25,7 @@ export default function NotificationSettings() {
   return (
     <div className="space-y-6">
       {/* 알림 채널 설정 */}
-      <div className="border border-app-border rounded-lg p-6 bg-white">
+      <div className="border border-[#EBECFF]/90 rounded-2xl p-6 bg-white shadow-[0_4px_12px_rgba(124,119,255,0.08)]">
         <h2 className="font-semibold text-app-text mb-6">알림 채널 설정</h2>
 
         <div className="space-y-4">
@@ -101,7 +101,7 @@ export default function NotificationSettings() {
       </div>
 
       {/* 알림 기준 점수 */}
-      <div className="border border-app-border rounded-lg p-6 bg-white">
+      <div className="border border-[#EBECFF]/90 rounded-2xl p-6 bg-white shadow-[0_4px_12px_rgba(124,119,255,0.08)]">
         <h2 className="font-semibold text-lg text-app-text mb-6">알림 기준 점수</h2>
 
         <div className="flex items-center gap-4">

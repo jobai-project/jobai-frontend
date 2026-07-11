@@ -1,12 +1,13 @@
-import { memo } from 'react';
+import { memo, ReactNode } from 'react';
 
 interface ScoreGauge2Props {
   score: number;
+  children?: ReactNode;
 }
 
-function ScoreGauge2({ score }: ScoreGauge2Props) {
+function ScoreGauge2({ score, children }: ScoreGauge2Props) {
   const radius = 40;
-  const strokeWidth = 15;
+  const strokeWidth = 13;
   const normalizedRadius = radius - strokeWidth / 2;
   const circumference = normalizedRadius * 2 * Math.PI;
   const strokeDashoffset = circumference - (score / 100) * circumference;
@@ -45,8 +46,9 @@ function ScoreGauge2({ score }: ScoreGauge2Props) {
       </svg>
 
       <div className="absolute flex items-baseline justify-center text-app-text">
-        <span className="text-lg font-bold">{score}</span>
-        <span className="text-sm font-medium ml-0.5">점</span>
+        {children || (
+          <span className="text-lg font-bold">{score}</span>
+        )}
       </div>
     </div>
   );

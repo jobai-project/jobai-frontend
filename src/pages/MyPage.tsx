@@ -88,7 +88,7 @@ export default function MyPage() {
   return (
     <div className="pt-12">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-app-text mb-1">마이페이지</h1>
+        <h1 className="text-3xl font-bold text-app-text mb-1">마이페이지</h1>
       </div>
 
       <MyPageTabNavigation activeTab={activeTab} onTabChange={setActiveTab} />

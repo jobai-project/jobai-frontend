@@ -35,12 +35,12 @@ function ScrapTable({
 
   return (
     <div className="border border-app-border rounded-lg overflow-hidden bg-white">
-      <div className="flex items-center justify-end px-6 h-[70px] bg-white">
+      <div className="flex items-center justify-end px-6 h-[72px] bg-white">
         <div 
           className="flex items-center gap-1.5 cursor-pointer hover:opacity-80 transition-opacity"
           onClick={onSortToggle}
         >
-          <span className="text-xs text-app-text-muted">마감기한순</span>
+          <span className="text-[14px] text-app-text-muted">마감기한순</span>
           <img 
             src="/sort-icon.png" 
             alt="정렬" 
@@ -53,13 +53,13 @@ function ScrapTable({
         <div className="col-span-6 border-b border-app-border"></div>
       </div>
       
-      <div className="grid grid-cols-[40px_2.5fr_1.2fr_1.2fr_1.2fr_70px] items-center gap-3 px-6 h-[70px] bg-app-bg font-semibold text-sm text-app-text">
+      <div className="grid grid-cols-[40px_2.5fr_1.2fr_1.2fr_1.2fr_70px] items-center gap-3 px-6 h-[77px] bg-app-bg font-medium text-[16px] text-app-text">
         <div className="flex items-center justify-center h-full">
           <input
             type="checkbox"
             checked={allSelected}
             onChange={onSelectAll}
-            className="w-4 h-4 cursor-pointer"
+            className="w-6 h-6 cursor-pointer border-gray-500 text-app-primary"
           />
         </div>
         <div>전체 선택</div>
@@ -83,30 +83,30 @@ function ScrapTable({
       {data.length > 0 ? (
         data.map((item) => (
           <div key={item.id}>
-            <div className="grid grid-cols-[40px_2.5fr_1.2fr_1.2fr_1.2fr_70px] gap-3 px-6 py-1.5 items-center hover:bg-app-bg transition-colors" >
+            <div className="h-[91px] grid grid-cols-[40px_2.5fr_1.2fr_1.2fr_1.2fr_70px] gap-3 px-6 items-center hover:bg-app-bg transition-colors" >
               <div className="flex items-center justify-center">
                 <input
                   type="checkbox"
                   checked={selectedItems.includes(item.id)}
                   onChange={() => onSelectItem(item.id)}
-                  className="w-4 h-4 cursor-pointer"
+                  className="w-6 h-6 cursor-pointer border-gray-400 text-app-primary"
                 />
               </div>
 
-              <div className="min-w-0">
+              <div className="min-w-0 ms-5">
                 {/* onClick={() => navigate('/scrap')} */}
-                <div className="font-semibold text-app-text text-sm truncate"> 
+                <div className="font-semibold text-app-text text-[18px] truncate mb-1"> 
                   {item.title}
                 </div>
-                <div className="text-xs text-app-text-muted">{item.category}</div>
+                <div className="text-[14px] text-gray-600">{item.category}</div>
               </div>
 
-              <div className="text-sm text-app-text text-center">{item.type}</div>
+              <div className="text-[16px] text-app-text text-center">{item.type}</div>
 
-              <div className="text-sm text-app-text text-center">{item.deadline}</div>
+              <div className="text-[16px] text-app-text text-center">{item.deadline}</div>
 
               <div className="flex items-center justify-center">
-                <div className="transform scale-75 origin-center"> 
+                <div className="transform scale-[0.7] origin-center"> 
                   <ScoreGauge2 score={item.score} />
                 </div>
               </div>

@@ -19,10 +19,10 @@ function MyPageTabNavigation({ activeTab, onTabChange }: MyPageTabNavigationProp
         <button
           key={tab.id}
           onClick={() => onTabChange(tab.id)}
-          className={`relative px-8 py-4 font-semibold text-sm transition-colors ${
+          className={`relative px-8 py-4 font-medium text-[16px] transition-colors ${
             activeTab === tab.id
               ? 'text-app-primary'
-              : 'text-app-text-muted hover:text-app-text'
+              : 'text-gray-400 hover:text-app-text'
           }`}
         >
           {tab.label}
