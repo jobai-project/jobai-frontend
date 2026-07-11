@@ -1,11 +1,12 @@
 import { Link, useNavigate } from 'react-router-dom';
 import BookmarkButton from '@/components/common/BookmarkButton';
 import ScoreGauge from '@/components/common/ScoreGauge';
-import type { Job } from '@/types/job';
+import type { JobSummary } from '@/types/jobApi';
 
 interface JobCardProps {
-  job: Job;
-  // 게스트 마스킹 모드 — 점수 blur + '??점' + 호버 툴팁 (spec §4.3·§4.4).
+  job: JobSummary;
+  // 게스트 마스킹 모드 — 로그인 유도 툴팁 + 북마크 숨김 + Link 비활성 (spec §4.3·§4.4).
+  // 점수 블러는 masked 와 별개로 matchScore === null 로 판정한다(로그인+이력서X 도 블러).
   masked?: boolean;
 }
 
@@ -36,27 +37,33 @@ function GuestScoreTooltip() {
 }
 
 export default function JobCard({ job, masked = false }: JobCardProps) {
+  const jobId = String(job.id); // JobSummary.id 는 number — BookmarkButton/Link 는 string
+  const noScore = job.matchScore === null; // 게스트 or 이력서 미업로드
+
   const inner = (
     <>
       {/* 게스트는 북마크 불가 → 마스킹 시 북마크 버튼 숨김 */}
       {!masked && (
-        <BookmarkButton jobId={job.id} className="absolute right-[24px] top-[20px]" />
+        <BookmarkButton jobId={jobId} className="absolute right-[24px] top-[20px]" />
       )}
 
       <div className="w-full">
         <div className="relative mb-[8px] flex items-start">
-          {masked ? (
-            <>
-              <div className="pointer-events-none select-none blur-[6px]">
-                <ScoreGauge score={job.score} variant="semicircle" />
-              </div>
+          {noScore ? (
+            // 점수 없음 → 블러 플레이스홀더. ScoreGauge 에 null/0 을 전달하지 않는다.
+            // 게스트일 때만 로그인 유도 툴팁을 함께 노출.
+            <div className="relative h-14 w-20 flex-shrink-0">
+              <div
+                aria-hidden
+                className="pointer-events-none h-full w-full select-none rounded-md bg-gray-100 blur-[6px]"
+              />
               <span className="absolute inset-0 flex items-center justify-center text-sm font-bold text-app-text-muted">
                 ??점
               </span>
-              <GuestScoreTooltip />
-            </>
+              {masked && <GuestScoreTooltip />}
+            </div>
           ) : (
-            <ScoreGauge score={job.score} variant="semicircle" />
+            <ScoreGauge score={job.matchScore as number} variant="semicircle" />
           )}
         </div>
 
@@ -66,20 +73,18 @@ export default function JobCard({ job, masked = false }: JobCardProps) {
 
         <div className="mb-[16px] flex items-center gap-[8px]">
           <span className="truncate text-sm text-app-text-muted">{job.company}</span>
+          {/* dDay null = 상시모집 */}
           <span className="flex-shrink-0 rounded-md bg-red-50 px-1.5 py-0.5 text-xs font-bold text-red-500">
-            D-{job.dday}
+            {job.dDay === null ? '상시' : `D-${job.dDay}`}
           </span>
         </div>
 
-        <div className="flex flex-wrap gap-[8px]">
-          {job.techStack.slice(0, 3).map((tech) => (
-            <span
-              key={tech}
-              className="rounded-md bg-gray-100 px-3 py-1 text-xs text-app-text-muted"
-            >
-              {tech}
-            </span>
-          ))}
+        {/* techStack 은 목록 API 응답에 없어(A4) 목록 카드에서는 표시하지 않는다.
+            (상세 API 에는 있을 수 있음 — 상세 연동 명세에서 처리) */}
+        <div className="flex flex-wrap items-center gap-[8px]">
+          <span className="truncate text-xs text-app-text-muted">
+            {job.location} · {job.employmentType}
+          </span>
         </div>
       </div>
     </>
@@ -91,7 +96,7 @@ export default function JobCard({ job, masked = false }: JobCardProps) {
   }
 
   return (
-    <Link to={`/jobs/${job.id}`} className={CARD_CLASS}>
+    <Link to={`/jobs/${jobId}`} className={CARD_CLASS}>
       {inner}
     </Link>
   );

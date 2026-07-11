@@ -1,8 +1,8 @@
-import type { Job } from '@/types/job';
+import type { JobSummary } from '@/types/jobApi';
 import JobCard from './JobCard';
 
 interface JobListProps {
-  jobs: Job[];
+  jobs: JobSummary[];
   // 게스트 마스킹 모드를 각 카드로 전달 (spec §4.3).
   masked?: boolean;
 }
