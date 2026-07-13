@@ -17,7 +17,7 @@ function DetailContent({ content }: DetailContentProps) {
 
       {html ? (
         <div
-          className="rounded-lg border border-app-border bg-app-bg p-5 text-sm leading-relaxed text-app-text [&_a]:text-app-primary [&_a]:underline [&_li]:ml-4 [&_li]:list-disc [&_ul]:pl-4"
+          className="rounded-lg border border-app-border bg-app-bg p-5 text-[16px] leading-[1.5] text-black [&_a]:text-app-primary [&_a]:underline [&_li]:ml-4 [&_li]:list-disc [&_ul]:pl-4"
           dangerouslySetInnerHTML={{ __html: html }}
         />
       ) : (

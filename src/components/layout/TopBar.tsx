@@ -117,10 +117,12 @@ export default function TopBar() {
               key={term}
               type="button"
               onClick={() => handleRecentClick(term)}
-              className="flex items-center gap-1 text-left transition hover:opacity-80"
+              className="flex items-end gap-2 text-left transition hover:opacity-80"
             >
-              <span className="text-sm font-medium text-gray-500">{i + 1}</span>
-              <span className="text-[16px] font-medium tracking-[-0.32px] text-gray-700">
+              <span className="text-[16px] font-medium leading-[1.5] tracking-[-0.32px] text-gray-700">
+                {i + 1}
+              </span>
+              <span className="text-[16px] font-medium leading-[1.5] tracking-[-0.32px] text-gray-700">
                 {term}
               </span>
             </button>

@@ -43,19 +43,24 @@ export default function JobSummarySection({ jobId }: JobSummarySectionProps) {
       </div>
 
       {requested && isFetching ? (
-        <div className="flex items-center justify-center gap-2 self-stretch rounded-xl bg-blue-500/90 px-10 py-3 text-white">
-          <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />
+        // §3 로딩 — bg-blue-500(불투명, /90 제거), 스피너→star 18px
+        <div className="flex items-center justify-center gap-2 self-stretch rounded-xl bg-blue-500 px-10 py-3 text-white">
+          {/* ❓ TODO: 로딩 애니메이션 유지 여부 확인 → 잠정 animate-pulse 유지 */}
+          <img src="/star.svg" alt="" aria-hidden className="h-[18px] w-[18px] animate-pulse" />
           <span className="font-pretendard text-[16px] font-semibold">
             요약 생성 중...
           </span>
         </div>
       ) : (
+        // §2 클릭 전 — "요약하기" + star 18px
         <button
           type="button"
           onClick={handleSummary}
           className="flex items-center justify-center gap-1.5 self-stretch rounded-xl bg-blue-500 px-10 py-3 font-pretendard text-[16px] font-semibold leading-[130%] tracking-[-0.32px] text-white transition hover:opacity-90"
         >
-          {requested && isError ? '다시 시도' : 'AI 요약 보기'}
+          {/* ❓ TODO: star 아이콘 정체 미확인(lucide Star 추정) → 기존 /star.svg 18px 사용 */}
+          <img src="/star.svg" alt="" aria-hidden className="h-[18px] w-[18px]" />
+          {requested && isError ? '다시 시도' : '요약하기'}
         </button>
       )}
     </div>

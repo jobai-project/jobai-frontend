@@ -4,9 +4,17 @@ import { useToastStore } from '@/stores/toastStore';
 interface BookmarkButtonProps {
   jobId: string;
   className?: string;
+  // 'lg' = 상세 페이지(아이콘 36px/버튼 44px). 기본은 기존 카드용(20/32) — 다른 사용처 영향 없음.
+  size?: 'default' | 'lg';
 }
 
-export default function BookmarkButton({ jobId, className = '' }: BookmarkButtonProps) {
+export default function BookmarkButton({
+  jobId,
+  className = '',
+  size = 'default',
+}: BookmarkButtonProps) {
+  const btnSize = size === 'lg' ? 'h-11 w-11' : 'h-8 w-8'; // 44 vs 32
+  const iconSize = size === 'lg' ? 'h-9 w-9' : 'h-5 w-5'; // 36 vs 20
   const isBookmarked = useIsBookmarked(jobId);
   const toggle = useBookmarkStore((s) => s.toggle);
 
@@ -28,12 +36,12 @@ export default function BookmarkButton({ jobId, className = '' }: BookmarkButton
       onClick={handleClick}
       aria-label={isBookmarked ? '스크랩 취소' : '스크랩'}
       aria-pressed={isBookmarked}
-      className={`inline-flex h-8 w-8 items-center justify-center rounded-full text-lg transition hover:bg-app-hover ${className}`}
+      className={`inline-flex ${btnSize} items-center justify-center rounded-full text-lg transition hover:bg-app-hover ${className}`}
     >
       {isBookmarked ? (
         <svg
           viewBox="0 0 20 20"
-          className="h-5 w-5 fill-blue-600"
+          className={`${iconSize} fill-blue-600`}
           aria-hidden="true"
         >
           <path d="M5 3a1 1 0 0 0-1 1v14l6-3.5L16 18V4a1 1 0 0 0-1-1H5z" />
@@ -41,7 +49,7 @@ export default function BookmarkButton({ jobId, className = '' }: BookmarkButton
       ) : (
         <svg
           viewBox="0 0 20 20"
-          className="h-5 w-5"
+          className={iconSize}
           aria-hidden="true"
         >
           <path
