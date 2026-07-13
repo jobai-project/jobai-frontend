@@ -19,6 +19,7 @@ import NoResults from '@/components/home/NoResults';
 import { mockJobs } from '@/data/mockJobs';
 import { mockAINews } from '@/data/mockNews';
 import TopBar from '@/components/layout/TopBar';
+import Footer from '@/components/layout/Footer';
 
 const WEEKDAY_KO = ['일', '월', '화', '수', '목', '금', '토'];
 
@@ -179,6 +180,9 @@ export default function HomePage() {
           <div ref={loadMoreRef} className="h-8" />
         </section>
       )}
+
+      {/* 홈 전용 푸터 (Footer.spec §6 — 홈에서만) */}
+      <Footer />
     </>
   );
 }
