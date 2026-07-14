@@ -115,8 +115,10 @@ export default function GuestHome() {
         <div
           className="relative h-[306px] w-[440px] flex-shrink-0 overflow-clip rounded-lg shadow-homecard"
           style={{
+            // 108%: PNG 4변 투명 여백(≈47px)을 카드 밖으로 밀어 crop(둥근 카드 흰 테두리 제거).
+            // cover(=100% 폭) 대비 ~8% 확대 → 가로 여백 2.6%·세로 3.6%를 여유 있게 덮음.
             backgroundImage: 'url(/guest-hero.png)',
-            backgroundSize: 'cover',
+            backgroundSize: '108%',
             backgroundPosition: 'center',
           }}
         >
