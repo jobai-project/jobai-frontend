@@ -1,23 +1,25 @@
 import { Link, useNavigate } from 'react-router-dom';
 import BookmarkButton from '@/components/common/BookmarkButton';
 import ScoreGauge from '@/components/common/ScoreGauge';
-import type { Job } from '@/types/job';
+import type { JobSummary } from '@/types/jobApi';
 
 interface JobCardProps {
-  job: Job;
-  // 게스트 마스킹 모드 — 점수 blur + '??점' + 호버 툴팁 (spec §4.3·§4.4).
+  job: JobSummary;
+  // 게스트 마스킹 모드 — 로그인 유도 툴팁 + 북마크 숨김 + Link 비활성 (spec §4.3·§4.4).
+  // 점수 블러는 masked 와 별개로 matchScore === null 로 판정한다(로그인+이력서X 도 블러).
   masked?: boolean;
 }
 
+// GC-1: rounded-[14px], gap-8, border-blue-100, shadow-guestcard.
 const CARD_CLASS =
-  'relative flex h-full flex-col items-start gap-[16px] self-stretch rounded-2xl border border-app-border bg-app-surface px-[24px] py-[20px] text-left transition-all hover:border-app-border-strong hover:shadow-[0_2px_8px_rgba(0,0,0,0.04)] focus:outline-none focus:ring-2 focus:ring-app-border-strong';
+  'relative flex h-full flex-col items-start gap-[8px] self-stretch rounded-[14px] border border-blue-100 bg-app-surface px-[24px] py-[20px] text-left shadow-guestcard transition-all hover:shadow-guestcard focus:outline-none focus:ring-2 focus:ring-app-border-strong';
 
 // 마스킹 카드 호버 시 노출되는 툴팁 (spec §4.4). 아래 방향 화살표로 점수를 가리킨다.
 function GuestScoreTooltip() {
   const navigate = useNavigate();
   return (
     <div className="pointer-events-none absolute left-0 top-[-64px] z-20 flex opacity-0 transition-opacity duration-150 group-hover:pointer-events-auto group-hover:opacity-100">
-      <div className="relative inline-flex flex-col items-center justify-center rounded-lg border border-gray-800 bg-gray-800 px-4 py-3 shadow-[0_6px_12px_0_rgba(0,0,0,0.20)]">
+      <div className="relative inline-flex flex-col items-center justify-center rounded-base border border-gray-800 bg-gray-800 px-4 py-3 shadow-[0_6px_12px_0_rgba(0,0,0,0.20)]">
         <span className="text-center font-pretendard text-[12px] font-normal leading-[130%] tracking-[-0.24px] text-white">
           로그인하면 점수를 확인할 수 있어요
         </span>
@@ -36,50 +38,75 @@ function GuestScoreTooltip() {
 }
 
 export default function JobCard({ job, masked = false }: JobCardProps) {
+  const jobId = String(job.id); // JobSummary.id 는 number — BookmarkButton/Link 는 string
+  const noScore = job.matchScore === null; // 게스트 or 이력서 미업로드
+
   const inner = (
     <>
       {/* 게스트는 북마크 불가 → 마스킹 시 북마크 버튼 숨김 */}
       {!masked && (
-        <BookmarkButton jobId={job.id} className="absolute right-[24px] top-[20px]" />
+        <BookmarkButton jobId={jobId} className="absolute right-[24px] top-[20px]" />
       )}
 
-      <div className="w-full">
-        <div className="relative mb-[8px] flex items-start">
-          {masked ? (
-            <>
-              <div className="pointer-events-none select-none blur-[6px]">
-                <ScoreGauge score={job.score} variant="semicircle" />
-              </div>
-              <span className="absolute inset-0 flex items-center justify-center text-sm font-bold text-app-text-muted">
-                ??점
-              </span>
-              <GuestScoreTooltip />
-            </>
-          ) : (
-            <ScoreGauge score={job.score} variant="semicircle" />
-          )}
-        </div>
+      {/* GC-2 상단 행 — 점수 그룹(북마크는 masked 시 숨김·absolute) */}
+      <div className="flex w-full items-start justify-between">
+        {noScore ? (
+          // 점수 없음 → 블러 게이지 플레이스홀더(GC-3). 게이지 그룹 93×47.84 근사 +
+          // "??" 24 SemiBold + "점" 16 Regular. 게스트일 때만 로그인 유도 툴팁 노출.
+          <div className="relative h-12 w-[93px] flex-shrink-0">
+            <svg viewBox="0 0 93 48" aria-hidden className="h-full w-full blur-[3px]">
+              <defs>
+                <linearGradient id="guest-gauge" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor="#A78BFA" />
+                  <stop offset="100%" stopColor="#7C3AED" />
+                </linearGradient>
+              </defs>
+              <path d="M 8 44 A 38 38 0 0 1 85 44" fill="none" stroke="#E6E8EB" strokeWidth="6" strokeLinecap="round" />
+              <path
+                d="M 8 44 A 38 38 0 0 1 85 44"
+                fill="none"
+                stroke="url(#guest-gauge)"
+                strokeWidth="6"
+                strokeLinecap="round"
+                strokeDasharray="120"
+                strokeDashoffset="55"
+              />
+            </svg>
+            <div className="absolute inset-x-0 bottom-0 flex items-baseline justify-center">
+              <span className="text-[24px] font-semibold tracking-[-0.48px] text-gray-900">??</span>
+              <span className="ml-0.5 text-[16px] font-normal text-gray-900">점</span>
+            </div>
+            {masked && <GuestScoreTooltip />}
+          </div>
+        ) : (
+          <ScoreGauge score={job.matchScore as number} variant="semicircle" />
+        )}
+      </div>
 
-        <h3 className="mb-[8px] line-clamp-2 min-h-[2.75rem] text-base font-bold leading-snug text-app-text">
-          {job.title}
-        </h3>
-
-        <div className="mb-[16px] flex items-center gap-[8px]">
-          <span className="truncate text-sm text-app-text-muted">{job.company}</span>
-          <span className="flex-shrink-0 rounded-md bg-red-50 px-1.5 py-0.5 text-xs font-bold text-red-500">
-            D-{job.dday}
-          </span>
-        </div>
-
-        <div className="flex flex-wrap gap-[8px]">
-          {job.techStack.slice(0, 3).map((tech) => (
-            <span
-              key={tech}
-              className="rounded-md bg-gray-100 px-3 py-1 text-xs text-app-text-muted"
-            >
-              {tech}
+      {/* GC-5 본문 — flex-col gap-16 */}
+      <div className="flex w-full flex-col gap-4">
+        {/* GC-6 텍스트 블록 — gap-4 */}
+        <div className="flex flex-col gap-1">
+          {/* GC-7 공고명 — 18 Medium/150%/-0.36px/gray-900 */}
+          <h3 className="line-clamp-2 text-[18px] font-medium leading-[1.5] tracking-[-0.36px] text-gray-900">
+            {job.title}
+          </h3>
+          <div className="flex items-center gap-2">
+            {/* GC-8 회사명 — 14 Regular/gray-800 */}
+            <span className="truncate text-[14px] text-gray-800">{job.company}</span>
+            {/* GC-9 D-day — 텍스트만(배경필 제거), 14 Medium/error-base. dDay null = 상시모집 */}
+            <span className="flex-shrink-0 text-[14px] font-medium text-error-base">
+              {job.dDay === null ? '상시' : `D-${job.dDay}`}
             </span>
-          ))}
+          </div>
+        </div>
+
+        {/* GC-10 배지 행(opacity-80). GC-11 techStack 배지는 목록 API 미제공으로 보류(§9-2) →
+            대신 location·employmentType 텍스트 유지. */}
+        <div className="flex flex-wrap items-center gap-[8px] opacity-80">
+          <span className="truncate text-xs text-app-text-muted">
+            {job.location} · {job.employmentType}
+          </span>
         </div>
       </div>
     </>
@@ -91,7 +118,7 @@ export default function JobCard({ job, masked = false }: JobCardProps) {
   }
 
   return (
-    <Link to={`/jobs/${job.id}`} className={CARD_CLASS}>
+    <Link to={`/jobs/${job.source}/${jobId}`} className={CARD_CLASS}>
       {inner}
     </Link>
   );

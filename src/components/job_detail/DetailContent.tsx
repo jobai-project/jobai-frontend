@@ -1,38 +1,30 @@
 import { memo } from 'react';
-import type { Job } from '@/types/job';
+import { decodeAndSanitize } from '@/utils/sanitizeHtml';
 
 interface DetailContentProps {
-  job: Job;
+  content: string; // private description / public htmlContent (원문 본문)
 }
 
-function DetailContent({ job }: DetailContentProps) {
-  const aiSummary = job.aiSummary ?? `
-    해당 공고의 주요 내용은 다음과 같습니다.
-
-    직무 개요
-    저희는 혁신적인 프론트엔드 개발팀을 확장하고 있습니다. React와 TypeScript를 기반으로 하는 고성능의 웹 애플리케이션을 개발하는 업무입니다.
-
-    주요 업무
-    • 사용자 인터페이스 설계 및 개발
-    • 컴포넌트 기반 아키텍처 구축
-    • 성능 최적화 및 번들 사이즈 관리
-    • 테스트 코드 작성 및 유지보수
-
-    우대 사항
-    • 오픈소스 프로젝트 경험
-    • 디자인 시스템 구축 경험
-    • DevOps 기초 지식
-  `.trim();
+function DetailContent({ content }: DetailContentProps) {
+  // private/public 둘 다 HTML(이스케이프 또는 생) → 디코드 + sanitize 후 렌더 (결정 사항).
+  const html = decodeAndSanitize(content);
 
   return (
     <div>
       <div className="mb-4 flex items-center gap-2">
-        <h3 className="text-base font-bold text-app-text">공고 요약</h3>
+        <h3 className="text-base font-bold text-app-text">상세 내용</h3>
       </div>
 
-      <div className="rounded-lg border border-app-border bg-app-bg p-5">
-        <p className="whitespace-pre-line text-sm leading-relaxed text-app-text">{aiSummary}</p>
-      </div>
+      {html ? (
+        <div
+          className="rounded-lg border border-app-border bg-app-bg p-5 text-[16px] leading-[1.5] text-black [&_a]:text-app-primary [&_a]:underline [&_li]:ml-4 [&_li]:list-disc [&_ul]:pl-4"
+          dangerouslySetInnerHTML={{ __html: html }}
+        />
+      ) : (
+        <div className="rounded-lg border border-app-border bg-app-bg p-5 text-sm text-app-text-muted">
+          상세 내용이 없습니다.
+        </div>
+      )}
     </div>
   );
 }

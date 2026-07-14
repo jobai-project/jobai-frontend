@@ -144,7 +144,7 @@ export default function ProfileSection({
         )}
       </div>
 
-      {/* 이력서 관리 */}
+      {/* 이력서 관리 — 팀원 디자인 그대로, 서버 훅으로 연결 */}
       <div className="w-[700px] min-h-[145px] flex flex-col border border-[#EBECFF]/90 rounded-2xl p-6 bg-white shadow-[0_4px_12px_rgba(124,119,255,0.08)]">
         <div className="flex items-center gap-1.5 mb-6">
           <h2 className="font-semibold text-[16px] text-app-text">이력서 관리</h2>
@@ -152,57 +152,53 @@ export default function ProfileSection({
 
         <div className="space-y-3">
           {resumesLoading ? (
-            <div className="text-sm text-app-text-muted">불러오는 중...</div>
+            <div className="text-sm text-gray-400">불러오는 중...</div>
           ) : resumes.length === 0 ? (
-            <div className="text-sm text-app-text-muted">등록된 이력서가 없어요.</div>
+            <div className="text-sm text-gray-400">등록된 이력서가 없어요.</div>
           ) : (
             resumes.map((resume) => (
-              <div
-                key={resume.resumeId}
-                className="flex items-center justify-between py-2"
-              >
+              <div key={resume.resumeId} className="flex items-center justify-between py-2">
                 <div className="flex items-center gap-3">
-                  {/* 팀원 폴리시: 활성/비활성 아이콘 크기 w-11 h-11 */}
+                  {/* 삭제 아이콘(팀원 디자인) — 서버 삭제로 연결(확인창 포함) */}
+                  <button
+                    onClick={() => handleDelete(resume.resumeId)}
+                    disabled={remove.isPending}
+                    className="p-0 hover:opacity-80 disabled:opacity-50"
+                  >
+                    <img src="/delete-gray-icon.png" alt="삭제" className="w-6 h-6" />
+                  </button>
+
                   {resume.isActive ? (
                     <img src="/submit-icon.png" alt="활성" className="w-11 h-11" />
                   ) : (
                     <img src="/submit-no-icon.png" alt="비활성" className="w-11 h-11" />
                   )}
+
                   <div>
-                    <div className="text-sm font-medium text-app-text mb-2">
+                    <div className="text-sm font-medium text-gray-800 mb-2">
                       {resume.originalFilename}
                     </div>
                     {/* fileSize 는 이미 "1.2 MB" 문자열 — 다시 포맷하지 않는다. */}
-                    <div className="text-sm font-normal text-app-text-muted">
+                    <div className="text-sm font-normal text-gray-400">
                       {resume.fileSize} · {resume.uploadedAt}
                     </div>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2">
-                  {/* 활성 이력서에는 [활성화] 숨김 — 활성 배지만 표시(자동 비활성화는 서버가 처리). */}
-                  {/* 팀원 폴리시: 활성 배지 bg-[#F5F5FF] text-blue-500, rounded-[7px] */}
-                  {resume.isActive ? (
-                    <span className="px-3 py-1.5 text-xs font-semibold rounded-[7px] bg-[#F5F5FF] text-blue-500">
-                      활성
-                    </span>
-                  ) : (
-                    <button
-                      onClick={() => activate.mutate(resume.resumeId)}
-                      disabled={activate.isPending}
-                      className="px-3 py-1.5 text-xs font-semibold rounded-[7px] bg-gray-100 text-gray-600 hover:bg-app-hover transition-colors disabled:opacity-50"
-                    >
-                      활성으로 변경
-                    </button>
-                  )}
-                  <button
-                    onClick={() => handleDelete(resume.resumeId)}
-                    disabled={remove.isPending}
-                    className="px-3 py-1.5 text-xs font-semibold rounded-[7px] border border-red-200 text-red-500 hover:bg-red-50 transition-colors disabled:opacity-50"
-                  >
-                    삭제
-                  </button>
-                </div>
+                {/* 활성 토글(팀원 디자인) — 비활성일 때만 서버 활성화 호출(중복 요청 방지) */}
+                <button
+                  onClick={() => {
+                    if (!resume.isActive) activate.mutate(resume.resumeId);
+                  }}
+                  disabled={activate.isPending}
+                  className={`px-3 py-1.5 text-xs font-semibold rounded-[7px] transition-colors disabled:opacity-50 ${
+                    resume.isActive
+                      ? 'bg-[#F5F5FF] text-blue-500'
+                      : 'bg-gray-100 text-gray-600 hover:bg-app-hover'
+                  }`}
+                >
+                  {resume.isActive ? '활성' : '활성으로 변경'}
+                </button>
               </div>
             ))
           )}

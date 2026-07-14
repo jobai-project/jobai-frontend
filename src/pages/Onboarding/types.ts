@@ -22,11 +22,17 @@ export const EMPLOYMENT_OPTIONS: { value: EmploymentType; label: string }[] = [
 ];
 
 // 지역 (Figma 체크박스 목록 + "전체")
+// 지역 목록 (Figma 확정: 17개 시도). locations 저장·FilterBar 필터에 쓰는 실제 지역.
+// 배열 순서 = 드롭다운 column-major 표시 순(좌열 서울~제주 8개, 우열 부산~광주 9개).
 export const REGION_OPTIONS = [
-  '서울', '부산', '경기', '대구', '판교', '전라', '인천',
-  '경상', '대전', '강원', '충남', '제주', '세종', '해외',
+  '서울', '경기', '인천', '대전', '충남', '충북', '세종', '제주',
+  '부산', '대구', '울산', '경북', '경남', '강원', '전북', '전남', '광주',
 ] as const;
 export type RegionCode = (typeof REGION_OPTIONS)[number];
+
+// 드롭다운 표시용: '전체'(좌열 첫 칸) + 17개 지역. '전체'는 select-all 트리거일 뿐
+// 실제 저장/타입(RegionCode)에는 포함하지 않는다(FilterBar·locations 오염 방지).
+export const REGION_SELECT_OPTIONS = ['전체', ...REGION_OPTIONS] as const;
 
 // step2 희망 직무 (온보딩 합본 카드 — spec v2). 사용자 노출 문자열은 한국어,
 // 코드 식별자는 영어. 상태별 합본 이미지 4장(초기 + 선택 3장)은 Step2JobRole에서

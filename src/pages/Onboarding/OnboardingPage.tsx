@@ -34,18 +34,19 @@ export default function OnboardingPage() {
     // 기존 위저드가 반응형이므로 화면 채움 + 중앙 정렬 + 콘텐츠 폭(≈555px)으로 매핑.
     // (1440 고정 vs 반응형은 추후 디자이너 확인 — 명세 ⚠️5)
     <div className="flex min-h-screen items-center justify-center bg-[linear-gradient(327deg,#DDDDFB_-0.86%,#FFF_56.45%)] px-4 py-16">
-      {/* §1 between-cards 간격은 Dev Mode에 없음(명세 ⚠️1) → 16px로 잠정 적용 */}
-      <div className="flex w-full max-w-[555px] flex-col gap-4">
+      {/* §1 between-cards 간격(A-6): 카드 간 20px */}
+      <div className="flex w-full max-w-[555px] flex-col gap-[20px]">
         {/* §2 스텝 인디케이터 카드 */}
         <StepIndicator steps={STEPS} current={step} />
 
         {/* §8 폼 본문 카드 (제목 + 지역 + 채용형태 + 버튼) */}
-        <div className="relative flex flex-col items-start gap-8 self-stretch rounded-2xl bg-white/50 p-10 shadow-[0_0_24px_0_rgba(51,68,255,0.12)]">
+        {/* D7: 폼카드 높이 635px 고정 — 전 스텝 통일(단일 소스). */}
+        <div className="relative flex h-[635px] flex-col items-start gap-8 self-stretch rounded-2xl bg-white/50 p-10 shadow-[0_0_24px_0_rgba(51,68,255,0.12)]">
           {/* §4 우측 상단 건너뛰기 */}
           <button
             type="button"
             onClick={handleSkip}
-            className="absolute right-10 top-10 font-pretendard text-sm text-[#AFB8C2] hover:text-[#303D4C]"
+            className="absolute right-10 top-10 font-pretendard text-[16px] font-normal text-[#AFB8C2] hover:text-[#303D4C]"
           >
             건너뛰기
           </button>
@@ -61,7 +62,7 @@ export default function OnboardingPage() {
               type="button"
               onClick={prev}
               disabled={step === 0}
-              className="h-11 w-[103px] rounded-lg bg-[#A1A9FF]/80 font-pretendard text-sm font-semibold text-gray-50 hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+              className="h-11 w-[103px] rounded-base bg-[#A1A9FF]/80 font-pretendard text-[16px] font-semibold text-gray-50 hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
             >
               이전으로
             </button>
@@ -71,7 +72,7 @@ export default function OnboardingPage() {
                 type="button"
                 onClick={handleFinish}
                 disabled={submit.isPending}
-                className="flex h-11 items-center justify-center gap-2.5 rounded-lg bg-[#4741FF] px-4 py-2 font-pretendard text-sm font-semibold text-white hover:opacity-90 disabled:opacity-50"
+                className="flex h-11 items-center justify-center gap-2.5 rounded-base bg-[#4741FF] px-4 py-2 font-pretendard text-sm font-semibold text-[#F9FAFB] hover:opacity-90 disabled:opacity-50"
               >
                 {submit.isPending ? '시작하는 중...' : '시작하기 →'}
               </button>
@@ -80,8 +81,9 @@ export default function OnboardingPage() {
                 type="button"
                 onClick={next}
                 disabled={nextDisabled}
-                className="flex h-11 w-[103px] items-center justify-center gap-2.5 rounded-lg bg-[#4741FF] px-2.5 py-2 font-pretendard text-sm font-semibold text-white hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+                className="flex h-11 w-[120px] items-center justify-center gap-2.5 rounded-base bg-[#4741FF] px-2.5 py-2 font-pretendard text-[16px] font-semibold text-[#F9FAFB] hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
               >
+                {/* ❓ TODO: Figma 화살표 아이콘 에셋 확인 전까지 유니코드 유지(arrowR-icon.png 후보) */}
                 다음으로 →
               </button>
             )}

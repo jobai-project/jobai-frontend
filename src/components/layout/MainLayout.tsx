@@ -12,7 +12,7 @@ interface MainLayoutProps {
 export default function MainLayout({ guest = false, children }: MainLayoutProps) {
   return (
     <div className="flex min-h-screen justify-center">
-      <div className="grid min-h-screen w-[1440px] grid-cols-[276px_1fr] bg-app-bg">
+      <div className="grid min-h-screen w-[1440px] grid-cols-[276px_1fr] bg-gray-50">
         <Sidebar guest={guest} />
         <main className="p-[40px]">{children ?? <Outlet />}</main>
       </div>

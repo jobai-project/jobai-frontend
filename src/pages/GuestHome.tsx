@@ -1,26 +1,70 @@
 import { useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import TopBar from '@/components/layout/TopBar';
+import Footer from '@/components/layout/Footer';
 import FilterBar from '@/components/home/FilterBar';
 import JobList from '@/components/home/JobList';
+import NoResults from '@/components/home/NoResults';
 import TrendingScrap, {
   type TrendingScrapItem,
 } from '@/components/home/TrendingScrap';
+import { useLatestJobs } from '@/hooks/useInfiniteJobList';
+import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
+import { useTechCards, toTechGlanceRows } from '@/hooks/useTechCards';
+import { parseCompanyType } from '@/types/job';
 import { mockJobs } from '@/data/mockJobs';
 
-// 게스트 마케팅용 정적 콘텐츠 (spec §3.2 ⚠️ 더미 기본값).
-// TODO(API 확인): 실 "IT 한눈에" 데이터 소스 존재 시 교체.
-const IT_GLANCE: { title: string; sub: string }[] = [
-  { title: '이번 주 IT 공고, 전주보다 12% 늘었어요', sub: '채용 시장이 다시 살아나는 중' },
-  { title: '토스, 신입 개발자 공개채용 시작', sub: '서류 마감 D-9' },
-  { title: '요즘 뜨는 기술 스택은 Kotlin', sub: '백엔드 공고 언급량 1위' },
-];
+// 우측 chevron (size-24). rotate-180 은 사용처에서 부여.
+function ChevronIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className={className}>
+      <path
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="m9 6 6 6-6 6"
+      />
+    </svg>
+  );
+}
+
+// 섹션 타이틀용 ai 아이콘 (size-24, §4-2). mingcute:ai-fill 근사.
+function AiIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className={className}>
+      <path
+        fill="currentColor"
+        d="M12 2.5c.4 0 .74.27.85.65l.9 3.14a4 4 0 0 0 2.76 2.76l3.14.9a.9.9 0 0 1 0 1.72l-3.14.9a4 4 0 0 0-2.76 2.76l-.9 3.14a.9.9 0 0 1-1.72 0l-.9-3.14a4 4 0 0 0-2.76-2.76l-3.14-.9a.9.9 0 0 1 0-1.72l3.14-.9a4 4 0 0 0 2.76-2.76l.9-3.14A.9.9 0 0 1 12 2.5Z"
+      />
+      <path fill="currentColor" d="M19 3.5c.16 0 .3.1.35.26l.38 1.25 1.25.38a.37.37 0 0 1 0 .7l-1.25.38-.38 1.25a.37.37 0 0 1-.7 0l-.38-1.25-1.25-.38a.37.37 0 0 1 0-.7l1.25-.38.38-1.25A.37.37 0 0 1 19 3.5Z" />
+    </svg>
+  );
+}
+
+// 히어로 버튼 화살표 (14×14, §3A-6).
+function ArrowIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 14 14" aria-hidden="true" className={className}>
+      <path
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M2.5 7h9M8 3.5 11.5 7 8 10.5"
+      />
+    </svg>
+  );
+}
 
 export default function GuestHome() {
   const navigate = useNavigate();
   const goLogin = () => navigate('/login');
 
   // §2 실시간 순위 — 회원 홈과 동일한 TrendingScrap 재사용. 게스트 전용 분기 없음.
+  // (실시간 순위는 이번 명세 범위 밖 → mockJobs 유지)
   const trendingItems = useMemo<TrendingScrapItem[]>(
     () =>
       [...mockJobs]
@@ -30,9 +74,31 @@ export default function GuestHome() {
     []
   );
 
-  // 게스트 공고 그리드 — 더미(mockJobs) 6장, 점수 마스킹 (spec §5 유지).
-  // TODO(API 확인): 비인증 공개 공고 API 확정 시 교체.
-  const jobs = mockJobs.slice(0, 6);
+  // 게스트 공고 그리드 — latest-jobs API. matchScore 필드 없음 → 정규화에서 null → 카드 블러.
+  const [searchParams] = useSearchParams();
+  const companyType = parseCompanyType(searchParams.get('companyType'));
+  const locations = searchParams.getAll('location');
+  const employmentTypes = searchParams.getAll('employmentType');
+  const filters = {
+    companyTypes: companyType ? [companyType] : undefined,
+    locations: locations.length ? locations : undefined,
+    employmentTypes: employmentTypes.length ? employmentTypes : undefined,
+  };
+  const { data, isLoading, isError, hasNextPage, isFetchingNextPage, fetchNextPage } =
+    useLatestJobs(filters);
+  const jobs = data?.pages.flatMap((p) => p.jobs) ?? [];
+
+  // "IT 한눈에" — tech-cards API (인증 불필요). 목록 훅과 이름 충돌 피해 별칭.
+  const {
+    data: techData,
+    isLoading: techLoading,
+    isError: techError,
+  } = useTechCards();
+  const techRows = toTechGlanceRows(techData?.cards ?? []);
+
+  const loadMoreRef = useInfiniteScroll(() => {
+    if (hasNextPage && !isFetchingNextPage) fetchNextPage();
+  }, !!hasNextPage);
 
   return (
     <>
@@ -41,95 +107,180 @@ export default function GuestHome() {
       {/* §2 검색바 아래 실시간 순위 (회원 컴포넌트 재사용) */}
       <TrendingScrap items={trendingItems} />
 
-      {/* §1 히어로(좌 461) + §3 사이드 카드 2개(우 302 스택) */}
-      <section className="mb-9 flex gap-5">
-        {/* §1 히어로 배너 — 461×309.355, relative(내부 요소 absolute 프레임 기준, round3).
-            배경 /비로그인화면.png center/cover. border-radius ⚠️~20px 추정 → rounded-[20px](§6 TODO).
-            요소는 flex 흐름이 아니라 프레임 절대좌표 배치 → 제목-일러스트 겹침 구현 + 순서 충돌 해소(round3).
-            ⚠️ 한글 public 경로 — 필요 시 영문 리네임(§6 TODO). */}
+      {/* §3 히어로(440) + 사이드 카드 2개(302×306) — bg-gray-50 행, gap-20 items-center */}
+      <section className="mb-9 flex items-center gap-5">
+        {/* §4(3-A) 히어로 배너 — 배경(보라 그라디언트)+일러스트 통합 PNG 1장(guest-hero.png).
+            타이틀·필·버튼만 코드 오버레이. w-440 h-306 rounded-lg(16) shadow-homecard.
+            비율(1882×1346≈1.40) ≈ 카드(440×306≈1.44) → cover+center 로 세로 미세 크롭만. */}
         <div
-          className="relative h-[309.355px] w-[461px] flex-shrink-0 overflow-hidden rounded-[20px]"
+          className="relative h-[306px] w-[440px] flex-shrink-0 overflow-clip rounded-lg shadow-homecard"
           style={{
-            backgroundImage: 'url(/비로그인화면.png)',
-            backgroundSize: 'cover',
+            // 108%: PNG 4변 투명 여백(≈47px)을 카드 밖으로 밀어 crop(둥근 카드 흰 테두리 제거).
+            // cover(=100% 폭) 대비 ~8% 확대 → 가로 여백 2.6%·세로 3.6%를 여유 있게 덮음.
+            backgroundImage: 'url(/guest-hero.png)',
+            backgroundSize: '108%',
             backgroundPosition: 'center',
-            backgroundRepeat: 'no-repeat',
           }}
         >
-          {/* §3.3 일러스트 — top48/right17, 208×227 (제목 아래 레이어) */}
-          <img
-            src="/비로그인화면컴포넌트.png"
-            alt=""
-            aria-hidden
-            draggable={false}
-            className="pointer-events-none absolute right-[17px] top-[48px] h-[227px] w-[208px] select-none object-contain"
-          />
-
-          {/* §3.1 제목 — top42/left28, z-10로 일러스트 위 겹침. 28/600(⚠️ 600·500→600)/140%/-0.56px, 2줄 */}
-          <h2 className="absolute left-[28px] top-[42px] z-10 font-pretendard text-[28px] font-semibold leading-[140%] tracking-[-0.56px] text-white">
-            AI가 24시간
-            <br />
-            공고를 찾아드려요
-          </h2>
-
-          {/* §3.2 펠 — top136/left28. 내부 p8/14, gap4, text 12/400/130%/-0.24px. ⚠️ 배경/radius ❓ → 반투명 pill 잠정 */}
-          <span className="absolute left-[28px] top-[136px] z-10 inline-flex items-center justify-center gap-1 rounded-full bg-white/15 px-[14px] py-2 text-center font-pretendard text-[12px] font-normal leading-[130%] tracking-[-0.24px] text-white backdrop-blur-[2px]">
-            IT 공고 매칭 서비스
-          </span>
-
-          {/* §3.4 버튼 → /login — top220/left28. p10/24, gap10, radius16, bg white/10, text 14/500/150%/-0.28px + 화살표 */}
-          <button
-            type="button"
-            onClick={goLogin}
-            className="absolute left-[28px] top-[220px] z-10 inline-flex items-center gap-2.5 rounded-2xl bg-white/10 px-6 py-2.5 font-pretendard text-[14px] font-medium leading-[150%] tracking-[-0.28px] text-white transition hover:bg-white/20"
-          >
-            지금 시작하기
-            <span aria-hidden="true">→</span>
-          </button>
-        </div>
-
-        {/* §3 정보 카드 2개 — 302×306. round2 §1 정정: 세로 스택이 아니라 히어로와 같은 top
-            가로 배치(부모 section이 flex row). 열 간 gap ❓ 미측정 → 20 잠정(TODO). */}
-          {/* §3.1 곧 마감되는 스크랩 공고 — 게스트 빈 상태 */}
-          <div className="flex h-[306px] w-[302px] flex-col items-start gap-5 rounded-2xl border border-app-border bg-app-surface p-5">
-            <span className="text-sm font-bold text-app-text">곧 마감되는 스크랩 공고</span>
-            <p className="text-sm text-app-text-muted">로그인 후 관심 공고를 저장해 보세요</p>
-            {/* ⚠️ 색상 blue-500 추정(§3.1) */}
+          {/* 3A-2 콘텐츠 origin left-28 top-42, 내부 w-350, 타이틀↔버튼 gap-52 */}
+          <div className="absolute left-[28px] top-[42px] z-10 flex w-[350px] flex-col gap-[52px]">
+            <div className="flex flex-col gap-4">
+              {/* 3A-3 타이틀 — 28/140%/-0.56px white. 혼용: AI·24·"공고를 찾아드려요"=SemiBold, 가·시간=Medium */}
+              <h2 className="font-pretendard text-[28px] leading-[1.4] tracking-[-0.56px] text-white">
+                <span className="block">
+                  <span className="font-semibold">AI</span>
+                  <span className="font-medium">가 </span>
+                  <span className="font-semibold">24</span>
+                  <span className="font-medium">시간</span>
+                </span>
+                <span className="block font-semibold">공고를 찾아드려요</span>
+              </h2>
+              {/* 3A-4 필 — bg-white/10, px-14 py-8, rounded-full, 12/400/130%/-0.24px, blur-2px */}
+              <span className="inline-flex items-center gap-1 self-start rounded-full bg-white/10 px-[14px] py-2 font-pretendard text-[12px] font-normal leading-[130%] tracking-[-0.24px] text-white backdrop-blur-[2px]">
+                IT 공고 매칭 서비스
+              </span>
+            </div>
+            {/* 3A-6 버튼 → /login. px-24 py-10, rounded-lg(16), gap-6, arrow 14×14 */}
             <button
               type="button"
               onClick={goLogin}
-              className="mt-auto inline-flex items-center rounded-lg bg-blue-500 px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90"
+              className="inline-flex items-center gap-1.5 self-start rounded-2xl bg-white/10 px-6 py-2.5 font-pretendard text-[14px] font-medium leading-[150%] tracking-[-0.28px] text-white transition hover:bg-white/20"
+            >
+              지금 시작하기
+              <ArrowIcon className="h-3.5 w-3.5" />
+            </button>
+          </div>
+        </div>
+
+        {/* §5(3-B) 곧 마감되는 스크랩 공고 — 게스트 빈 상태 */}
+        <div className="flex h-[306px] w-[302px] flex-col gap-5 rounded-2xl border border-blue-100 bg-card-radial p-5 shadow-homecard">
+          {/* 3B-3 헤더 */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <img src="/mingcute_time-fill.svg" alt="" aria-hidden className="h-6 w-6 flex-shrink-0" />
+              <span className="text-[18px] font-semibold tracking-[-0.36px] text-gray-900">
+                곧 마감되는 스크랩 공고
+              </span>
+            </div>
+            <ChevronIcon className="h-6 w-6 flex-shrink-0 text-gray-400" />
+          </div>
+          {/* 3B-4 빈 상태 본문 — 중앙정렬, gap-32 */}
+          <div className="flex flex-1 flex-col items-center justify-center gap-8">
+            {/* 3B-5 북마크-슬래시 아이콘 — 54×52.65 (noscrap.svg 재사용) */}
+            <img src="/noscrap.svg" alt="" aria-hidden className="h-[52.65px] w-[54px] select-none" />
+            {/* 3B-6 안내문 — 16 SemiBold/130%/-0.32px/gray-500 */}
+            <p className="text-center text-[16px] font-semibold leading-[1.3] tracking-[-0.32px] text-gray-500">
+              로그인 후 관심 공고를 저장해 보세요
+            </p>
+            {/* 3B-7 버튼 — bg-blue-50, text-blue-500, px-16 py-10, rounded-[12px] */}
+            <button
+              type="button"
+              onClick={goLogin}
+              className="inline-flex items-center rounded-[12px] bg-blue-50 px-4 py-2.5 text-sm font-semibold tracking-[-0.28px] text-blue-500 transition hover:bg-blue-100"
             >
               가입하러 가기
             </button>
           </div>
+        </div>
 
-          {/* §3.2 IT 한눈에 — items-end는 좌측정렬 텍스트와 상충(§3.2 ⚠️) → items-start 유지, TODO 확인 */}
-          <div className="flex h-[306px] w-[302px] flex-col items-start gap-5 rounded-2xl border border-app-border bg-app-surface p-5">
-            <span className="text-sm font-bold text-app-text">IT 한눈에</span>
-            <ul className="flex flex-col gap-3">
-              {IT_GLANCE.map((row) => (
-                <li key={row.title} className="flex flex-col gap-0.5">
-                  <span className="text-[13px] font-medium text-app-text">{row.title}</span>
-                  <span className="text-xs text-app-text-subtle">{row.sub}</span>
+        {/* §6(3-C) IT 한눈에 */}
+        <div className="flex h-[306px] w-[302px] flex-col gap-5 rounded-2xl border border-blue-100 bg-card-radial p-5 shadow-homecard">
+          {/* 3C-2 헤더 — gap-12, news 아이콘 24, 18 SemiBold/-0.36px/black */}
+          <div className="flex items-center gap-3">
+            <img src="/iconamoon_news-fill.svg" alt="" aria-hidden className="h-6 w-6 flex-shrink-0" />
+            <span className="text-[18px] font-semibold tracking-[-0.36px] text-black">IT 한눈에</span>
+          </div>
+          {techLoading ? (
+            // 스켈레톤 3줄
+            <ul className="flex flex-col">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <li key={i} className={i < 2 ? 'border-b-[0.7px] border-gray-200' : ''}>
+                  <div className="flex w-full flex-col gap-2 px-1 py-3">
+                    <div className="h-4 w-3/4 animate-pulse rounded bg-gray-100" />
+                    <div className="h-3 w-1/2 animate-pulse rounded bg-gray-100" />
+                  </div>
                 </li>
               ))}
             </ul>
-          </div>
+          ) : techError ? (
+            <div className="px-1 py-3 text-[14px] text-gray-500">정보를 불러오지 못했어요</div>
+          ) : (
+            <ul className="flex flex-col">
+              {techRows.map((row, i) => {
+                // 항목 내용. 테크 뉴스 줄만 originalUrl 새 탭 링크(§2-2).
+                const inner = (
+                  <div className="flex w-full items-center justify-between gap-1 px-1 py-3">
+                    <div className="flex min-w-0 flex-col gap-2">
+                      {/* 3C-4 제목 — 14 Medium/-0.28px/black */}
+                      <span className="truncate text-[14px] font-medium tracking-[-0.28px] text-black">
+                        {row.title}
+                      </span>
+                      {/* 3C-5 서브 — 12 Regular/-0.24px/gray-600 */}
+                      <span className="truncate text-[12px] tracking-[-0.24px] text-gray-600">
+                        {row.sub}
+                      </span>
+                    </div>
+                    {/* 3C-6 chevron 24 rotate-180 */}
+                    <ChevronIcon className="h-6 w-6 flex-shrink-0 rotate-180 text-gray-400" />
+                  </div>
+                );
+                return (
+                  <li
+                    key={row.badge}
+                    className={i < techRows.length - 1 ? 'border-b-[0.7px] border-gray-200' : ''}
+                  >
+                    {row.url ? (
+                      <a href={row.url} target="_blank" rel="noopener noreferrer" className="block">
+                        {inner}
+                      </a>
+                    ) : (
+                      inner
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </div>
       </section>
 
-      {/* §4 섹션 타이틀 — 20/600/140%/-0.4px/#000 */}
-      <div className="mb-4 flex items-center gap-2">
-        <h2 className="font-pretendard text-[20px] font-semibold leading-[140%] tracking-[-0.4px] text-black">
-          ✨ 지금 주목할 만한 공고
-        </h2>
+      {/* §7 섹션 헤더 블록 — 타이틀 + 필터 묶음(flex-col gap-16) */}
+      <div className="mb-4 flex flex-col gap-4">
+        {/* 4-2 섹션 타이틀 — ai 아이콘 24 + 20/600/140%/-0.4px/#000, gap-12 */}
+        <div className="flex items-center gap-3">
+          <AiIcon className="h-6 w-6 flex-shrink-0 text-app-primary" />
+          <h2 className="font-pretendard text-[20px] font-semibold leading-[140%] tracking-[-0.4px] text-black">
+            지금 주목할 만한 공고
+          </h2>
+        </div>
+        <FilterBar guest />
       </div>
 
-      <FilterBar />
+      {isError ? (
+        <NoResults
+          title="공고를 불러오지 못했습니다"
+          description="잠시 후 다시 시도해 주세요."
+        />
+      ) : isLoading ? (
+        <div className="grid grid-cols-3 gap-[20px]">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div
+              key={i}
+              className="h-[220px] animate-pulse rounded-2xl border border-app-border bg-app-surface"
+            />
+          ))}
+        </div>
+      ) : jobs.length === 0 ? (
+        <NoResults />
+      ) : (
+        <section className="w-full max-w-[1164px]">
+          <JobList jobs={jobs} masked />
+          <div ref={loadMoreRef} className="h-8" />
+        </section>
+      )}
 
-      <section className="w-full max-w-[1164px]">
-        <JobList jobs={jobs} masked />
-      </section>
+      {/* 홈 전용 푸터 (Footer.spec §6 — 홈에서만) */}
+      <Footer />
     </>
   );
 }

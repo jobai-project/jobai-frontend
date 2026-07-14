@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 
 export interface TrendingScrapItem {
   id: string;
@@ -17,7 +16,6 @@ export default function TrendingScrap({
   items,
   intervalMs = 3000,
 }: TrendingScrapProps) {
-  const navigate = useNavigate();
   const [index, setIndex] = useState(0);
 
   useEffect(() => {
@@ -44,7 +42,8 @@ export default function TrendingScrap({
       <button
         key={current.id}
         type="button"
-        onClick={() => navigate(`/jobs/${current.id}`)}
+        // TODO(실데이터): 실시간 순위 API 연동 시 상세 이동 복구. 지금은 mockJobs 기반이라
+        // source 가 없고 mock id 가 실제 API id 와 안 맞아 엉뚱한 상세가 뜰 위험 → 비활성.
         className="animate-fade-up flex min-w-0 flex-1 items-center gap-2 text-left transition hover:text-app-text"
       >
         <span className="flex-shrink-0 font-bold text-app-text">

@@ -68,7 +68,7 @@ export default function Step3Resume({ state, dispatch }: StepProps) {
     state.resumeStatus === 'PENDING' || state.resumeStatus === 'DONE';
 
   return (
-    <div className="flex w-full flex-col gap-8 self-stretch">
+    <div className="flex w-full flex-col gap-16 self-stretch">
       {/* 헤더 — Title 1 (spec §1 #1/#2): 28/600/140%/-0.56px/gray-900 #171F29 */}
       <h2 className="font-pretendard text-[28px] font-semibold leading-[140%] tracking-[-0.56px] text-[#171F29]">
         맞춤 공고 추천을 위해
@@ -90,28 +90,28 @@ export default function Step3Resume({ state, dispatch }: StepProps) {
         <div className="flex h-[226px] flex-col items-center justify-between self-stretch rounded-xl border-2 border-dashed border-blue-500 bg-white/70 px-4 py-5">
           {/* 파일 항목 §5.1: p12/20, gap24, radius12, bg blue-100 #EBECFF */}
           <div className="flex items-center gap-6 self-stretch rounded-xl bg-blue-100 px-5 py-3">
-            {/* 완료 아이콘 afterpdf.svg ~24px (§5.1) */}
-            <img src="/afterpdf.svg" alt="" aria-hidden className="h-6 w-6 shrink-0" />
+            {/* 완료 아이콘 afterpdf.svg 54×54 (S3-A4, D4) */}
+            <img src="/afterpdf.svg" alt="" aria-hidden className="h-[54px] w-[54px] shrink-0" />
             <div className="flex min-w-0 flex-1 flex-col">
-              {/* 파일명 18px / 600 / gray-900 (§5.2 ⚠️ 굵기·색상은 가정) */}
-              <div className="truncate font-pretendard text-[18px] font-semibold text-[#171F29]">
+              {/* 파일명 18px / Regular / #303D4C (S3-A4) */}
+              <div className="truncate font-pretendard text-[18px] font-normal text-[#303D4C]">
                 {state.resumeFileName}
               </div>
-              {/* 업로드 날짜 14px / 400 / gray-600 (§5.2 ⚠️).
+              {/* 업로드 날짜 14px / Medium / #AFB8C2 (S3-A4).
                   TODO(백엔드 연동 필요): 날짜는 서버 응답값 사용. 지금은 클라이언트 현재일. */}
-              <div className="font-pretendard text-sm font-normal text-[#687685]">
+              <div className="font-pretendard text-sm font-medium text-[#AFB8C2]">
                 업로드 날짜: {formatYmd(new Date())}
               </div>
             </div>
           </div>
-          {/* 하단 액션 §5.3: 업로드 아이콘 + "다시 업로드하기" */}
+          {/* 하단 액션 §5.3: 업로드 아이콘 + "다시 업로드하기" — 20px Medium, 가운데정렬 (S3-A4) */}
           <button
             type="button"
             onClick={() => inputRef.current?.click()}
-            className="inline-flex items-center gap-2 self-start font-pretendard text-sm font-semibold text-app-primary hover:opacity-80"
+            className="inline-flex items-center justify-center gap-[12px] self-center font-pretendard hover:opacity-80"
           >
-            <img src="/upload-icon.png" alt="" aria-hidden className="h-4 w-4" />
-            다시 업로드하기
+            <img src="/onboardupload.svg" alt="" aria-hidden className="h-[20px] w-[20px]" />
+            <span className="text-[20px] font-medium text-[#171F29]">다시 업로드하기</span>
           </button>
         </div>
       ) : (
@@ -128,18 +128,20 @@ export default function Step3Resume({ state, dispatch }: StepProps) {
             dragActive ? 'bg-blue-100/60' : 'bg-white/70'
           }`}
         >
-          {/* 빈 드롭존 아이콘 — pdf.svg, 크기 확정 82.468×103.75px (spec §2.1) */}
+          {/* 빈 드롭존 아이콘 — pdf.svg 120×120 (S3-A1, D1) */}
           <img
             src="/pdf.svg"
             alt=""
             aria-hidden
-            className="object-contain"
-            style={{ width: '82.468px', height: '103.75px' }}
+            className="h-[120px] w-[120px] object-contain"
           />
-          {/* 안내 텍스트 — PDF 업로드 (#5) */}
-          <p className="font-pretendard text-sm font-medium text-[#303D4C]">
-            {isUploading ? '업로드 중...' : 'PDF 업로드'}
-          </p>
+          {/* 안내 텍스트 — 업로드 아이콘 20px + "PDF 업로드" 20px Medium #171F29 (S3-A2) */}
+          <div className="flex items-center gap-[12px]">
+            <img src="/onboardupload.svg" alt="" aria-hidden className="h-[20px] w-[20px]" />
+            <span className="font-pretendard text-[20px] font-medium tracking-[-0.4px] text-[#171F29]">
+              {isUploading ? '업로드 중...' : 'PDF 업로드'}
+            </span>
+          </div>
         </div>
       )}
 

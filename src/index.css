@@ -72,6 +72,14 @@ p {
   @apply m-0 p-0;
 }
 
+/* 홈 카드(게스트·회원 공용: 마감·IT 한눈에) purple 방사형 그라디언트 오버레이 (§Phase2 1-2).
+   ⚠️ 정확한 색·중심·반경은 Figma 재확인 필요(근사값). */
+.bg-card-radial {
+  background:
+    radial-gradient(120% 120% at 50% 0%, rgba(118, 85, 255, 0.07), rgba(255, 255, 255, 0) 60%),
+    #ffffff;
+}
+
 .flex-center {
   @apply flex items-center justify-center;
 }

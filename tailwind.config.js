@@ -87,6 +87,10 @@ export default {
       boxShadow: {
         card: '0 2px 8px rgba(0, 0, 0, 0.04)',
         'card-hover': '0 4px 12px rgba(0, 0, 0, 0.08)',
+        // 게스트 홈 카드 이펙트(§Phase2 1-2, additive). Figma 홈카드이펙트 radius 15.2 →
+        // CSS drop/box-shadow blur 환산 7.6px. 히어로·마감카드·IT카드 = homecard, GuestCard = guestcard.
+        homecard: '0 0 7.6px rgba(118, 85, 255, 0.12)',
+        guestcard: '0 0 7.6px rgba(118, 85, 255, 0.06)',
       },
       backgroundImage: {
         'card-gradient': 'linear-gradient(135deg, #F5F5FF 0%, #FFFFFF 100%)',

@@ -71,7 +71,7 @@ export default function App() {
           <Route element={<OnboardingGate />}>
             <Route element={<MainLayout />}>
               {/* / 는 HomeEntry로 이동됨. 나머지 보호 라우트는 그대로. */}
-              <Route path="/jobs/:id" element={<JobDetailPage />} />
+              <Route path="/jobs/:source/:id" element={<JobDetailPage />} />
 
               {/* // 추가해야함 라우트 */}
               <Route path="/application" element={<ApplicationStatusPage />} />
