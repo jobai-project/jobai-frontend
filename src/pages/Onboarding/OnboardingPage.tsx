@@ -40,7 +40,8 @@ export default function OnboardingPage() {
         <StepIndicator steps={STEPS} current={step} />
 
         {/* §8 폼 본문 카드 (제목 + 지역 + 채용형태 + 버튼) */}
-        <div className="relative flex flex-col items-start gap-8 self-stretch rounded-2xl bg-white/50 p-10 shadow-[0_0_24px_0_rgba(51,68,255,0.12)]">
+        {/* D7: 폼카드 높이 635px 고정 — 전 스텝 통일(단일 소스). */}
+        <div className="relative flex h-[635px] flex-col items-start gap-8 self-stretch rounded-2xl bg-white/50 p-10 shadow-[0_0_24px_0_rgba(51,68,255,0.12)]">
           {/* §4 우측 상단 건너뛰기 */}
           <button
             type="button"
@@ -61,7 +62,7 @@ export default function OnboardingPage() {
               type="button"
               onClick={prev}
               disabled={step === 0}
-              className="h-11 w-[103px] rounded-lg bg-[#A1A9FF]/80 font-pretendard text-[16px] font-semibold text-gray-50 hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+              className="h-11 w-[103px] rounded-base bg-[#A1A9FF]/80 font-pretendard text-[16px] font-semibold text-gray-50 hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
             >
               이전으로
             </button>
@@ -71,7 +72,7 @@ export default function OnboardingPage() {
                 type="button"
                 onClick={handleFinish}
                 disabled={submit.isPending}
-                className="flex h-11 items-center justify-center gap-2.5 rounded-lg bg-[#4741FF] px-4 py-2 font-pretendard text-sm font-semibold text-white hover:opacity-90 disabled:opacity-50"
+                className="flex h-11 items-center justify-center gap-2.5 rounded-base bg-[#4741FF] px-4 py-2 font-pretendard text-sm font-semibold text-[#F9FAFB] hover:opacity-90 disabled:opacity-50"
               >
                 {submit.isPending ? '시작하는 중...' : '시작하기 →'}
               </button>
@@ -80,7 +81,7 @@ export default function OnboardingPage() {
                 type="button"
                 onClick={next}
                 disabled={nextDisabled}
-                className="flex h-11 w-[120px] items-center justify-center gap-2.5 rounded-lg bg-[#4741FF] px-2.5 py-2 font-pretendard text-[16px] font-semibold text-white hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+                className="flex h-11 w-[120px] items-center justify-center gap-2.5 rounded-base bg-[#4741FF] px-2.5 py-2 font-pretendard text-[16px] font-semibold text-[#F9FAFB] hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
               >
                 {/* ❓ TODO: Figma 화살표 아이콘 에셋 확인 전까지 유니코드 유지(arrowR-icon.png 후보) */}
                 다음으로 →

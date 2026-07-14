@@ -73,6 +73,10 @@ export default function HomePage() {
   const active = isSearching ? search : recommended;
   const { isLoading, isError } = active;
 
+  // 검색 결과 전체 건수: 검색 API 응답 res.data.result.totalCount(jobApi.ts:104) —
+  // 모든 페이지에 동일 값이 실려오므로 첫 페이지에서 읽음. results.length(누적 로드 수) 아님.
+  const searchTotalCount = search.data?.pages[0]?.totalCount;
+
   const loadMoreRef = useInfiniteScroll(() => {
     if (active.hasNextPage && !active.isFetchingNextPage) active.fetchNextPage();
   }, !!active.hasNextPage);
@@ -139,6 +143,13 @@ export default function HomePage() {
         <div className="mb-4 flex items-center gap-2">
           <div className="text-base font-bold text-app-text">
             "{q}" 검색 결과
+            {/* 전체 건수(gray-500): totalCount 필드 사용. 결과 1건 이상일 때만 표시.
+                크기=헤딩과 동일(text-base)/Regular — ❓ TODO: Figma 크기·굵기 확정 시 조정. */}
+            {searchTotalCount != null && searchTotalCount > 0 && (
+              <span className="ml-1 font-normal text-gray-500">
+                {searchTotalCount}건
+              </span>
+            )}
           </div>
         </div>
       )}

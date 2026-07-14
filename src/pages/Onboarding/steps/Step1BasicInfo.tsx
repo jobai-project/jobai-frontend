@@ -62,9 +62,18 @@ export default function Step1BasicInfo({ state, dispatch }: StepProps) {
                 <span className="font-pretendard text-[14px] font-normal text-[#171F29]">
                   {opt.label}
                 </span>
-                {/* 선택 시에만 우측 체크 아이콘 20px */}
-                {checked && (
+                {/* 우측 체크 아이콘 20px: 선택=파란 체크 / 미선택=회색 체크(onboarduncheck.svg) */}
+                {checked ? (
+                  /* ❓ TODO: 선택 상태 파란 체크 아이콘 에셋 확정 시 교체 (현행 유지) */
                   <img src="/check.svg" alt="" aria-hidden className="h-5 w-5 shrink-0" />
+                ) : (
+                  /* ❓ TODO: 미선택 행 아이콘 상시 표시 여부 확인 */
+                  <img
+                    src="/onboarduncheck.svg"
+                    alt=""
+                    aria-hidden
+                    className="h-[20px] w-[20px] shrink-0"
+                  />
                 )}
               </label>
             );
