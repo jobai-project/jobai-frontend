@@ -109,24 +109,17 @@ export default function GuestHome() {
 
       {/* §3 히어로(440) + 사이드 카드 2개(302×306) — bg-gray-50 행, gap-20 items-center */}
       <section className="mb-9 flex items-center gap-5">
-        {/* §4(3-A) 히어로 배너 — 절충 C: 배경 그라디언트 + 캐릭터 일러스트만 이미지,
-            타이틀·필·버튼은 코드로 재구현. w-440 h-306 rounded-lg(16) shadow-homecard.
-            ⚠️ 배경 그라디언트 색은 근사값 — 텍스트 제거된 정확한 Figma 배경/색 재확인 필요(§9). */}
+        {/* §4(3-A) 히어로 배너 — 배경(보라 그라디언트)+일러스트 통합 PNG 1장(guest-hero.png).
+            타이틀·필·버튼만 코드 오버레이. w-440 h-306 rounded-lg(16) shadow-homecard.
+            비율(1882×1346≈1.40) ≈ 카드(440×306≈1.44) → cover+center 로 세로 미세 크롭만. */}
         <div
           className="relative h-[306px] w-[440px] flex-shrink-0 overflow-clip rounded-lg shadow-homecard"
           style={{
-            backgroundImage: 'linear-gradient(120deg, #5B4BFF 0%, #7C68FF 55%, #9B7BFF 100%)',
+            backgroundImage: 'url(/guest-hero.png)',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
           }}
         >
-          {/* 3A-7 일러스트 — left-209 top-[-1], 232×234 (내부 208×227) */}
-          <img
-            src="/비로그인화면컴포넌트.png"
-            alt=""
-            aria-hidden
-            draggable={false}
-            className="pointer-events-none absolute left-[209px] top-[-1px] h-[234px] w-[232px] select-none object-contain"
-          />
-
           {/* 3A-2 콘텐츠 origin left-28 top-42, 내부 w-350, 타이틀↔버튼 gap-52 */}
           <div className="absolute left-[28px] top-[42px] z-10 flex w-[350px] flex-col gap-[52px]">
             <div className="flex flex-col gap-4">
