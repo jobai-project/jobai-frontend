@@ -37,17 +37,14 @@ export default function Step1BasicInfo({ state, dispatch }: StepProps) {
         <h3 className="font-pretendard text-[18px] font-medium leading-[150%] tracking-[-0.36px] text-[#303D4C]">
           희망하는 채용 형태를 선택해주세요.
         </h3>
-        <div className="flex flex-col items-start gap-2 self-stretch">
+        <div className="flex flex-col items-start gap-[12px] self-stretch">
           {EMPLOYMENT_OPTIONS.map((opt) => {
             const checked = state.employmentType === opt.value;
             return (
+              // A-1: 카드형(bg-white + 그림자) + 우측 체크. 단일선택(배타) 로직 유지.
               <label
                 key={opt.value}
-                className={`flex cursor-pointer items-center gap-3 self-stretch rounded-lg border p-3 ${
-                  checked
-                    ? 'border-[#4741FF] bg-[#EBECFF]'
-                    : 'border-[#AFB8C2]'
-                }`}
+                className="flex h-[48px] cursor-pointer items-center justify-between self-stretch rounded-[12px] bg-white px-3 shadow-[0_0_7.6px_rgba(158,158,158,0.2)]"
               >
                 <input
                   type="radio"
@@ -62,23 +59,19 @@ export default function Step1BasicInfo({ state, dispatch }: StepProps) {
                   }
                   className="sr-only"
                 />
-                {/* Ratio.svg(선택 에셋)가 빈 파일이라 CSS로 파란 라디오 렌더 */}
-                <span
-                  className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 ${
-                    checked ? 'border-[#4741FF]' : 'border-[#AFB8C2]'
-                  }`}
-                >
-                  {checked && (
-                    <span className="h-2.5 w-2.5 rounded-full bg-[#4741FF]" />
-                  )}
-                </span>
-                <span className="font-pretendard text-[15px] text-[#303D4C]">
+                <span className="font-pretendard text-[14px] font-normal text-[#171F29]">
                   {opt.label}
                 </span>
+                {/* 선택 시에만 우측 체크 아이콘 20px */}
+                {checked && (
+                  <img src="/check.svg" alt="" aria-hidden className="h-5 w-5 shrink-0" />
+                )}
               </label>
             );
           })}
         </div>
+        {/* ❓ TODO: 경력 구분(EXPERIENCE_OPTIONS, types.ts:7)은 정의만 있고 Step1 미렌더 —
+            채용 형태와 별도 항목 필요 여부 확인. 임의 추가/수정 안 함. */}
       </div>
     </div>
   );

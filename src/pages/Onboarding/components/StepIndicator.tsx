@@ -18,7 +18,7 @@ export default function StepIndicator({ steps, current }: StepIndicatorProps) {
             <div className="flex items-center gap-2">
               {/* 번호 뱃지: 활성 = 파란 원, 비활성 = 회색 원 */}
               <span
-                className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-semibold text-white ${
+                className={`flex h-6 w-6 items-center justify-center rounded-full text-[16px] font-semibold text-[#F5F5FF] ${
                   isActive ? 'bg-[#4741FF]' : 'bg-[#AFB8C2]'
                 }`}
               >
