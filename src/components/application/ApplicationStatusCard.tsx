@@ -19,7 +19,7 @@ function ApplicationStatusCard({
   items,
 }: ApplicationStatusCardProps) {
   return (
-    <div className="w-[256px] h-[256px] flex flex-col rounded-[14px] border border-[#EBECFF]/90 bg-white p-6 shadow-[0_4px_12px_rgba(124,119,255,0.08)]">
+    <div className="w-[256px] h-[256px] flex flex-col rounded-[14px] border border-[#EBECFF]/90 bg-white pt-4 px-6 shadow-[0_4px_12px_rgba(124,119,255,0.08)]">
       <div className="flex items-center gap-2 mb-1">
         <img src={iconSrc} alt={title} className="w-6 h-6" />
         <h3 style={{ fontSize: '15px' }} className="font-semibold text-app-text">{title}</h3>
@@ -29,7 +29,7 @@ function ApplicationStatusCard({
         {items.map((item, index) => (
           <div key={index}>
             <div className="py-3">
-              <div className="flex items-start justify-between mb-1">
+              <div className="flex items-start justify-between mb-2">
                 <div className="font-medium text-sm text-app-text">{item.label}</div>
                 <div className="text-sm font-semibold text-app-primary">{item.date}</div>
               </div>

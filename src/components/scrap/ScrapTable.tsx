@@ -18,7 +18,14 @@ interface ScrapTableProps {
   onRemove: (id: string) => void;
   allSelected: boolean;
   onSortToggle: () => void;
+  activeTab: 'all' | 'ongoing' | 'deadline';
 }
+
+const EMPTY_MESSAGES: Record<string, { title: string; desc?: string }> = {
+  all: { title: '스크랩된 공고가 없습니다.', desc: '관심있는 공고를 스크랩하세요.' },
+  ongoing: { title: '진행 중인 공고가 없습니다.'},
+  deadline: { title: '마감된 공고가 없습니다.'},
+};
 
 function ScrapTable({
   data,
@@ -28,13 +35,14 @@ function ScrapTable({
   onRemove,
   allSelected,
   onSortToggle,
+  activeTab,
 }: ScrapTableProps) {
   const handleDeleteSelected = () => {
     selectedItems.forEach((id) => onRemove(id));
   };
 
   return (
-    <div className="border border-app-border rounded-lg overflow-hidden bg-white">
+    <div className="w-[1084px] h-[628px] border border-[#EBECFF]/90 rounded-2xl overflow-hidden bg-white shadow-[0_4px_12px_rgba(124,119,255,0.08)]">
       <div className="flex items-center justify-end px-6 h-[72px] bg-white">
         <div 
           className="flex items-center gap-1.5 cursor-pointer hover:opacity-80 transition-opacity"
@@ -50,7 +58,7 @@ function ScrapTable({
       </div>
 
       <div className="grid grid-cols-[40px_2.5fr_1.2fr_1.2fr_1.2fr_40px] gap-3 px-6">
-        <div className="col-span-6 border-b border-app-border"></div>
+        <div className="col-span-6 bg-[#EBECFF] h-px"></div>
       </div>
       
       <div className="grid grid-cols-[40px_2.5fr_1.2fr_1.2fr_1.2fr_70px] items-center gap-3 px-6 h-[77px] bg-app-bg font-medium text-[16px] text-app-text">
@@ -77,7 +85,7 @@ function ScrapTable({
       </div>
 
       <div className="grid grid-cols-[40px_2.5fr_1.2fr_1.2fr_1.2fr_40px] gap-3 px-6">
-        <div className="col-span-6 border-b border-app-border"></div>
+        <div className="col-span-6 bg-[#EBECFF] h-px"></div>
       </div>
 
       {data.length > 0 ? (
@@ -95,10 +103,10 @@ function ScrapTable({
 
               <div className="min-w-0 ms-5">
                 {/* onClick={() => navigate('/scrap')} */}
-                <div className="font-semibold text-app-text text-[18px] truncate mb-1"> 
+                <div className="font-semibold text-app-text text-[18px] truncate mb-[6px]"> 
                   {item.title}
                 </div>
-                <div className="text-[14px] text-gray-600">{item.category}</div>
+                <div className="text-[16px] text-gray-600">{item.category}</div>
               </div>
 
               <div className="text-[16px] text-app-text text-center">{item.type}</div>
@@ -127,14 +135,14 @@ function ScrapTable({
             </div>
             
             <div className="grid grid-cols-[40px_2.5fr_1.2fr_1.2fr_1.2fr_40px] gap-3 px-6">
-              <div className="col-span-6 border-b border-app-border"></div>
+              <div className="col-span-6 border-b border-gray-200"></div>
             </div>
           </div>
         ))
       ) : (
         <div className="text-center py-12 text-app-text-muted">
-          <div className="text-lg font-semibold mb-2">스크랩한 공고가 없습니다</div>
-          <div className="text-sm">관심 있는 공고를 스크랩해보세요</div>
+          <div className="text-lg font-semibold mb-2">{EMPTY_MESSAGES[activeTab].title}</div>
+          <div className="text-sm">{EMPTY_MESSAGES[activeTab].desc}</div>
         </div>
       )}
     </div>

@@ -25,7 +25,7 @@ function ApplicationStatusTabNavigation({
         <button
           key={tab.id}
           onClick={() => onTabChange(tab.id as TabType)}
-          className={`relative px-6 py-4 text-sm transition-colors ${
+          className={`relative px-6 pt-4 pb-2 text-sm transition-colors ${
             activeTab === tab.id
               ? 'font-semibold text-app-primary'
               : 'font-medium text-[#AFB8C2] hover:text-app-text'

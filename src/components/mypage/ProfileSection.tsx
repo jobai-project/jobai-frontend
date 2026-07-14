@@ -3,6 +3,7 @@ import EditableField from '@/components/mypage/EditableField';
 import JobConditionsEditor from '@/components/mypage/JobConditionsEditor';
 import { useResumes, useActivateResume, useDeleteResume } from '@/hooks/useResumes';
 import { useUploadResume } from '@/hooks/useUploadResume';
+import ProfileBox from '@/components/mypage/ProfileBox';
 
 const MAX_SIZE = 5 * 1024 * 1024; // 5MB
 
@@ -73,42 +74,16 @@ export default function ProfileSection({
   return (
     <div className="space-y-6">
       {/* 프로필 섹션 */}
-      <div className="border border-[#EBECFF]/90 rounded-2xl p-6 bg-white shadow-[0_4px_12px_rgba(124,119,255,0.08)]">
-        <div className="flex items-center gap-1.5 mb-6">
-          <h2 className="font-semibold text-[16px] text-app-text">프로필</h2>
-          <button
-            onClick={() => {
-              // 이름 EditableField와 별개로 아이콘만 옮긴 상태입니다.
-              // 필요 시 이름 수정 모드를 여기서 트리거하도록 연결할 수 있습니다.
-            }}
-            className="p-0 hover:opacity-80"
-          >
-            <img src="/edit-icon.png" alt="수정" className="w-5 h-5" />
-          </button>
-        </div>
-
-        <div className="flex items-start gap-4">
-          <img src="/profile-icon.png" alt="프로필" className="w-16 h-16 rounded-full" />
-          <div className="flex-1 space-y-4">
-            <div className="flex items-center gap-4">
-              <div className="text-xs text-app-text-muted min-w-12">이름</div>
-              <div className="flex items-center gap-0">
-                <div className="text-sm font-medium text-app-text">{user.name}</div>
-                <EditableField value={user.name} onSave={onNameChange} iconSrc="/edit-icon.png" />
-              </div>
-            </div>
-            <div className="flex items-center gap-4">
-              <div className="text-xs text-app-text-muted min-w-12">이메일</div>
-              <div className="text-sm text-app-text">{user.email}</div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <ProfileBox
+        name={user.name}
+        email={user.email}
+        onNameChange={onNameChange}
+      />
 
       {/* 공고 조건 설정 */}
-      <div className="border border-[#EBECFF]/90 rounded-2xl p-6 bg-white shadow-[0_4px_12px_rgba(124,119,255,0.08)]">
+      <div className="w-[700px] flex flex-col justify-center border border-[#EBECFF]/90 rounded-2xl p-6 bg-white shadow-[0_4px_12px_rgba(124,119,255,0.08)]">
         <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-2">
             <h2 className="font-semibold text-[16px] text-app-text">공고 조건 설정</h2>
             <button
               onClick={() => setEditingJobConditions(!editingJobConditions)}
@@ -132,10 +107,10 @@ export default function ProfileSection({
           <div className="space-y-4">
             {/* 직무 - 가로 */}
             <div className="flex items-center gap-3">
-              <div className="text-xs text-app-text-muted min-w-12">지역</div>
-              <div className="flex gap-2 flex-wrap">
+              <div className="text-sm text-gray-400 min-w-12 mr-6">지역</div>
+              <div className="flex gap-[6px] flex-wrap">
                 {user.jobConditions.positions.map((pos, idx) => (
-                  <span key={idx} className="inline-block px-3 py-1 bg-app-primary/10 text-app-primary text-xs rounded-full">
+                  <span key={idx} className="inline-block px-2.5 py-1.5 bg-[#F5F5FF] text-app-primary font-semibold text-xs rounded-[7px]">
                     {pos}
                   </span>
                 ))}
@@ -144,10 +119,10 @@ export default function ProfileSection({
 
             {/* 지역 - 가로 */}
             <div className="flex items-center gap-3">
-              <div className="text-xs text-app-text-muted min-w-12">기업 형태</div>
+              <div className="text-sm text-gray-400 min-w-12 mr-6">기업 형태</div>
               <div className="flex gap-2 flex-wrap">
                 {user.jobConditions.locations.map((loc, idx) => (
-                  <span key={idx} className="inline-block px-3 py-1 bg-app-primary/10 text-app-primary text-xs rounded-full">
+                  <span key={idx} className="inline-block px-2.5 py-1.5 bg-[#F5F5FF] text-app-primary font-semibold text-xs rounded-[7px]">
                     {loc}
                   </span>
                 ))}
@@ -156,20 +131,21 @@ export default function ProfileSection({
 
             {/* 경력 - 드롭다운 */}
             <div className="flex items-center gap-3">
-              <div className="text-xs text-app-text-muted min-w-12">고용 형태</div>
-              <select className="px-3 py-1.5 border border-app-border rounded text-xs">
-                <option>{user.jobConditions.experiences[0]}</option>
-                <option>신입</option>
-                <option>1년 이상</option>
-                <option>3년 이상</option>
-              </select>
+              <div className="text-sm text-gray-400 min-w-12 mr-6">고용 형태</div>
+              <div className="flex gap-2 flex-wrap">
+                {user.jobConditions.experiences.map((exp, idx) => (
+                  <span key={idx} className="inline-block px-2.5 py-1.5 bg-[#F5F5FF] text-app-primary font-semibold text-xs rounded-[7px]">
+                    {exp}
+                  </span>
+                ))}
+              </div>
             </div>
           </div>
         )}
       </div>
 
       {/* 이력서 관리 */}
-      <div className="border border-[#EBECFF]/90 rounded-2xl p-6 bg-white shadow-[0_4px_12px_rgba(124,119,255,0.08)]">
+      <div className="w-[700px] min-h-[145px] flex flex-col border border-[#EBECFF]/90 rounded-2xl p-6 bg-white shadow-[0_4px_12px_rgba(124,119,255,0.08)]">
         <div className="flex items-center gap-1.5 mb-6">
           <h2 className="font-semibold text-[16px] text-app-text">이력서 관리</h2>
         </div>
@@ -245,9 +221,9 @@ export default function ProfileSection({
         <button
           onClick={() => fileInputRef.current?.click()}
           disabled={upload.isPending}
-          className="flex items-center justify-center gap-2 w-full mt-4 py-2 border border-dashed border-app-border rounded text-sm text-app-text-muted hover:bg-app-bg transition-colors disabled:opacity-50"
+          className="flex items-center justify-center gap-2 w-full mt-4 py-2 border-2 border-dashed border-app-border rounded-[12px] font-semibold text-sm text-gray-300 hover:bg-app-bg transition-colors disabled:opacity-50"
         >
-          <img src="/upload-icon.png" alt="업로드" className="w-3 h-3" />
+          <img src="/upload-icon.png" alt="업로드" className="w-4 h-4" />
           <span>{upload.isPending ? '업로드 중...' : 'PDF 업로드'}</span>
         </button>
 

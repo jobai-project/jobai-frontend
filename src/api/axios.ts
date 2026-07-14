@@ -38,10 +38,6 @@ export const apiClient = axios.create({
 apiClient.interceptors.response.use(
   (res) => res,
   (error) => {
-    if (error.response?.status === 401) {
-      useAuthStore.getState().clearUser();
-      useOnboardingStore.getState().reset();
-    }
     return Promise.reject(error);
   },
 );

@@ -15,6 +15,9 @@ interface ApplicationStatusTableProps {
   editingId: string | null;
   onEditingChange: (id: string | null) => void;
   onUpdateItem: (id: string, field: keyof ApplicationItem, value: string) => void;
+  // 실제 API 호출(PATCH)이 필요한 시점(blur, 선택 확정)에만 호출된다.
+  // onUpdateItem은 매 keystroke마다 로컬 상태만 갱신하고, onCommitField가 서버 반영을 담당한다.
+  onCommitField: (id: string, field: keyof ApplicationItem) => void;
   onDeleteItem: (id: string) => void;
   stageColors: Record<string, string>;
   newlyAddedId: string | null;
@@ -36,20 +39,23 @@ const FIELD_ORDER: (keyof ApplicationItem)[] = [
   'memo',
 ];
 
-const EMPTY_MESSAGES: Record<string, string> = {
-  all: '지원 공고를 추가하면 이 자리가 채워져요',
-  expected: '공고를 담아 두면 지원 타이밍을 놓치지 않아요',
-  ongoing: '단계가 통과되면 여기서 계속 이어가요',
-  rejected: '아직 여기 채워질 일이 없어요',
-  passed: '좋은 소식, 제일 먼저 여기 채워 드릴게요',
+const EMPTY_MESSAGES: Record<string, { title: string; desc?: string }> = {
+  all: { title: '아직 등록된 지원 현황이 없어요', desc: '공고 추가 버튼으로 첫 지원 현황을 등록해보세요' },
+  expected: { title: '지원 예정인 공고가 없어요' },
+  ongoing: { title: '진행 중인 지원이 없어요', desc: '지원 중인 공고가 여기에 표시돼요' },
+  rejected: { title: '탈락한 공고가 없어요' },
+  passed: { title: '최종합격한 공고가 없어요' },
 };
 
 // ⚠️ 컴포넌트 바깥(모듈 스코프)에 정의 — 리렌더링마다 재생성되지 않도록 함
+// (내부에 있으면 매 렌더링마다 함수가 새로 만들어져 <input> DOM이 리마운트되고,
+//  그 과정에서 한글 IME 조합이 끊겨 낱자로 분리되어 보이는 문제가 발생함)
 function EditableCell({
   item,
   field,
   value,
   onChange,
+  onCommit,
   editing,
   setEditing,
   onEditingChange,
@@ -59,6 +65,7 @@ function EditableCell({
   field: keyof ApplicationItem;
   value: string;
   onChange: (value: string) => void;
+  onCommit: () => void;
   editing: EditingState;
   setEditing: (state: EditingState) => void;
   onEditingChange: (id: string | null) => void;
@@ -66,6 +73,7 @@ function EditableCell({
 }) {
   const isEditing = editing.itemId === item.id && editing.field === field;
 
+  // 단계(stage) - 버튼 항상 표시, 클릭 시 모달
   if (field === 'stage') {
     return (
       <div className="relative">
@@ -87,6 +95,7 @@ function EditableCell({
 
         {isEditing && (
           <>
+            {/* 반투명 배경 - 모달 밖 클릭 감지 */}
             <div
               className="fixed inset-0 z-40 bg-black/0"
               onClick={() => setEditing({ itemId: null, field: null })}
@@ -106,6 +115,7 @@ function EditableCell({
                     <button
                       onClick={() => {
                         onChange('지원예정');
+                        onCommit();
                         setEditing({ itemId: null, field: null });
                       }}
                       className={`px-2.5 py-1 rounded-[7px] text-[11px] font-semibold ${
@@ -120,6 +130,7 @@ function EditableCell({
                     <button
                       onClick={() => {
                         onChange('지원완료');
+                        onCommit();
                         setEditing({ itemId: null, field: null });
                       }}
                       className={`px-2.5 py-1 rounded-[7px] text-[11px] font-semibold ${
@@ -142,6 +153,7 @@ function EditableCell({
                         key={stage}
                         onClick={() => {
                           onChange(stage);
+                          onCommit();
                           setEditing({ itemId: null, field: null });
                         }}
                         className={`px-2.5 py-1 rounded-[7px] text-[11px] font-semibold ${
@@ -165,6 +177,7 @@ function EditableCell({
                         key={stage}
                         onClick={() => {
                           onChange(stage);
+                          onCommit();
                           setEditing({ itemId: null, field: null });
                         }}
                         className={`px-2.5 py-1 rounded-[7px] text-[11px] font-semibold ${
@@ -193,10 +206,15 @@ function EditableCell({
           type="text"
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          onBlur={() => setEditing({ itemId: null, field: null })}
+          onBlur={() => {
+            onCommit();
+            setEditing({ itemId: null, field: null });
+          }}
           onKeyDown={(e) => {
+            // 한글 조합 중에는 Enter로 다음 칸 이동하지 않음
             if (e.nativeEvent.isComposing) return;
             if (e.key === 'Enter') {
+              onCommit();
               const currentIndex = FIELD_ORDER.indexOf(field);
               if (currentIndex < FIELD_ORDER.length - 1) {
                 setEditing({ itemId: item.id, field: FIELD_ORDER[currentIndex + 1] });
@@ -280,6 +298,7 @@ function ApplicationStatusTable({
   data,
   onEditingChange,
   onUpdateItem,
+  onCommitField,
   onDeleteItem,
   stageColors,
   newlyAddedId,
@@ -330,10 +349,10 @@ function ApplicationStatusTable({
   return (
     <div
       ref={tableRef}
-      className="w-[808px] h-[715px] border border-[#EBECFF]/90 rounded-2xl overflow-hidden flex flex-col bg-white shadow-[0_4px_12px_rgba(124,119,255,0.08)]"
+      className="w-[808px] border border-[#EBECFF]/90 rounded-2xl overflow-hidden flex flex-col bg-white shadow-[0_4px_12px_rgba(124,119,255,0.08)]"
     >
       {/* 테이블 헤더 */}
-      <div className="grid grid-cols-[108px_144px_98px_140px_135px_150px] gap-0 px-6 ml-2 py-4 bg-app-bg font-medium text-sm text-[#8995A2] items-start">
+      <div className="grid grid-cols-[108px_144px_98px_140px_135px_150px] gap-0 px-6 ml-4 py-4 bg-app-bg font-medium text-sm text-[#8995A2] items-start">
         <div>기업</div>
         <div>직무</div>
         <div>단계</div>
@@ -362,6 +381,7 @@ function ApplicationStatusTable({
                   field="company"
                   value={item.company}
                   onChange={(value) => onUpdateItem(item.id, 'company', value)}
+                  onCommit={() => onCommitField(item.id, 'company')}
                   editing={editing}
                   setEditing={setEditing}
                   onEditingChange={onEditingChange}
@@ -374,6 +394,7 @@ function ApplicationStatusTable({
                   field="position"
                   value={item.position}
                   onChange={(value) => onUpdateItem(item.id, 'position', value)}
+                  onCommit={() => onCommitField(item.id, 'position')}
                   editing={editing}
                   setEditing={setEditing}
                   onEditingChange={onEditingChange}
@@ -386,6 +407,7 @@ function ApplicationStatusTable({
                   field="stage"
                   value={item.stage}
                   onChange={(value) => onUpdateItem(item.id, 'stage', value)}
+                  onCommit={() => onCommitField(item.id, 'stage')}
                   editing={editing}
                   setEditing={setEditing}
                   onEditingChange={onEditingChange}
@@ -398,6 +420,7 @@ function ApplicationStatusTable({
                   field="appliedDate"
                   value={item.appliedDate}
                   onChange={(value) => onUpdateItem(item.id, 'appliedDate', value)}
+                  onCommit={() => onCommitField(item.id, 'appliedDate')}
                   editing={editing}
                   setEditing={setEditing}
                   onEditingChange={onEditingChange}
@@ -410,6 +433,7 @@ function ApplicationStatusTable({
                   field="nextSchedule"
                   value={item.nextSchedule}
                   onChange={(value) => onUpdateItem(item.id, 'nextSchedule', value)}
+                  onCommit={() => onCommitField(item.id, 'nextSchedule')}
                   editing={editing}
                   setEditing={setEditing}
                   onEditingChange={onEditingChange}
@@ -424,6 +448,7 @@ function ApplicationStatusTable({
                       field="memo"
                       value={item.memo}
                       onChange={(value) => onUpdateItem(item.id, 'memo', value)}
+                      onCommit={() => onCommitField(item.id, 'memo')}
                       editing={editing}
                       setEditing={setEditing}
                       onEditingChange={onEditingChange}
@@ -431,7 +456,7 @@ function ApplicationStatusTable({
                     />
                   </div>
 
-                  {/* 삭제 버튼 - 클릭 시 확인 모달 오픈 */}
+                  {/* 삭제 버튼 */}
                   <button
                     onClick={() => setDeleteTargetId(item.id)}
                     className="ml-2 p-1 text-app-text-muted hover:text-app-text opacity-0 group-hover:opacity-100 transition-opacity"
@@ -448,6 +473,7 @@ function ApplicationStatusTable({
                 </div>
               </div>
 
+              {/* 구분선 */}
               <div className="mx-8">
                 <div className="bg-gray-200 h-[0.6px]"></div>
               </div>
@@ -456,10 +482,15 @@ function ApplicationStatusTable({
         </div>
       ) : (
         <div className="flex-1 flex flex-col items-center justify-center bg-gradient-to-br from-white via-white to-[#EDEBFF]">
-          <img src="/empty-page.png" alt="빈 상태" className="w-[259px] h-[235px] mb-6" />
-          <p className="text-[20px] font-semibold text-app-text">
-            {EMPTY_MESSAGES[activeTab] || '지원 현황이 없습니다'}
+          <img src="/empty-page.png" alt="빈 상태" className="w-[259px] h-[235px] mb-4" />
+          <p className="text-base font-semibold text-app-text">
+            {EMPTY_MESSAGES[activeTab]?.title ?? '지원 현황이 없습니다'}
           </p>
+          {EMPTY_MESSAGES[activeTab]?.desc && (
+            <p className="text-sm text-app-text-muted mt-1">
+              {EMPTY_MESSAGES[activeTab].desc}
+            </p>
+          )}
         </div>
       )}
 

@@ -1,8 +1,21 @@
-import { useState, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import ApplicationStatusTabNavigation from '@/components/application/ApplicationStatusTabNavigation';
 import ApplicationStatusTable from '@/components/application/ApplicationStatusTable';
 import ApplicationStatusCard from '@/components/application/ApplicationStatusCard';
 import ScoreGauge2 from '@/components/common/ScoreGauge2';
+import {
+  useApplications,
+  useCreateApplication,
+  useUpdateApplication,
+  useDeleteApplication,
+} from '@/hooks/useApplications';
+import {
+  STATUS_TO_STAGE,
+  STAGE_TO_STATUS,
+  formatDateForDisplay,
+  formatDateForApi,
+} from '@/utils/applicationStatusMapping';
+import type { ApplicationApiItem } from '@/types/application';
 
 type TabType = 'all' | 'expected' | 'ongoing' | 'rejected' | 'passed';
 
@@ -16,36 +29,6 @@ interface ApplicationItem {
   memo: string;
 }
 
-const MOCK_DATA: ApplicationItem[] = [
-  {
-    id: '1',
-    company: '네이버',
-    position: '백엔드 개발자',
-    stage: '지원예정',
-    appliedDate: '2026.05.16',
-    nextSchedule: '2026.05.20',
-    memo: '코테 준비',
-  },
-  {
-    id: '2',
-    company: '네이버',
-    position: '백엔드 개발자',
-    stage: '지원완료',
-    appliedDate: '2026.05.16',
-    nextSchedule: '2026.05.20',
-    memo: '코테 준비',
-  },
-  {
-    id: '3',
-    company: '네이버',
-    position: '백엔드 개발자',
-    stage: '면접합격',
-    appliedDate: '2026.05.16',
-    nextSchedule: '2026.05.20',
-    memo: '코테 준비',
-  },
-];
-
 const STAGE_COLORS: Record<string, string> = {
   '지원예정': 'bg-[#FFF5E5] text-[#E49735]',
   '지원완료': 'bg-[#F3F3FC] text-[#5C69FF]',
@@ -56,11 +39,37 @@ const STAGE_COLORS: Record<string, string> = {
   '면접탈락': 'bg-[#FDE7E9] text-[#F36975]',
 };
 
+// API 응답 항목 → 화면에서 쓰는 ApplicationItem 형태로 변환
+const mapApiItemToApplicationItem = (apiItem: ApplicationApiItem): ApplicationItem => ({
+  id: String(apiItem.applicationId),
+  company: apiItem.companyName,
+  position: apiItem.jobTitle,
+  stage: STATUS_TO_STAGE[apiItem.status] ?? apiItem.statusLabel,
+  appliedDate: formatDateForDisplay(apiItem.appliedAt),
+  nextSchedule: formatDateForDisplay(apiItem.interviewAt),
+  memo: apiItem.memo ?? '',
+});
+
 export default function ApplicationStatusPage() {
   const [activeTab, setActiveTab] = useState<TabType>('all');
-  const [data, setData] = useState<ApplicationItem[]>(MOCK_DATA);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [newlyAddedId, setNewlyAddedId] = useState<string | null>(null);
+
+  // 서버 상태(TanStack Query)와 화면에서 바로 편집하는 로컬 상태를 분리한다.
+  // - data: 편집 중 타이핑을 즉시 반영하기 위한 로컬 사본(각 keystroke마다 갱신)
+  // - 실제 서버 반영(PATCH)은 blur/선택 확정 시점에만 일어난다(onCommitField).
+  const { data: applicationsData, isLoading } = useApplications();
+  const [data, setData] = useState<ApplicationItem[]>([]);
+
+  useEffect(() => {
+    if (applicationsData) {
+      setData(applicationsData.applications.map(mapApiItemToApplicationItem));
+    }
+  }, [applicationsData]);
+
+  const createMutation = useCreateApplication();
+  const updateMutation = useUpdateApplication();
+  const deleteMutation = useDeleteApplication();
 
   const filteredData = useMemo(() => {
     let filtered = data;
@@ -68,12 +77,12 @@ export default function ApplicationStatusPage() {
     if (activeTab === 'expected') {
       filtered = filtered.filter((item) => item.stage === '지원예정');
     } else if (activeTab === 'ongoing') {
-      filtered = filtered.filter((item) => 
-        ['지원예정', '지원완료', '서류합격', '면접합격'].includes(item.stage)
+      filtered = filtered.filter((item) =>
+        ['지원예정', '지원완료', '서류합격', '면접합격'].includes(item.stage),
       );
     } else if (activeTab === 'rejected') {
-      filtered = filtered.filter((item) => 
-        ['서류탈락', '면접탈락'].includes(item.stage)
+      filtered = filtered.filter((item) =>
+        ['서류탈락', '면접탈락'].includes(item.stage),
       );
     } else if (activeTab === 'passed') {
       filtered = filtered.filter((item) => item.stage === '최종합격');
@@ -82,39 +91,85 @@ export default function ApplicationStatusPage() {
     return filtered;
   }, [data, activeTab]);
 
-  const handleAddRow = () => {
-    const newItem: ApplicationItem = {
-      id: Date.now().toString(),
-      company: '',
-      position: '',
-      stage: '',
-      appliedDate: '',
-      nextSchedule: '',
-      memo: '',
-    };
+  // "공고 추가" 클릭 시 바로 서버에 빈 값으로 생성 요청을 보내
+  // applicationId를 받아온 뒤, 그 ID로 로컬 행을 추가한다.
+  const handleAddRow = async () => {
+    try {
+      const { applicationId } = await createMutation.mutateAsync({
+        companyName: '',
+        jobTitle: '',
+        status: 'PLANNED',
+      });
 
-    setData([...data, newItem]);
-    setNewlyAddedId(newItem.id);
+      const newItem: ApplicationItem = {
+        id: String(applicationId),
+        company: '',
+        position: '',
+        stage: '지원예정',
+        appliedDate: '',
+        nextSchedule: '',
+        memo: '',
+      };
+
+      setData((prev) => [...prev, newItem]);
+      setNewlyAddedId(newItem.id);
+    } catch (error) {
+      console.error('공고 추가 실패:', error);
+    }
   };
 
+  // 로컬 상태만 즉시 갱신 (타이핑마다 서버로 보내지 않음)
   const handleUpdateItem = (id: string, field: keyof ApplicationItem, value: string) => {
-    setData(
-      data.map((item) =>
-        item.id === id ? { ...item, [field]: value } : item
-      )
+    setData((prev) =>
+      prev.map((item) => (item.id === id ? { ...item, [field]: value } : item)),
     );
   };
 
-  const handleDeleteItem = (id: string) => {
-    setData(data.filter((item) => item.id !== id));
+  // blur/선택 확정 시점에 실제 PATCH 호출
+  const handleCommitField = (id: string, field: keyof ApplicationItem) => {
+    const item = data.find((d) => d.id === id);
+    if (!item) return;
+
+    const applicationId = Number(id);
+
+    if (field === 'company') {
+      updateMutation.mutate({ applicationId, payload: { companyName: item.company } });
+    } else if (field === 'position') {
+      updateMutation.mutate({ applicationId, payload: { jobTitle: item.position } });
+    } else if (field === 'stage') {
+      const status = STAGE_TO_STATUS[item.stage];
+      if (status) {
+        updateMutation.mutate({ applicationId, payload: { status } });
+      }
+    } else if (field === 'appliedDate') {
+      const appliedAt = formatDateForApi(item.appliedDate);
+      // 형식이 올바를 때만 반영 (입력 중인 불완전한 날짜는 서버로 보내지 않음)
+      if (appliedAt !== null || item.appliedDate === '') {
+        updateMutation.mutate({ applicationId, payload: { appliedAt } });
+      }
+    } else if (field === 'nextSchedule') {
+      const interviewAt = formatDateForApi(item.nextSchedule);
+      if (interviewAt !== null || item.nextSchedule === '') {
+        updateMutation.mutate({ applicationId, payload: { interviewAt } });
+      }
+    } else if (field === 'memo') {
+      updateMutation.mutate({ applicationId, payload: { memo: item.memo || null } });
+    }
   };
 
-  //TODO UI랑 연결 해야함 
-  // const progressPercentage = Math.round(
-  //   (data.filter((item) => 
-  //     ['지원완료', '서류합격', '면접합격', '최종합격'].includes(item.stage)
-  //   ).length / data.length) * 100
-  // ) || 0;
+  const handleDeleteItem = (id: string) => {
+    setData((prev) => prev.filter((item) => item.id !== id));
+    deleteMutation.mutate(Number(id));
+  };
+
+  const progressPercentage =
+    Math.round(
+      (data.filter((item) =>
+        ['지원완료', '서류합격', '면접합격', '최종합격'].includes(item.stage),
+      ).length /
+        (data.length || 1)) *
+        100,
+    ) || 0;
 
   return (
     <div className="pt-12 grid grid-cols-[808px_240px] gap-4">
@@ -126,28 +181,35 @@ export default function ApplicationStatusPage() {
           <ApplicationStatusTabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
           <button
             onClick={handleAddRow}
-            className="w-[103px] h-[37px] flex items-center gap-2 bg-app-primary text-white px-4 py-2 rounded-[12px] font-semibold text-[14px] hover:opacity-90 transition-colors whitespace-nowrap"
+            disabled={createMutation.isPending}
+            className="w-[103px] h-[37px] flex items-center gap-2 bg-app-primary text-white px-4 py-2 rounded-[12px] font-semibold text-[14px] hover:opacity-90 transition-colors whitespace-nowrap disabled:opacity-50"
           >
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-              <path d="M9 4V14M4 9H14" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-            </svg>
+            <img src="/plus-icon.png" alt="추가" width="14" height="14" />
             공고 추가
           </button>
         </div>
 
-        <ApplicationStatusTable
-          data={filteredData}
-          editingId={editingId}
-          onEditingChange={setEditingId}
-          onUpdateItem={handleUpdateItem}
-          onDeleteItem={handleDeleteItem}
-          stageColors={STAGE_COLORS}
-          newlyAddedId={newlyAddedId}
-          onNewlyAddedHandled={() => setNewlyAddedId(null)}
-          activeTab={activeTab}
-        />
+        {isLoading ? (
+          <div className="w-[808px] h-[400px] flex items-center justify-center text-app-text-muted text-sm">
+            불러오는 중...
+          </div>
+        ) : (
+          <ApplicationStatusTable
+            data={filteredData}
+            editingId={editingId}
+            onEditingChange={setEditingId}
+            onUpdateItem={handleUpdateItem}
+            onCommitField={handleCommitField}
+            onDeleteItem={handleDeleteItem}
+            stageColors={STAGE_COLORS}
+            newlyAddedId={newlyAddedId}
+            onNewlyAddedHandled={() => setNewlyAddedId(null)}
+            activeTab={activeTab}
+          />
+        )}
       </div>
 
+      {/* 오른쪽 카드 두 개는 별도 API(추후 연동) - 현재는 목업 그대로 유지 */}
       <div className="space-y-5 mt-[130px]">
         <ApplicationStatusCard
           title="다가오는 일정"
@@ -161,15 +223,15 @@ export default function ApplicationStatusPage() {
 
         <div className="w-[256px] h-[260px] flex flex-col rounded-[14px] border border-[#EBECFF]/90 bg-white pt-4 px-6 pb-5 shadow-[0_4px_12px_rgba(124,119,255,0.08)]">
           <div className="flex items-center gap-2 mb-4">
-            <img src="/percent-icon.png" alt="지원 현황" className="w-5 h-5"/>
+            <img src="/percent-icon.png" alt="지원 현황" className="w-5 h-5" />
             <h3 style={{ fontSize: '15px' }} className="font-semibold text-app-text">지원 현황 요약</h3>
           </div>
 
           <div className="flex justify-center mt-11 mb-6">
             <div className="scale-[2]">
-              <ScoreGauge2 score={70}>
+              <ScoreGauge2 score={progressPercentage}>
                 <div className="text-center">
-                  <span style={{ fontSize: '16px' }} className="font-bold">70</span>
+                  <span style={{ fontSize: '16px' }} className="font-bold">{progressPercentage}</span>
                   <span style={{ fontSize: '10px' }}>%</span>
                   <div style={{ fontSize: '8px' }} className="text-app-text-muted -mt-0.5">진행 중</div>
                 </div>

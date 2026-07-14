@@ -89,9 +89,9 @@ export default function ScrapPage() {
 
   return (
     <div className="pt-12">
-      <div className="mb-6">
+      <div className="mb-7">
         <h1 className="text-2xl font-bold text-app-text mb-2">스크랩</h1>
-        <p className="text-sm text-app-text">
+        <p className="text-[16px] text-app-text">
           관심 있는 공고를 저장하고 한눈에 확인해보세요.
         </p>
       </div>
@@ -111,6 +111,7 @@ export default function ScrapPage() {
           onRemove={handleRemove}
           allSelected={paginatedData.length > 0 && paginatedData.every((item) => selectedItems.includes(item.id))}
           onSortToggle={handleSortToggle}
+          activeTab={activeTab}
         />
       )}
 

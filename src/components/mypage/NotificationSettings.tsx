@@ -25,17 +25,27 @@ export default function NotificationSettings() {
   return (
     <div className="space-y-6">
       {/* 알림 채널 설정 */}
-      <div className="border border-[#EBECFF]/90 rounded-2xl p-6 bg-white shadow-[0_4px_12px_rgba(124,119,255,0.08)]">
-        <h2 className="font-semibold text-app-text mb-6">알림 채널 설정</h2>
+      <div className="w-[700px] h-[271px] flex flex-col justify-center border border-[#EBECFF]/90 rounded-2xl px-6 py-8 bg-white shadow-[0_4px_12px_rgba(124,119,255,0.08)]">
+        <div className="flex items-center gap-2 mb-6">
+          <h2 className="font-semibold text-[16px] text-app-text">알림 채널 설정</h2>
+          <button
+            onClick={() => {
+              // 알림 채널 설정 수정 로직 연결
+            }}
+            className="p-0 hover:opacity-80"
+          >
+            <img src="/edit-icon.png" alt="수정" className="w-5 h-5" />
+          </button>
+        </div>
 
         <div className="space-y-4">
           {/* 이메일 */}
-          <div className="flex items-center justify-between pb-4">
-            <div className="flex items-center gap-3">
+          <div className="flex items-center justify-between pb-3">
+            <div className="flex items-center gap-6">
               <img src="/mail-icon.png" alt="등록" className="w-5 h-5" />
               <div>
-                <div className="text-sm font-medium text-app-text">이메일</div>
-                <div className="text-xs text-app-text-muted">juhoonkim22@gmail.com</div>
+                <div className="text-sm font-medium text-app-text mb-1">이메일</div>
+                <div className="text-sm font-normal text-gray-400">juhoonkim22@gmail.com</div>
               </div>
             </div>
             <button
@@ -54,11 +64,11 @@ export default function NotificationSettings() {
 
           {/* Slack */}
           <div className="flex items-center justify-between pb-4">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-6">
               <img src="/slack-icon.png" alt="등록" className="w-5 h-5" />
               <div>
-                <div className="text-sm font-medium text-app-text">Slack</div>
-                <div className="text-xs text-app-text-muted">연결 중</div>
+                <div className="text-sm font-medium text-app-text mb-1">Slack</div>
+                <div className="text-sm font-normal text-gray-400">연결됨</div>
               </div>
             </div>
             <button
@@ -77,11 +87,11 @@ export default function NotificationSettings() {
 
           {/* Discord */}
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-6">
               <img src="/discord-icon.png" alt="등록" className="w-5 h-5" />
               <div>
-                <div className="text-sm font-medium text-app-text">Discord</div>
-                <div className="text-xs text-app-text-muted">미 연결되었어요</div>
+                <div className="text-sm font-medium text-app-text mb-1">Discord</div>
+                <div className="text-sm font-normal text-gray-400">미 연결되었어요</div>
               </div>
             </div>
             <button
@@ -101,11 +111,11 @@ export default function NotificationSettings() {
       </div>
 
       {/* 알림 기준 점수 */}
-      <div className="border border-[#EBECFF]/90 rounded-2xl p-6 bg-white shadow-[0_4px_12px_rgba(124,119,255,0.08)]">
-        <h2 className="font-semibold text-lg text-app-text mb-6">알림 기준 점수</h2>
+      <div className="w-[700px] h-[102px] flex flex-col justify-center border border-[#EBECFF]/90 rounded-2xl p-6 bg-white shadow-[0_4px_12px_rgba(124,119,255,0.08)]">
+        <h2 className="font-semibold text-[16px] text-app-text mb-5">알림 기준 점수</h2>
 
         <div className="flex items-center gap-4">
-          <div className="text-xs text-app-text-muted min-w-max">
+          <div className="text-sm font-normal text-gray-500 min-w-max">
             이 점수 이상 공고만 알림
           </div>
 
@@ -121,7 +131,7 @@ export default function NotificationSettings() {
                 background: `linear-gradient(to right, #4741FF 0%, #4741FF ${(settings.minScore / 100) * 100}%, #D0D6DD ${(settings.minScore / 100) * 100}%, #D0D6DD 100%)`
               }}
             />
-            <div className="text-sm font-semibold text-app-primary min-w-12">
+            <div className="text-[16px] font-semibold text-app-primary min-w-12">
               {settings.minScore}점
             </div>
           </div>

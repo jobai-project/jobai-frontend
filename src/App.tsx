@@ -23,9 +23,17 @@ export default function App() {
   const setOnboarded = useOnboardingStore((s) => s.setOnboarded);
   const resetOnboarding = useOnboardingStore((s) => s.reset);
 
+  // const MOCK_AUTH = true; 
+
   // 앱 진입 시 세션 복구: 쿠키가 남아 있으면 /auth/me 한 번으로 자동 로그인 복구.
   // 온보딩 완료 여부가 user.onboarded로 오면 서버 값을 우선한다.
   useEffect(() => {
+    // if (MOCK_AUTH) {
+    //   setUser({ email: 'dev@test.com', name: '개발자', onboarded: true });
+    //   setOnboarded(true);
+    //   return;
+    // } 
+    
     getMe()
       .then((user) => {
         setUser(user);
@@ -44,6 +52,14 @@ export default function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/oauth/callback" element={<OAuthCallback />} />
         <Route path="/oauth2/redirect" element={<OAuthCallback />} />
+
+        {/* {import.meta.env.DEV && (
+          <Route element={<MainLayout />}>
+            <Route path="/dev/application" element={<ApplicationStatusPage />} />
+            <Route path="/dev/scrap" element={<ScrapPage />} />
+            <Route path="/dev/profile" element={<MyPage />} />
+          </Route>
+        )}         */}
 
         {/* / 는 공개 진입점. 게스트/회원/온보딩 분기는 HomeEntry가 담당 (spec §1). */}
         <Route path="/" element={<HomeEntry />} />
