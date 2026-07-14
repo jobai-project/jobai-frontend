@@ -8,10 +8,12 @@ type HeroRole = 'developer' | 'designer' | 'planner';
 
 // 배경 = 역할별 단일 PNG 1장(보라 그라디언트 + 일러스트 포함, §Phase2 1-4). 텍스트/필/버튼은
 // 코드 오버레이. 경로는 public 루트(한글 파일명 그대로). 역할 소스 = conditionStore.jobRole.
-const ROLE_HERO: Record<HeroRole, { background: string; tag: string }> = {
-  developer: { background: '/개발자로그인컴포넌트.png', tag: '백엔드 개발자' },
-  designer: { background: '/디자이너로그인컴포넌트.png', tag: '프로덕트 디자이너' },
-  planner: { background: '/기획자로그인컴포넌트.png', tag: '서비스 기획자' },
+// scale: PNG 4변 투명 여백(≈47px)을 카드 밖으로 밀어내 crop → 둥근 카드의 직사각 흰 테두리 제거.
+// 개발자 PNG 만 여백 없는 full-bleed(1760×1224)라 확대 안 함(1). 나머지 2종은 여백 있어 1.08.
+const ROLE_HERO: Record<HeroRole, { background: string; tag: string; scale: number }> = {
+  developer: { background: '/개발자로그인컴포넌트.png', tag: '백엔드 개발자', scale: 1 },
+  designer: { background: '/디자이너로그인컴포넌트.png', tag: '프로덕트 디자이너', scale: 1.08 },
+  planner: { background: '/기획자로그인컴포넌트.png', tag: '서비스 기획자', scale: 1.08 },
 };
 
 export default function WelcomeCard() {
@@ -27,13 +29,14 @@ export default function WelcomeCard() {
   return (
     // 컨테이너 — w-440 h-306 rounded-16, overflow-hidden(카드 형태로 클립), shadow-homecard.
     <div className="relative h-[306px] w-[440px] flex-shrink-0 overflow-hidden rounded-2xl shadow-homecard">
-      {/* 배경 = 역할별 PNG. absolute inset-0 + object-cover 로 카드 전체를 여백 없이 덮는다
-          (full-bleed). 컨테이너의 overflow-hidden 이 둥근 모서리로 클립. */}
+      {/* 배경 = 역할별 PNG. absolute inset-0 + object-cover 로 카드 전체를 덮고, scale 로 살짝
+          확대해 투명 여백을 crop. 컨테이너의 overflow-hidden 이 둥근 모서리로 클립. */}
       <img
         src={hero.background}
         alt=""
         aria-hidden
         draggable={false}
+        style={{ transform: `scale(${hero.scale})` }}
         className="pointer-events-none absolute inset-0 h-full w-full select-none object-cover object-center"
       />
       {/* 콘텐츠 — 배경 위(z-10). origin left-28 top-42, 내부 w-350, 타이틀↔버튼 gap-52 */}
