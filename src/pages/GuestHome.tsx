@@ -10,15 +10,9 @@ import TrendingScrap, {
 } from '@/components/home/TrendingScrap';
 import { useLatestJobs } from '@/hooks/useInfiniteJobList';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
+import { useTechCards, toTechGlanceRows } from '@/hooks/useTechCards';
 import { parseCompanyType } from '@/types/job';
 import { mockJobs } from '@/data/mockJobs';
-
-// 게스트 마케팅용 정적 큐레이션 (§Phase2 6, 프레임 카피). ❓ 정적 vs API 는 §9-6.
-const IT_GLANCE: { title: string; sub: string }[] = [
-  { title: '이번 주 IT 공고, 전주보다 12% 늘었어요', sub: '백엔드와 데이터 직군 채용이 특히 활발했어요' },
-  { title: '토스, 신입 개발 공개채용 시작', sub: '서류 마감까지 D-9, 지금 확인해 보세요' },
-  { title: '요즘 뜨는 기술 스택은 Kotlin', sub: '최근 한 달 공고 중 Kotlin 언급이 23% 늘었어요' },
-];
 
 // 우측 chevron (size-24). rotate-180 은 사용처에서 부여.
 function ChevronIcon({ className }: { className?: string }) {
@@ -93,6 +87,14 @@ export default function GuestHome() {
   const { data, isLoading, isError, hasNextPage, isFetchingNextPage, fetchNextPage } =
     useLatestJobs(filters);
   const jobs = data?.pages.flatMap((p) => p.jobs) ?? [];
+
+  // "IT 한눈에" — tech-cards API (인증 불필요). 목록 훅과 이름 충돌 피해 별칭.
+  const {
+    data: techData,
+    isLoading: techLoading,
+    isError: techError,
+  } = useTechCards();
+  const techRows = toTechGlanceRows(techData?.cards ?? []);
 
   const loadMoreRef = useInfiniteScroll(() => {
     if (hasNextPage && !isFetchingNextPage) fetchNextPage();
@@ -193,30 +195,57 @@ export default function GuestHome() {
             <img src="/iconamoon_news-fill.svg" alt="" aria-hidden className="h-6 w-6 flex-shrink-0" />
             <span className="text-[18px] font-semibold tracking-[-0.36px] text-black">IT 한눈에</span>
           </div>
-          <ul className="flex flex-col">
-            {IT_GLANCE.map((row, i) => (
-              <li
-                key={row.title}
-                className={i < IT_GLANCE.length - 1 ? 'border-b-[0.7px] border-gray-200' : ''}
-              >
-                {/* 3C-3 항목 — px-4 py-12, justify-between */}
-                <div className="flex w-full items-center justify-between gap-1 px-1 py-3">
-                  <div className="flex min-w-0 flex-col gap-2">
-                    {/* 3C-4 제목 — 14 Medium/-0.28px/black */}
-                    <span className="truncate text-[14px] font-medium tracking-[-0.28px] text-black">
-                      {row.title}
-                    </span>
-                    {/* 3C-5 서브 — 12 Regular/-0.24px/gray-600 */}
-                    <span className="truncate text-[12px] tracking-[-0.24px] text-gray-600">
-                      {row.sub}
-                    </span>
+          {techLoading ? (
+            // 스켈레톤 3줄
+            <ul className="flex flex-col">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <li key={i} className={i < 2 ? 'border-b-[0.7px] border-gray-200' : ''}>
+                  <div className="flex w-full flex-col gap-2 px-1 py-3">
+                    <div className="h-4 w-3/4 animate-pulse rounded bg-gray-100" />
+                    <div className="h-3 w-1/2 animate-pulse rounded bg-gray-100" />
                   </div>
-                  {/* 3C-6 chevron 24 rotate-180 */}
-                  <ChevronIcon className="h-6 w-6 flex-shrink-0 rotate-180 text-gray-400" />
-                </div>
-              </li>
-            ))}
-          </ul>
+                </li>
+              ))}
+            </ul>
+          ) : techError ? (
+            <div className="px-1 py-3 text-[14px] text-gray-500">정보를 불러오지 못했어요</div>
+          ) : (
+            <ul className="flex flex-col">
+              {techRows.map((row, i) => {
+                // 항목 내용. 테크 뉴스 줄만 originalUrl 새 탭 링크(§2-2).
+                const inner = (
+                  <div className="flex w-full items-center justify-between gap-1 px-1 py-3">
+                    <div className="flex min-w-0 flex-col gap-2">
+                      {/* 3C-4 제목 — 14 Medium/-0.28px/black */}
+                      <span className="truncate text-[14px] font-medium tracking-[-0.28px] text-black">
+                        {row.title}
+                      </span>
+                      {/* 3C-5 서브 — 12 Regular/-0.24px/gray-600 */}
+                      <span className="truncate text-[12px] tracking-[-0.24px] text-gray-600">
+                        {row.sub}
+                      </span>
+                    </div>
+                    {/* 3C-6 chevron 24 rotate-180 */}
+                    <ChevronIcon className="h-6 w-6 flex-shrink-0 rotate-180 text-gray-400" />
+                  </div>
+                );
+                return (
+                  <li
+                    key={row.badge}
+                    className={i < techRows.length - 1 ? 'border-b-[0.7px] border-gray-200' : ''}
+                  >
+                    {row.url ? (
+                      <a href={row.url} target="_blank" rel="noopener noreferrer" className="block">
+                        {inner}
+                      </a>
+                    ) : (
+                      inner
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          )}
         </div>
       </section>
 

@@ -1,7 +1,36 @@
 import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '@/api/axios';
 import { normalizeTechCardsResult } from '@/api/normalizeJob';
-import type { RawTechCardsResult, TechCardsResult } from '@/types/jobApi';
+import type { RawTechCardsResult, TechCard, TechCardsResult } from '@/types/jobApi';
+
+// 홈 "IT 한눈에" 표시 행 (badge 자동 분배 결과, 명세 §2-1).
+export interface TechGlanceRow {
+  badge: string;
+  title: string; // ← headline
+  sub: string; // ← subtext
+  url: string | null; // 테크 뉴스 줄만 originalUrl, 나머지는 null(링크 없음)
+}
+
+// badge 고정 순서: 채용 트렌드 → 신규 공고 → 테크 뉴스. 서버 응답 문자열 그대로 상수화.
+export const TECH_BADGE_ORDER = ['채용 트렌드', '신규 공고', '테크 뉴스'] as const;
+
+// cards 를 badge 로 매칭해 고정 순서 행으로 변환. 없는 badge 는 그 줄만 제외(§2-4).
+// 로그인/게스트 두 카드가 공유하는 순수 변환 — 마크업은 각 페이지가 담당.
+export function toTechGlanceRows(cards: TechCard[]): TechGlanceRow[] {
+  return TECH_BADGE_ORDER.flatMap((badge) => {
+    const card = cards.find((c) => c.badge === badge);
+    if (!card) return [];
+    return [
+      {
+        badge: card.badge,
+        title: card.headline,
+        sub: card.subtext,
+        // 테크 뉴스(외부)만 새 탭 링크. originalUrl null 이면 링크 비활성(§2-2).
+        url: badge === '테크 뉴스' ? card.originalUrl : null,
+      },
+    ];
+  });
+}
 
 // 홈 IT 인사이트 카드 (GET /api/v1/home/tech-cards).
 // 인증 불필요·파라미터 없음 → 단순 useQuery. withCredentials 는 전역 설정(axios.ts:35).

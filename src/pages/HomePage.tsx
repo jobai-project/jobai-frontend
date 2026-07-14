@@ -17,7 +17,6 @@ import FilterBar from '@/components/home/FilterBar';
 import JobList from '@/components/home/JobList';
 import NoResults from '@/components/home/NoResults';
 import { mockJobs } from '@/data/mockJobs';
-import { mockAINews } from '@/data/mockNews';
 import TopBar from '@/components/layout/TopBar';
 import Footer from '@/components/layout/Footer';
 
@@ -134,7 +133,7 @@ export default function HomePage() {
         <section className="mb-9 flex items-center gap-5">
           <WelcomeCard />
           <DeadlineCard jobs={deadlineItems} />
-          <AINewsCard news={mockAINews} />
+          <AINewsCard />
         </section>
       )}
 
