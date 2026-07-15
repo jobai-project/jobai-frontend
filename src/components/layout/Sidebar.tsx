@@ -111,12 +111,10 @@ export default function Sidebar({ guest = false }: SidebarProps) {
     <aside className="sticky top-0 flex h-screen w-[276px] flex-col gap-[88px] border-r border-gray-200 bg-app-surface px-[32px] py-[40px]">
       {/* 1-3 로고 행: 로고(좌) + 토글 아이콘(우) */}
       <div className="flex items-center justify-between">
-        {/* 1-4 로고: 32px Bold, lh 1.5, tracking -0.64px. 색은 #4741FF(app-sidebar-logo) 유지(DEFER). */}
-        <NavLink
-          to="/"
-          className="block text-[32px] font-bold leading-[1.5] tracking-[-0.64px] text-app-sidebar-logo"
-        >
-          JobA!
+        {/* 1-4 로고: public/logo.png. w-[86px] 실측 폭 고정 + h-auto(3.48:1 왜곡 방지).
+            h-[48px]는 슬롯 높이(기존 text 라인박스 32×1.5=48 승계 — 빼면 행 높이 붕괴). */}
+        <NavLink to="/" className="flex h-[48px] items-center">
+          <img src="/logo.png" alt="JobA!" className="h-auto w-[86px]" />
         </NavLink>
         {/* 1-5 토글 아이콘 */}
         <button
