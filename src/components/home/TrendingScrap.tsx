@@ -31,26 +31,23 @@ export default function TrendingScrap({
   const current = items[index];
 
   return (
-    <div
-      className="mb-5 flex h-9 items-center gap-2 rounded-full border border-app-border bg-app-surface px-3.5 text-xs text-app-text-muted"
-      aria-live="polite"
-    >
-      <span className="flex-shrink-0 font-semibold text-app-text-subtle">
-        실시간 스크랩
-      </span>
-      <span aria-hidden="true" className="h-3 w-px bg-app-border" />
+    // Figma 1648:16410 정합: 알약/라벨/구분선 제거 → 평문 행. px-[24px]로 검색 텍스트와 좌측 정렬.
+    // items-end + gap-[8px] (Figma). mb-5 제거(간격은 TopBar 컬럼 gap-[16px]이 담당).
+    <div className="flex px-[24px]" aria-live="polite">
       <button
         key={current.id}
         type="button"
         // TODO(실데이터): 실시간 순위 API 연동 시 상세 이동 복구. 지금은 mockJobs 기반이라
         // source 가 없고 mock id 가 실제 API id 와 안 맞아 엉뚱한 상세가 뜰 위험 → 비활성.
-        className="animate-fade-up flex min-w-0 flex-1 items-center gap-2 text-left transition hover:text-app-text"
+        className="animate-fade-up flex min-w-0 flex-1 items-end gap-[8px] text-left"
       >
-        <span className="flex-shrink-0 font-bold text-app-text">
+        <span className="shrink-0 text-[16px] font-medium tracking-[-0.32px] text-gray-700">
           {current.rank}
         </span>
-        <span className="truncate text-app-text">{current.title}</span>
-        <span className="flex-shrink-0 text-app-text-subtle">
+        <span className="truncate text-[16px] font-medium tracking-[-0.32px] text-gray-700">
+          {current.title}
+        </span>
+        <span className="shrink-0 text-[14px] font-normal tracking-[-0.28px] text-app-text-subtle">
           {current.company}
         </span>
       </button>

@@ -1,7 +1,8 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 
-export default function TopBar() {
+// children = 검색바 아래 같은 716 컬럼에 렌더(실시간 스크랩). Figma 1648:16406 gap-[16px].
+export default function TopBar({ children }: { children?: ReactNode }) {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const location = useLocation();
@@ -54,8 +55,9 @@ export default function TopBar() {
   };
 
   return (
-    // 2-2 검색 컨테이너: w-716, 검색바.
-    <div className="mb-8 flex w-full max-w-[716px] flex-col gap-4">
+    // 2-2 검색 컨테이너: w-716 컬럼. 검색바 + children(실시간 스크랩) 사이 gap-[16px].
+    // mb-8 은 컬럼 아래(다음 섹션과의 간격, §3.3 기존 32px 유지).
+    <div className="mb-8 flex w-full max-w-[716px] flex-col gap-[16px]">
       {/* 2-3 검색바: px-24 py-12, rounded-full, border-gray-100. 아이콘은 우측. */}
       <div className="flex items-center gap-2 rounded-full border border-gray-100 bg-app-surface px-6 py-3">
         <input
@@ -77,6 +79,7 @@ export default function TopBar() {
         {/* 2-5 검색 아이콘 size-24 */}
         <img src="/A22.svg" alt="검색" className="h-6 w-6 shrink-0" />
       </div>
+      {children}
     </div>
   );
 }

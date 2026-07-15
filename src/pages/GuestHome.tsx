@@ -102,10 +102,10 @@ export default function GuestHome() {
 
   return (
     <>
-      <TopBar />
-
-      {/* §2 검색바 아래 실시간 순위 (회원 컴포넌트 재사용) */}
-      <TrendingScrap items={trendingItems} />
+      {/* §2 검색바 + 아래 실시간 순위를 한 716 컬럼으로 (Figma 1648:16406) */}
+      <TopBar>
+        <TrendingScrap items={trendingItems} />
+      </TopBar>
 
       {/* §3 히어로(440) + 사이드 카드 2개(302×306) — bg-gray-50 행, gap-20 items-center */}
       <section className="mb-9 flex items-center gap-5">

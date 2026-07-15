@@ -86,9 +86,9 @@ export default function HomePage() {
 
   return (
     <>
-      <TopBar />
-      
-      {!isSearching && <TrendingScrap items={trendingItems} />}
+      <TopBar>
+        {!isSearching && <TrendingScrap items={trendingItems} />}
+      </TopBar>
 
       {/* A. 히어로(440) + 카드 2개(302×306) — flex gap-20 items-center (bg-gray-50·패딩은 MainLayout) */}
       {!isSearching && (
