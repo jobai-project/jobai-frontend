@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import ApplicationStatusTabNavigation from '@/components/application/ApplicationStatusTabNavigation';
 import ApplicationStatusTable from '@/components/application/ApplicationStatusTable';
-import ApplicationStatusCard from '@/components/application/ApplicationStatusCard';
-import ScoreGauge2 from '@/components/common/ScoreGauge2';
+import ApplicationSummaryCard from '@/components/application/ApplicationSummaryCard';
+import UpcomingScheduleCard from '@/components/application/UpcomingScheduleCard';
 import {
   useApplications,
   useCreateApplication,
@@ -162,15 +162,6 @@ export default function ApplicationStatusPage() {
     deleteMutation.mutate(Number(id));
   };
 
-  const progressPercentage =
-    Math.round(
-      (data.filter((item) =>
-        ['지원완료', '서류합격', '면접합격', '최종합격'].includes(item.stage),
-      ).length /
-        (data.length || 1)) *
-        100,
-    ) || 0;
-
   return (
     <div className="pt-12 grid grid-cols-[808px_240px] gap-4">
       <div>
@@ -209,40 +200,10 @@ export default function ApplicationStatusPage() {
         )}
       </div>
 
-      {/* 오른쪽 카드 두 개는 별도 API(추후 연동) - 현재는 목업 그대로 유지 */}
+      {/* 우측 카드: 실제 API 연동 (요약 /summary · 일정 /upcoming). CRUD 후 자동 갱신. */}
       <div className="space-y-5 mt-[130px]">
-        <ApplicationStatusCard
-          title="다가오는 일정"
-          iconSrc="/calendar-icon.png"
-          items={[
-            { label: '1차 면접', date: 'D-4', detail: '이마트 토요일', time: '이번 주 토요일' },
-            { label: '1차 면접', date: 'D-7', detail: '신한투자증권', time: '2026.06.04' },
-            { label: '1차 면접', date: 'D-4', detail: '토스증권', time: '이번 주 토요일' },
-          ]}
-        />
-
-        <div className="w-[256px] h-[260px] flex flex-col rounded-[14px] border border-[#EBECFF]/90 bg-white pt-4 px-6 pb-5 shadow-[0_4px_12px_rgba(124,119,255,0.08)]">
-          <div className="flex items-center gap-2 mb-4">
-            <img src="/percent-icon.png" alt="지원 현황" className="w-5 h-5" />
-            <h3 style={{ fontSize: '15px' }} className="font-semibold text-app-text">지원 현황 요약</h3>
-          </div>
-
-          <div className="flex justify-center mt-11 mb-6">
-            <div className="scale-[2]">
-              <ScoreGauge2 score={progressPercentage}>
-                <div className="text-center">
-                  <span style={{ fontSize: '16px' }} className="font-bold">{progressPercentage}</span>
-                  <span style={{ fontSize: '10px' }}>%</span>
-                  <div style={{ fontSize: '8px' }} className="text-app-text-muted -mt-0.5">진행 중</div>
-                </div>
-              </ScoreGauge2>
-            </div>
-          </div>
-
-          <div className="text-center text-[12px] text-gray-500 mt-5">
-            총 지원 {data.length}건
-          </div>
-        </div>
+        <UpcomingScheduleCard />
+        <ApplicationSummaryCard />
       </div>
     </div>
   );
