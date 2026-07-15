@@ -1,7 +1,6 @@
 import { create } from 'zustand';
 
-// 전역 토스트 상태. 여러 화면(홈·상세·스크랩)에서 공통으로 쓰므로
-// bookmarkStore와 분리해 토스트 책임만 담당한다.
+// 전역 토스트 상태. 여러 화면(홈·상세·스크랩)에서 공통으로 쓰는 토스트 책임만 담당한다.
 interface ToastState {
   message: string | null;
   visible: boolean;

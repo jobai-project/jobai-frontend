@@ -1,7 +1,7 @@
 import { memo, ReactNode } from 'react';
 
 interface ScoreGauge2Props {
-  score: number;
+  score: number | null; // null = 점수 없음(스코어링 미실행) → 블러 "??" (C1=B)
   children?: ReactNode;
 }
 
@@ -10,8 +10,35 @@ function ScoreGauge2({ score, children }: ScoreGauge2Props) {
   const strokeWidth = 13;
   const normalizedRadius = radius - strokeWidth / 2;
   const circumference = normalizedRadius * 2 * Math.PI;
-  const strokeDashoffset = circumference - (score / 100) * circumference;
   const svgSize = radius * 2;
+
+  // 점수 없음 → 트랙만 블러 처리 + "??" (JobCard:53-80 처리를 이 치수에 맞춤).
+  // TODO(D2): 테이블 셀 크기의 "??" 블러 시각 사양 디자이너 확인 필요.
+  if (score === null) {
+    return (
+      <div className="relative inline-flex items-center justify-center">
+        <svg
+          width={svgSize}
+          height={svgSize}
+          className="-rotate-90 scale-y-[-1] blur-[2px]"
+        >
+          <circle
+            stroke="#E6E8EB"
+            fill="transparent"
+            strokeWidth={strokeWidth}
+            r={normalizedRadius}
+            cx={radius}
+            cy={radius}
+          />
+        </svg>
+        <div className="absolute flex items-baseline justify-center text-app-text">
+          <span className="text-lg font-bold">??</span>
+        </div>
+      </div>
+    );
+  }
+
+  const strokeDashoffset = circumference - (score / 100) * circumference;
 
   return (
     <div className="relative inline-flex items-center justify-center">

@@ -1,91 +1,100 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useBookmarkStore } from '@/stores/bookmarkStore';
-import { mockJobs } from '@/data/mockJobs';
+import { useScraps, useToggleScrap, useDeleteScraps } from '@/hooks/useScraps';
 import ScrapTable from '@/components/scrap/ScrapTable';
 import EmptyScrap from '@/components/common/EmptyScrap';
 import ScrapTabNavigation from '@/components/scrap/ScrapTabNavigation';
+import type { ScrapKey, ScrapSource } from '@/types/scrap';
 
 type TabType = 'all' | 'ongoing' | 'deadline';
 
-const formatDeadline = (dday: number): string => {
-  if (dday === 0) return '오늘 마감';
-  if (dday < 0) return `마감`;
-  return `D-${dday}`;
-};
+const itemsPerPage = 5;
+
+// 정렬 키: null=상시=가장 덜 급함 → +Infinity (§1.3)
+const dv = (d: number | null) => d ?? Number.POSITIVE_INFINITY;
 
 export default function ScrapPage() {
   const navigate = useNavigate();
-  // ScrapTabNavigation 활성화 시 setter를 다시 추가한다.
   const [activeTab, setActiveTab] = useState<TabType>('all');
-  const [selectedItems, setSelectedItems] = useState<string[]>([]);
+  const [selectedKeys, setSelectedKeys] = useState<Set<ScrapKey>>(new Set());
   const [currentPage, setCurrentPage] = useState(1);
   const [sortAsc, setSortAsc] = useState(true);
 
-  const bookmarkedIds = useBookmarkStore((s) => s.bookmarkedIds);
-  const toggle = useBookmarkStore((s) => s.toggle);
+  const { data, isLoading } = useScraps();
+  const toggle = useToggleScrap();
+  const deleteScraps = useDeleteScraps();
 
-  const itemsPerPage = 5;
+  const scraps = data ?? [];
 
-  // 북마크된 공고만 필터링
-  const bookmarkedJobs = useMemo(() => {
-    return mockJobs.filter((job) => bookmarkedIds.has(job.id));
-  }, [bookmarkedIds]);
+  // 탭·정렬 변경 시 1페이지로 리셋(범위 이탈 방지)
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeTab, sortAsc]);
 
   const filteredData = useMemo(() => {
-    let filtered = bookmarkedJobs.map((job) => ({
-      id: job.id,
-      title: job.title,
-      category: job.company,
-      type: job.employmentType,
-      deadline: formatDeadline(job.dday),
-      dday: job.dday,
-      score: job.score,
-    }));
-
+    let filtered = scraps;
+    // §1.4: dDay===null(상시) → 진행중, dDay===0(D-DAY) → 마감
     if (activeTab === 'ongoing') {
-      filtered = filtered.filter((item) => item.dday > 0);
+      filtered = filtered.filter((s) => s.dDay === null || s.dDay > 0);
     } else if (activeTab === 'deadline') {
-      filtered = filtered.filter((item) => item.dday <= 0);
+      filtered = filtered.filter((s) => s.dDay !== null && s.dDay <= 0);
     }
+    // §1.3: dDay 클라 재정렬. null끼리는 0(Infinity-Infinity=NaN 가드)
+    return [...filtered].sort((a, b) => {
+      const av = dv(a.dDay);
+      const bv = dv(b.dDay);
+      if (av === bv) return 0;
+      return sortAsc ? av - bv : bv - av;
+    });
+  }, [scraps, activeTab, sortAsc]);
 
-    if (sortAsc) {
-      filtered.sort((a, b) => a.dday - b.dday); // 마감 임박 순
-    } else {
-      filtered.sort((a, b) => b.dday - a.dday); // 마감 여유 순
-    }
-
-    return filtered;
-  }, [bookmarkedJobs, activeTab, sortAsc]);
-
+  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
   const paginatedData = useMemo(() => {
     const start = (currentPage - 1) * itemsPerPage;
     return filteredData.slice(start, start + itemsPerPage);
   }, [filteredData, currentPage]);
 
-  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+  const allSelected =
+    paginatedData.length > 0 && paginatedData.every((s) => selectedKeys.has(s.key));
 
   const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.checked) {
-      setSelectedItems(paginatedData.map((item) => item.id));
-    } else {
-      setSelectedItems([]);
-    }
+    setSelectedKeys((prev) => {
+      const next = new Set(prev);
+      if (e.target.checked) paginatedData.forEach((s) => next.add(s.key));
+      else paginatedData.forEach((s) => next.delete(s.key));
+      return next;
+    });
   };
 
-  const handleSelectItem = (id: string) => {
-    setSelectedItems((prev) =>
-      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+  const handleToggleSelect = (key: ScrapKey) => {
+    setSelectedKeys((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  };
+
+  const handleRemove = (source: ScrapSource, sourceId: number) => {
+    toggle.mutate({ source, sourceId, scrapped: true });
+  };
+
+  const handleDeleteSelected = () => {
+    if (selectedKeys.size === 0) return;
+    deleteScraps.mutate(Array.from(selectedKeys));
+    setSelectedKeys(new Set());
+  };
+
+  const handleSortToggle = () => setSortAsc((v) => !v);
+
+  if (isLoading) {
+    return (
+      <div className="pt-12">
+        <div className="mb-7 h-8 w-40 animate-pulse rounded bg-[#F2F4F6]" />
+        <div className="h-[628px] w-[1084px] animate-pulse rounded-2xl bg-[#F2F4F6]" />
+      </div>
     );
-  };
-
-  const handleRemove = (id: string) => {
-    toggle(id);
-  };
-
-  const handleSortToggle = () => {
-    setSortAsc(!sortAsc);
-  };
+  }
 
   return (
     <div className="pt-12">
@@ -95,21 +104,22 @@ export default function ScrapPage() {
           관심 있는 공고를 저장하고 한눈에 확인해보세요.
         </p>
       </div>
-      
+
       <ScrapTabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
-     
+
       <div className="h-6" />
 
-      {bookmarkedJobs.length === 0 ? (
+      {scraps.length === 0 ? (
         <EmptyScrap onAction={() => navigate('/')} className="py-20" />
       ) : (
         <ScrapTable
-          data={paginatedData}
-          selectedItems={selectedItems}
+          items={paginatedData}
+          selectedKeys={selectedKeys}
+          onToggleSelect={handleToggleSelect}
           onSelectAll={handleSelectAll}
-          onSelectItem={handleSelectItem}
+          allSelected={allSelected}
           onRemove={handleRemove}
-          allSelected={paginatedData.length > 0 && paginatedData.every((item) => selectedItems.includes(item.id))}
+          onDeleteSelected={handleDeleteSelected}
           onSortToggle={handleSortToggle}
           activeTab={activeTab}
         />
@@ -123,7 +133,7 @@ export default function ScrapPage() {
             onClick={() => setCurrentPage(currentPage - 1)}
             className="flex items-center justify-center disabled:opacity-50"
           >
-            <img src="/arrowL-icon.png" alt="이전" className="w-16 h-16 object-contain"/>
+            <img src="/arrowL-icon.png" alt="이전" className="w-16 h-16 object-contain" />
           </button>
 
           {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
@@ -131,9 +141,7 @@ export default function ScrapPage() {
               key={page}
               onClick={() => setCurrentPage(page)}
               className={`w-8 h-8 text-[16px] font-semibold ${
-                currentPage === page
-                  ? 'text-app-text'
-                  : 'text-gray-300'
+                currentPage === page ? 'text-app-text' : 'text-gray-300'
               }`}
             >
               {page}
@@ -146,7 +154,7 @@ export default function ScrapPage() {
             onClick={() => setCurrentPage(currentPage + 1)}
             className="flex items-center justify-center disabled:opacity-50"
           >
-            <img src="/arrowR-icon.png" alt="다음" className="w-16 h-16 object-contain"/>
+            <img src="/arrowR-icon.png" alt="다음" className="w-16 h-16 object-contain" />
           </button>
         </div>
       )}

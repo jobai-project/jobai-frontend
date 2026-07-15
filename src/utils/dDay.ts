@@ -13,3 +13,12 @@ export function deadlineToDday(deadline: string | null): number | null {
 
   return Math.round((endDay - todayDay) / 86_400_000);
 }
+
+// 표시용: dDay(숫자|null) → 마감 텍스트. JobCard:99·DeadlineCard:82와 통일(dDay===0 → "D-0", D3).
+export const formatDDay = (dDay: number | null): string => {
+  if (dDay === null) return '상시';
+  // TODO(G6): 백엔드 dDay 계산 버그(355551) 방어. 백엔드 수정 후 제거.
+  if (dDay > 365) return '상시';
+  if (dDay < 0) return '마감';
+  return `D-${dDay}`; // dDay===0 → "D-0"
+};

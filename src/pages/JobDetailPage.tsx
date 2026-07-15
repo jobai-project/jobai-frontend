@@ -105,7 +105,7 @@ export default function JobDetailPage() {
             {/* A-1 공고 제목 — 32 Bold, tracking -0.64, #000 (text-app-text #172129 → text-black) */}
             <h1 className="text-[32px] font-bold tracking-[-0.64px] text-black">{job.title}</h1>
             {/* A-1 북마크 — 아이콘 36px(size=lg) */}
-            <BookmarkButton jobId={String(job.id)} size="lg" />
+            <BookmarkButton source={job.source} sourceId={job.id} size="lg" />
           </div>
 
           <JobInfo job={job} />

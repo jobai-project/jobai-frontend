@@ -1,66 +1,53 @@
 import { memo } from 'react';
 import ScoreGauge2 from '@/components/common/ScoreGauge2';
-
-interface ScrapItem {
-  id: string;
-  title: string;
-  category: string;
-  type: string;
-  deadline: string;
-  score: number;
-}
+import { formatDDay } from '@/utils/dDay';
+import type { Scrap, ScrapKey, ScrapSource } from '@/types/scrap';
 
 interface ScrapTableProps {
-  data: ScrapItem[];
-  selectedItems: string[];
+  items: Scrap[]; // ScrapItem 폐기 — Scrap 직접 사용 (v3 §2)
+  selectedKeys: Set<ScrapKey>; // Set<string>(id) 폐기
+  onToggleSelect: (key: ScrapKey) => void;
   onSelectAll: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  onSelectItem: (id: string) => void;
-  onRemove: (id: string) => void;
   allSelected: boolean;
+  onRemove: (source: ScrapSource, sourceId: number) => void;
+  onDeleteSelected: () => void; // 벌크 삭제(§1.5) — ScrapPage가 useDeleteScraps로 처리
   onSortToggle: () => void;
   activeTab: 'all' | 'ongoing' | 'deadline';
 }
 
 const EMPTY_MESSAGES: Record<string, { title: string; desc?: string }> = {
   all: { title: '스크랩된 공고가 없습니다.', desc: '관심있는 공고를 스크랩하세요.' },
-  ongoing: { title: '진행 중인 공고가 없습니다.'},
-  deadline: { title: '마감된 공고가 없습니다.'},
+  ongoing: { title: '진행 중인 공고가 없습니다.' },
+  deadline: { title: '마감된 공고가 없습니다.' },
 };
 
 function ScrapTable({
-  data,
-  selectedItems,
+  items,
+  selectedKeys,
+  onToggleSelect,
   onSelectAll,
-  onSelectItem,
-  onRemove,
   allSelected,
+  onRemove,
+  onDeleteSelected,
   onSortToggle,
   activeTab,
 }: ScrapTableProps) {
-  const handleDeleteSelected = () => {
-    selectedItems.forEach((id) => onRemove(id));
-  };
-
   return (
     <div className="w-[1084px] h-[628px] border border-[#EBECFF]/90 rounded-2xl overflow-hidden bg-white shadow-[0_4px_12px_rgba(124,119,255,0.08)]">
       <div className="flex items-center justify-end px-6 h-[72px] bg-white">
-        <div 
+        <div
           className="flex items-center gap-1.5 cursor-pointer hover:opacity-80 transition-opacity"
           onClick={onSortToggle}
         >
           <span className="text-[14px] text-app-text-muted">마감기한순</span>
-          <img 
-            src="/sort-icon.png" 
-            alt="정렬" 
-            className="w-4 h-4"
-          />
+          <img src="/sort-icon.png" alt="정렬" className="w-4 h-4" />
         </div>
       </div>
 
       <div className="grid grid-cols-[40px_2.5fr_1.2fr_1.2fr_1.2fr_40px] gap-3 px-6">
         <div className="col-span-6 bg-[#EBECFF] h-px"></div>
       </div>
-      
+
       <div className="grid grid-cols-[40px_2.5fr_1.2fr_1.2fr_1.2fr_70px] items-center gap-3 px-6 h-[77px] bg-app-bg font-medium text-[16px] text-app-text">
         <div className="flex items-center justify-center h-full">
           <input
@@ -76,8 +63,8 @@ function ScrapTable({
         <div className="text-center">적합도 점수</div>
         <button
           type="button"
-          onClick={handleDeleteSelected}
-          disabled={selectedItems.length === 0}
+          onClick={onDeleteSelected}
+          disabled={selectedKeys.size === 0}
           className="text-xs font-semibold text-app-primary border border-app-primary/30 px-3 py-1.5 rounded-lg hover:bg-app-primary/10 disabled:opacity-40 transition-colors whitespace-nowrap"
         >
           선택 삭제
@@ -88,52 +75,47 @@ function ScrapTable({
         <div className="col-span-6 bg-[#EBECFF] h-px"></div>
       </div>
 
-      {data.length > 0 ? (
-        data.map((item) => (
-          <div key={item.id}>
-            <div className="h-[91px] grid grid-cols-[40px_2.5fr_1.2fr_1.2fr_1.2fr_70px] gap-3 px-6 items-center hover:bg-app-bg transition-colors" >
+      {items.length > 0 ? (
+        items.map((item) => (
+          <div key={item.key}>
+            <div className="h-[91px] grid grid-cols-[40px_2.5fr_1.2fr_1.2fr_1.2fr_70px] gap-3 px-6 items-center hover:bg-app-bg transition-colors">
               <div className="flex items-center justify-center">
                 <input
                   type="checkbox"
-                  checked={selectedItems.includes(item.id)}
-                  onChange={() => onSelectItem(item.id)}
+                  checked={selectedKeys.has(item.key)}
+                  onChange={() => onToggleSelect(item.key)}
                   className="w-6 h-6 cursor-pointer border-gray-400 text-app-primary"
                 />
               </div>
 
               <div className="min-w-0 ms-5">
-                {/* onClick={() => navigate('/scrap')} */}
-                <div className="font-semibold text-app-text text-[18px] truncate mb-[6px]"> 
+                <div className="font-semibold text-app-text text-[18px] truncate mb-[6px]">
                   {item.title}
                 </div>
-                <div className="text-[16px] text-gray-600">{item.category}</div>
+                <div className="text-[16px] text-gray-600">{item.companyName}</div>
               </div>
 
-              <div className="text-[16px] text-app-text text-center">{item.type}</div>
+              <div className="text-[16px] text-app-text text-center">{item.employmentType}</div>
 
-              <div className="text-[16px] text-app-text text-center">{item.deadline}</div>
+              {/* 마감 기한: S1은 deadline 없음 → dDay 파생 텍스트 (§1.2). TODO(G4) 백엔드 deadline 추가 시 날짜로 원복 */}
+              <div className="text-[16px] text-app-text text-center">{formatDDay(item.dDay)}</div>
 
               <div className="flex items-center justify-center">
-                <div className="transform scale-[0.7] origin-center"> 
-                  <ScoreGauge2 score={item.score} />
+                <div className="transform scale-[0.7] origin-center">
+                  <ScoreGauge2 score={item.matchScore} />
                 </div>
               </div>
 
               <button
                 type="button"
-                onClick={() => onRemove(item.id)}
+                onClick={() => onRemove(item.source, item.sourceId)}
                 className="flex items-center justify-self-end w-7 h-7 hover:bg-app-hover rounded transition-colors"
                 aria-label="제거"
               >
-                <img 
-                  src="/remove-icon.png"
-                  alt="" 
-                  width="24" 
-                  height="24" 
-                />
+                <img src="/remove-icon.png" alt="" width="24" height="24" />
               </button>
             </div>
-            
+
             <div className="grid grid-cols-[40px_2.5fr_1.2fr_1.2fr_1.2fr_40px] gap-3 px-6">
               <div className="col-span-6 border-b border-gray-200"></div>
             </div>

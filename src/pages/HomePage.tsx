@@ -3,12 +3,11 @@ import { useSearchParams } from 'react-router-dom';
 import { useJobSearch } from '@/hooks/useJobSearch';
 import { useRecommendedJobs } from '@/hooks/useInfiniteJobList';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
-import { useBookmarkStore } from '@/stores/bookmarkStore';
 import { useAuthStore } from '@/stores/authStore';
 import { parseCompanyType } from '@/types/job';
 import type { JobSummary } from '@/types/jobApi';
 import WelcomeCard from '@/components/home/WelcomeCard';
-import DeadlineCard, { type DeadlineItem } from '@/components/home/DeadlineCard';
+import DeadlineCard from '@/components/home/DeadlineCard';
 import AINewsCard from '@/components/home/AINewsCard';
 import TrendingScrap, {
   type TrendingScrapItem,
@@ -19,8 +18,6 @@ import NoResults from '@/components/home/NoResults';
 import { mockJobs } from '@/data/mockJobs';
 import TopBar from '@/components/layout/TopBar';
 import Footer from '@/components/layout/Footer';
-
-const WEEKDAY_KO = ['일', '월', '화', '수', '목', '금', '토'];
 
 // 섹션 타이틀용 ai 아이콘 (size-24, §6 E). mingcute:ai-fill 근사.
 function AiIcon({ className }: { className?: string }) {
@@ -33,14 +30,6 @@ function AiIcon({ className }: { className?: string }) {
       <path fill="currentColor" d="M19 3.5c.16 0 .3.1.35.26l.38 1.25 1.25.38a.37.37 0 0 1 0 .7l-1.25.38-.38 1.25a.37.37 0 0 1-.7 0l-.38-1.25-1.25-.38a.37.37 0 0 1 0-.7l1.25-.38.38-1.25A.37.37 0 0 1 19 3.5Z" />
     </svg>
   );
-}
-
-function formatExpiresAt(dday: number): string {
-  const target = new Date();
-  target.setDate(target.getDate() + dday);
-  const mm = String(target.getMonth() + 1).padStart(2, '0');
-  const dd = String(target.getDate()).padStart(2, '0');
-  return `${mm}. ${dd} (${WEEKDAY_KO[target.getDay()]})`;
 }
 
 export default function HomePage() {
@@ -81,25 +70,6 @@ export default function HomePage() {
     if (active.hasNextPage && !active.isFetchingNextPage) active.fetchNextPage();
   }, !!active.hasNextPage);
 
-  // "곧 마감되는 스크랩 공고" 카드는 실제 스크랩(북마크)된 공고만 노출한다.
-  // TODO(API 연동): 북마크 store 대신 실제 스크랩 목록 API로 교체.
-  const bookmarkedIds = useBookmarkStore((s) => s.bookmarkedIds);
-  const deadlineItems = useMemo<DeadlineItem[]>(
-    () =>
-      mockJobs
-        .filter((j) => bookmarkedIds.has(j.id))
-        .sort((a, b) => a.dday - b.dday)
-        .slice(0, 3)
-        .map((j) => ({
-          id: j.id,
-          title: j.title,
-          company: j.company,
-          dDay: j.dday,
-          expiresAt: formatExpiresAt(j.dday),
-        })),
-    [bookmarkedIds]
-  );
-
   const trendingItems = useMemo<TrendingScrapItem[]>(
     () =>
       [...mockJobs]
@@ -124,7 +94,7 @@ export default function HomePage() {
       {!isSearching && (
         <section className="mb-9 flex items-center gap-5">
           <WelcomeCard />
-          <DeadlineCard jobs={deadlineItems} />
+          <DeadlineCard />
           <AINewsCard />
         </section>
       )}

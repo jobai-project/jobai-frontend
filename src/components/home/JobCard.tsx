@@ -2,6 +2,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import BookmarkButton from '@/components/common/BookmarkButton';
 import ScoreGauge from '@/components/common/ScoreGauge';
 import type { JobSummary } from '@/types/jobApi';
+import { toScrapKey, type Scrap } from '@/types/scrap';
 
 interface JobCardProps {
   job: JobSummary;
@@ -38,14 +39,33 @@ function GuestScoreTooltip() {
 }
 
 export default function JobCard({ job, masked = false }: JobCardProps) {
-  const jobId = String(job.id); // JobSummary.id 는 number — BookmarkButton/Link 는 string
+  const jobId = String(job.id); // Link 는 string 경로 필요
   const noScore = job.matchScore === null; // 게스트 or 이력서 미업로드
+  // 스크랩 추가 시 목록에 낙관적으로 넣을 데이터(onSettled invalidate가 서버값으로 정정).
+  const scrapOptimistic: Scrap = {
+    key: toScrapKey(job.source, job.id),
+    source: job.source,
+    sourceId: job.id,
+    companyName: job.company,
+    title: job.title,
+    location: job.location,
+    employmentType: job.employmentType,
+    matchScore: job.matchScore,
+    dDay: job.dDay,
+    deadline: null,
+    scrappedAt: new Date().toISOString(),
+  };
 
   const inner = (
     <>
       {/* 게스트는 북마크 불가 → 마스킹 시 북마크 버튼 숨김 */}
       {!masked && (
-        <BookmarkButton jobId={jobId} className="absolute right-[24px] top-[20px]" />
+        <BookmarkButton
+          source={job.source}
+          sourceId={job.id}
+          optimistic={scrapOptimistic}
+          className="absolute right-[24px] top-[20px]"
+        />
       )}
 
       {/* GC-2 상단 행 — 점수 그룹(북마크는 masked 시 숨김·absolute) */}
