@@ -1,5 +1,4 @@
 import { useState, useRef } from 'react';
-import EditableField from '@/components/mypage/EditableField';
 import JobConditionsEditor from '@/components/mypage/JobConditionsEditor';
 import { useResumes, useActivateResume, useDeleteResume } from '@/hooks/useResumes';
 import { useUploadResume } from '@/hooks/useUploadResume';
