@@ -73,7 +73,7 @@ export default function RegionMultiSelect({
           {/* '전체'(좌열 첫 칸) + 17개 지역을 column-major 2열 × 9행으로 배치.
               grid-flow-col + 9행 고정 → 배열 순서대로 좌열을 세로로 채운 뒤 우열.
               (grid-rows-9 는 Tailwind core 미제공 → arbitrary repeat 사용) */}
-          <div className="grid grid-flow-col grid-cols-2 grid-rows-[repeat(9,minmax(0,1fr))] gap-x-4 gap-y-3">
+          <div className="grid grid-flow-col grid-cols-2 grid-rows-[repeat(9,minmax(0,1fr))]">
             {REGION_SELECT_OPTIONS.map((r) => {
               const isAll = r === '전체';
               const checked = isAll ? allSelected : selected.includes(r as RegionCode);
