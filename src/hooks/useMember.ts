@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { getMyPageInfo, updateJobPreferences } from '@/api/member';
+import { getMyPageInfo, updateJobPreferences, updateMemberName } from '@/api/member';
 
 // 마이페이지(E1)·희망조건(E3). staleTime 은 main.tsx 전역 60초 사용.
 export const memberKeys = { me: ['member', 'me'] as const };
@@ -14,6 +14,17 @@ export const useUpdateJobPreferences = () => {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: memberKeys.me });
       qc.invalidateQueries({ queryKey: ['jobList'] }); // 조건 변경 → 추천 결과 변경
+    },
+  });
+};
+
+// E2 — 이름 수정
+export const useUpdateName = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: updateMemberName,
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: memberKeys.me });
     },
   });
 };

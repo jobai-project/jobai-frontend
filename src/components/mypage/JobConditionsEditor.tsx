@@ -193,6 +193,7 @@ export default function JobConditionsEditor({
       <FieldRow field="experiences" label="고용 형태" options={EMPLOYMENT_TYPE_OPTIONS} panelWidth="200px" />
 
       {/* 하단 취소/저장 */}
+      <div className="border-t border-gray-200 mt-5 mb-4" />
       <div className="flex items-center justify-end gap-2 pt-2">
         <button
           onClick={onCancel}

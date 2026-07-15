@@ -6,6 +6,7 @@ import type {
   OnboardingNotificationSettingsRequest,
   MemberMeResponse,
   UpdateJobPreferencesRequest,
+  UpdateNameRequest,
 } from '@/types/member';
 
 // 온보딩 제출 3단계 PATCH. 인터셉터가 (res)=>res 라 res.data.result 수동 언랩.
@@ -58,6 +59,15 @@ export const updateJobPreferences = async (
 ) => {
   const res = await apiClient.put<ApiEnvelope<unknown>>(
     '/api/v1/members/me/job-preferences',
+    body,
+  );
+  return res.data.result;
+};
+
+// E2 — 이름 수정. 서버가 공백만 있는 이름·20자 초과를 400으로 거부한다.
+export const updateMemberName = async (body: UpdateNameRequest) => {
+  const res = await apiClient.patch<ApiEnvelope<string>>(
+    '/api/v1/members/me/name',
     body,
   );
   return res.data.result;

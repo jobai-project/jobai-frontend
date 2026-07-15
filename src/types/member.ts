@@ -51,3 +51,9 @@ export interface UpdateJobPreferencesRequest {
   jobCategories: string[];
   locations: string[];
 }
+
+// ── E2 요청 (PATCH /api/v1/members/me/name) ──
+// 서버가 공백만 있는 이름·20자 초과를 400으로 거부한다.
+export interface UpdateNameRequest {
+  name: string;
+}

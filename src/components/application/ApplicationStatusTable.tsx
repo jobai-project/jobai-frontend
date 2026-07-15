@@ -56,6 +56,7 @@ function EditableCell({
   value,
   onChange,
   onCommit,
+  onValidationFail,
   editing,
   setEditing,
   onEditingChange,
@@ -66,12 +67,14 @@ function EditableCell({
   value: string;
   onChange: (value: string) => void;
   onCommit: () => void;
+  onValidationFail?: (message: string) => void;
   editing: EditingState;
   setEditing: (state: EditingState) => void;
   onEditingChange: (id: string | null) => void;
   stageColors: Record<string, string>;
 }) {
   const isEditing = editing.itemId === item.id && editing.field === field;
+  const inputRef = useRef<HTMLInputElement>(null);
 
   // 단계(stage) - 버튼 항상 표시, 클릭 시 모달
   if (field === 'stage') {
@@ -200,21 +203,51 @@ function EditableCell({
   }
 
   if (isEditing) {
+    const isRequiredField = field === 'company' || field === 'position';
+    const isTempRow = item.id.startsWith('temp-');
+    const siblingValue = field === 'company' ? item.position : item.company;
+
+    // 회사명/직무 벗어남 검증:
+    // - 임시(미생성) 행: 회사명·직무가 둘 다 비어있으면 벗어남 허용(=자동 삭제로 이어짐)
+    //   하나만 비어있으면 벗어남을 막고 안내한다.
+    // - 이미 저장된 행: 서버가 두 필드 모두 필수이므로 비운 채로는 항상 벗어남을 막는다.
+    const tryLeave = () => {
+      if (isRequiredField && value.trim() === '') {
+        const bothEmpty = isTempRow && siblingValue.trim() === '';
+        if (!bothEmpty) {
+          onValidationFail?.(
+            field === 'company' ? '회사명을 입력해주세요' : '직무를 입력해주세요',
+          );
+          // 벗어나지 못하게 포커스를 다시 준다.
+          requestAnimationFrame(() => {
+            inputRef.current?.focus();
+          });
+          return false;
+        }
+      }
+      onCommit();
+      return true;
+    };
+
     return (
       <div className="h-full flex items-center -mt-1">
         <input
+          ref={inputRef}
           type="text"
           value={value}
           onChange={(e) => onChange(e.target.value)}
           onBlur={() => {
-            onCommit();
-            setEditing({ itemId: null, field: null });
+            const left = tryLeave();
+            if (left) {
+              setEditing({ itemId: null, field: null });
+            }
           }}
           onKeyDown={(e) => {
             // 한글 조합 중에는 Enter로 다음 칸 이동하지 않음
             if (e.nativeEvent.isComposing) return;
             if (e.key === 'Enter') {
-              onCommit();
+              const left = tryLeave();
+              if (!left) return;
               const currentIndex = FIELD_ORDER.indexOf(field);
               if (currentIndex < FIELD_ORDER.length - 1) {
                 setEditing({ itemId: item.id, field: FIELD_ORDER[currentIndex + 1] });
@@ -308,6 +341,33 @@ function ApplicationStatusTable({
   const tableRef = useRef<HTMLDivElement>(null);
   const [editing, setEditing] = useState<EditingState>({ itemId: null, field: null });
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  const showToast = (message: string) => {
+    setToastMessage(message);
+  };
+
+  useEffect(() => {
+    if (!toastMessage) return;
+    const timer = setTimeout(() => setToastMessage(null), 2000);
+    return () => clearTimeout(timer);
+  }, [toastMessage]);
+
+  // 현재 편집 중인 필드가 회사명/직무이고 값이 비어있는데, 벗어날 수 없는 상태인지 확인.
+  // (임시 행은 회사명·직무가 둘 다 비었을 때만 벗어남 허용, 저장된 행은 항상 필수)
+  const isCurrentEditBlocked = () => {
+    if (editing.field !== 'company' && editing.field !== 'position') return false;
+    const item = data.find((d) => d.id === editing.itemId);
+    if (!item) return false;
+
+    const value = editing.field === 'company' ? item.company : item.position;
+    if (value.trim() !== '') return false;
+
+    const isTempRow = item.id.startsWith('temp-');
+    const sibling = editing.field === 'company' ? item.position : item.company;
+    const bothEmpty = isTempRow && sibling.trim() === '';
+    return !bothEmpty;
+  };
 
   // 새 행 추가 감지
   useEffect(() => {
@@ -318,10 +378,17 @@ function ApplicationStatusTable({
     }
   }, [newlyAddedId, onEditingChange, onNewlyAddedHandled]);
 
-  // 모달 클릭 아웃사이드 감지
+  // 모달/편집 상태 바깥 클릭 감지
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (tableRef.current && !tableRef.current.contains(e.target as Node)) {
+        // 회사명/직무가 필수 조건을 만족하지 못하면 바깥을 클릭해도 편집 상태를 유지한다.
+        if (isCurrentEditBlocked()) {
+          showToast(
+            editing.field === 'company' ? '회사명을 입력해주세요' : '직무를 입력해주세요',
+          );
+          return;
+        }
         setEditing({ itemId: null, field: null });
         onEditingChange(null);
       }
@@ -342,14 +409,14 @@ function ApplicationStatusTable({
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [editing.itemId, editing.field, onEditingChange]);
+  }, [editing.itemId, editing.field, onEditingChange, data]);
 
   const deleteTarget = data.find((item) => item.id === deleteTargetId);
 
   return (
     <div
       ref={tableRef}
-      className="w-[808px] border border-[#EBECFF]/90 rounded-2xl overflow-hidden flex flex-col bg-white shadow-[0_4px_12px_rgba(124,119,255,0.08)]"
+      className="w-[808px] h-[715px] border border-[#EBECFF]/90 rounded-2xl overflow-hidden flex flex-col bg-white shadow-[0_4px_12px_rgba(124,119,255,0.08)]"
     >
       {/* 테이블 헤더 */}
       <div className="grid grid-cols-[108px_144px_98px_140px_135px_150px] gap-0 px-6 ml-4 py-4 bg-app-bg font-medium text-sm text-[#8995A2] items-start">
@@ -382,6 +449,7 @@ function ApplicationStatusTable({
                   value={item.company}
                   onChange={(value) => onUpdateItem(item.id, 'company', value)}
                   onCommit={() => onCommitField(item.id, 'company')}
+                  onValidationFail={showToast}
                   editing={editing}
                   setEditing={setEditing}
                   onEditingChange={onEditingChange}
@@ -395,6 +463,7 @@ function ApplicationStatusTable({
                   value={item.position}
                   onChange={(value) => onUpdateItem(item.id, 'position', value)}
                   onCommit={() => onCommitField(item.id, 'position')}
+                  onValidationFail={showToast}
                   editing={editing}
                   setEditing={setEditing}
                   onEditingChange={onEditingChange}
@@ -505,6 +574,13 @@ function ApplicationStatusTable({
           }}
           onCancel={() => setDeleteTargetId(null)}
         />
+      )}
+
+      {/* 필수값 안내 토스트 */}
+      {toastMessage && (
+        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[300] bg-gray-900 text-white text-sm font-medium px-4 py-2.5 rounded-lg shadow-lg">
+          {toastMessage}
+        </div>
       )}
     </div>
   );
