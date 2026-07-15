@@ -12,7 +12,7 @@ interface SearchPage {
 }
 
 // 자연어 검색 무한스크롤. page 0부터 누적, 로드한 총 개수가 totalCount 미만이면 다음 page.
-// 목록용 useInfiniteJobs(q/cursor·mock)와 파라미터 체계가 달라 별도 훅으로 분리.
+// 홈 목록 훅(useInfiniteJobList)과 파라미터 체계가 달라 검색은 별도 훅으로 분리.
 export function useJobSearch(query: string, enabled = true) {
   return useInfiniteQuery<SearchPage>({
     queryKey: ['searchJobs', query],

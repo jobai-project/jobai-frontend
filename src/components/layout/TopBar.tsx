@@ -12,10 +12,13 @@ export default function TopBar() {
   const [value, setValue] = useState(q);
   const isComposing = useRef(false); // 조합 중 여부
 
-  // 최근검색어 기능 제거에 따른 잔여 데이터 정리 (한시성 마이그레이션 코드).
-  // 기존 사용자 브라우저에 남은 'recentSearches' 키만 1회 제거. 충분히 배포된 뒤 삭제 가능.
+  // 제거된 기능의 잔여 localStorage 데이터 1회성 정리 (한시성 마이그레이션 코드).
+  // 🔴 removeItem 개별 키만 — clear() 금지(jobai.onboarded 등 공존).
+  //  - recentSearches: 최근검색어 기능 제거 잔재
+  //  - jobai.condition: conditionStore 제거(서버 E1 단일 소스 전환) 잔재
   useEffect(() => {
     localStorage.removeItem('recentSearches');
+    localStorage.removeItem('jobai.condition');
   }, []);
 
   // 뒤로가기·링크 등 외부 요인으로 URL 의 q 가 바뀌면 입력값을 동기화한다.

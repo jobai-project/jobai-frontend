@@ -16,3 +16,38 @@ export interface OnboardingNotificationSettingsRequest {
   discordEnabled: boolean; // 항상 false (UI 미배선)
   matchScoreThreshold: number; // 0~100
 }
+
+// ── E1 응답 (GET /api/v1/members/me) ──
+export interface MemberProfile {
+  name: string;
+  email: string;
+  profileImageUrl: string | null; // 실측 null 가능
+}
+
+export interface JobPreference {
+  careerType: string | null; // 온보딩 전 null 실측
+  jobCategories: string[]; // 한글. 예: ["개발자"]
+  locations: string[]; // 한글 시도명. 예: ["서울"]
+}
+
+// 정의만. 소비하지 않음 — 이력서는 useResumes()(/members/resumes)가 정본.
+export interface MemberMeResume {
+  resumeId: number;
+  originalFilename: string;
+  storedFileUrl: string;
+  updatedAt: string;
+  active: boolean; // 🔴 실측 필드명 (types/resume.ts 의 isActive 아님)
+}
+
+export interface MemberMeResponse {
+  profile: MemberProfile;
+  jobPreference: JobPreference;
+  resumes: MemberMeResume[]; // 미사용
+}
+
+// ── E3 요청 (PUT /api/v1/members/me/job-preferences) — 🔴 전체 교체, 세 필드 모두 필수 ──
+export interface UpdateJobPreferencesRequest {
+  careerType: string;
+  jobCategories: string[];
+  locations: string[];
+}

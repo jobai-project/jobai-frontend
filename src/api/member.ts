@@ -4,6 +4,8 @@ import type {
   OnboardingBasicInfoRequest,
   OnboardingJobCategoryRequest,
   OnboardingNotificationSettingsRequest,
+  MemberMeResponse,
+  UpdateJobPreferencesRequest,
 } from '@/types/member';
 
 // 온보딩 제출 3단계 PATCH. 인터셉터가 (res)=>res 라 res.data.result 수동 언랩.
@@ -37,6 +39,25 @@ export const saveOnboardingNotificationSettings = async (
 ) => {
   const res = await apiClient.patch<ApiEnvelope<unknown>>(
     '/api/v1/members/me/onboarding/notification-settings',
+    body,
+  );
+  return res.data.result;
+};
+
+// E1 — 마이페이지 정보 조회
+export const getMyPageInfo = async (): Promise<MemberMeResponse> => {
+  const res = await apiClient.get<ApiEnvelope<MemberMeResponse>>(
+    '/api/v1/members/me',
+  );
+  return res.data.result;
+};
+
+// E3 — 희망 조건 수정 (🔴 PUT = careerType·jobCategories·locations 전체 교체)
+export const updateJobPreferences = async (
+  body: UpdateJobPreferencesRequest,
+) => {
+  const res = await apiClient.put<ApiEnvelope<unknown>>(
+    '/api/v1/members/me/job-preferences',
     body,
   );
   return res.data.result;
