@@ -3,7 +3,7 @@ import { AuthUser, useAuthStore } from '@/stores/authStore';
 import { useOnboardingStore } from '@/stores/onboardingStore';
 
 // Swagger 공통 응답 봉투
-interface ApiEnvelope<T> {
+export interface ApiEnvelope<T> {
   isSuccess: boolean;
   code: string;
   message?: string;
@@ -29,9 +29,17 @@ export async function getGoogleLoginUrl(): Promise<string> {
   return data.result.googleLoginUrl;
 }
 // 2-2. 내 정보 조회 — 200이면 로그인 상태, 401이면 미로그인(throw)
+// 🔴 서버 온보딩 플래그 필드명은 onboardingCompleted (프론트 AuthUser.onboarded와 다름).
+//    매핑을 안 하면 user.onboarded가 항상 undefined → 게이트가 localStorage로만 판정됨.
+interface RawMe {
+  email: string;
+  name: string;
+  onboardingCompleted?: boolean;
+}
 export async function getMe(): Promise<AuthUser> {
-  const { data } = await apiClient.get<ApiEnvelope<AuthUser>>('/api/v1/auth/me');
-  return data.result; // { email, name }
+  const { data } = await apiClient.get<ApiEnvelope<RawMe>>('/api/v1/auth/me');
+  const { email, name, onboardingCompleted } = data.result;
+  return { email, name, onboarded: onboardingCompleted };
 }
 
 // 2-3. 로그아웃 — 서버가 accessToken 쿠키를 Max-Age=0으로 만료. 미로그인도 호출 가능.

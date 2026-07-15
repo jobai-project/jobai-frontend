@@ -1,7 +1,6 @@
 // 경력 (Figma 라디오: 신입 / 1-3년 / 3-5년 / 5년 이상 → 단일 선택)
-// 제출 파이프라인(useSubmitOnboarding → createCondition/conditionStore → 홈 필터)이
-// 이 값을 사용하므로 데이터 모델/기본값은 그대로 유지한다. (Step1 UI에서는 더 이상
-// 노출하지 않지만 INITIAL_ONBOARDING 기본값으로 계속 제출된다.)
+// Step1 UI 미노출·서버 제출(E4~E6) 미전송인 죽은 값이지만, conditionStore(홈 환영카드·
+// 필터·MyPage)가 아직 이 값을 읽으므로 데이터 모델/기본값은 그대로 유지한다.
 export type ExperienceLevel = 'NEW' | 'EXP_1_3' | 'EXP_3_5' | 'EXP_5_PLUS';
 
 export const EXPERIENCE_OPTIONS: { value: ExperienceLevel; label: string }[] = [
