@@ -1,13 +1,14 @@
 import { useNavigate } from 'react-router-dom';
-import { useConditionStore } from '@/stores/conditionStore';
 import { useAuthStore } from '@/stores/authStore';
+import { useMyPageInfo } from '@/hooks/useMember';
+import { ROLES } from '@/pages/Onboarding/types';
 
 // 역할별 히어로 변형 (spec §1.2). ⚠️ 태그 텍스트가 역할 고정 라벨인지 사용자 직무 데이터인지
 // 미확정 (spec §8.6): 일단 역할별 고정 라벨로 구현.
 type HeroRole = 'developer' | 'designer' | 'planner';
 
 // 배경 = 역할별 단일 PNG 1장(보라 그라디언트 + 일러스트 포함, §Phase2 1-4). 텍스트/필/버튼은
-// 코드 오버레이. 경로는 public 루트(한글 파일명 그대로). 역할 소스 = conditionStore.jobRole.
+// 코드 오버레이. 경로는 public 루트(한글 파일명 그대로). 역할 소스 = E1 jobPreference.jobCategories.
 // scale: PNG 4변 투명 여백(≈47px)을 카드 밖으로 밀어내 crop → 둥근 카드의 직사각 흰 테두리 제거.
 // 개발자 PNG 만 여백 없는 full-bleed(1760×1224)라 확대 안 함(1). 나머지 2종은 여백 있어 1.08.
 const ROLE_HERO: Record<HeroRole, { background: string; tag: string; scale: number }> = {
@@ -22,9 +23,13 @@ export default function WelcomeCard() {
   // 인사 문구 이름: Google OAuth 로그인 시 받아온 사용자 이름 (spec §1.1).
   const name = useAuthStore((s) => s.user?.name);
 
-  // 역할 소스: 온보딩 Step 2에서 고른 값(conditionStore.jobRole)을 재사용 (spec §1.2).
-  const jobRole = useConditionStore((s) => s.condition?.jobRole);
-  const hero = ROLE_HERO[(jobRole as HeroRole) ?? 'developer'] ?? ROLE_HERO.developer;
+  // 역할 소스: 서버(E1 jobPreference.jobCategories)를 정본으로. 한글 라벨 → ROLES 역매핑(.key).
+  // localStorage 기반이던 기존 방식은 새 기기/로그아웃 후 개발자로 고착되는 버그가 있었음(감사 F4).
+  // TODO: E3로 직무 복수 설정 가능해지면 [0] 선택 규칙 재검토.
+  const { data } = useMyPageInfo();
+  const label = data?.jobPreference.jobCategories?.[0];
+  const role: HeroRole = ROLES.find((r) => r.label === label)?.key ?? 'developer';
+  const hero = ROLE_HERO[role];
 
   return (
     // 컨테이너 — w-440 h-306 rounded-16, overflow-hidden(카드 형태로 클립), shadow-homecard.

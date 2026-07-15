@@ -6,7 +6,6 @@ import {
   ROLES,
 } from '@/pages/Onboarding/types';
 import { useOnboardingStore } from '@/stores/onboardingStore';
-import { useConditionStore } from '@/stores/conditionStore';
 import {
   saveOnboardingBasicInfo,
   saveOnboardingJobCategory,
@@ -17,7 +16,6 @@ export function useSubmitOnboarding() {
   const navigate = useNavigate();
   const qc = useQueryClient();
   const complete = useOnboardingStore((s) => s.complete);
-  const setCondition = useConditionStore((s) => s.setCondition);
 
   return useMutation({
     // 🔴 순차 실행(Promise.all 금지). E6(notification)이 마지막이어야 한다 —
@@ -53,19 +51,11 @@ export function useSubmitOnboarding() {
         matchScoreThreshold: s.scoreThreshold,
       });
     },
-    onSuccess: (_data, s) => {
-      // conditionStore 는 홈 환영카드·필터 + MyPage 가 읽는 클라이언트 단일 소스라 유지(B4).
-      // 서버 저장(E4~E6)과는 별개 경로.
-      setCondition({
-        locations: s.locations,
-        experience: s.experience,
-        jobTypes: s.jobTypes,
-        scoreThreshold: s.scoreThreshold,
-        jobRole: s.jobRole,
-      });
+    onSuccess: () => {
       // 게이트 즉시 통과(+ localStorage). 다음 /auth/me 가 서버 onboardingCompleted 로 확정.
       complete();
-      // 홈 목록 재조회 → 이력서 반영된 새 matchScore 표시.
+      // 서버(E1)가 조건의 단일 소스 — 홈 WelcomeCard(직무)·목록(matchScore) 재조회.
+      qc.invalidateQueries({ queryKey: ['member', 'me'] });
       qc.invalidateQueries({ queryKey: ['jobList'] });
       navigate('/', { replace: true });
     },
