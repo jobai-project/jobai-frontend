@@ -1,4 +1,5 @@
 import type { ApplicationStatus } from '@/utils/applicationStatusMapping';
+export type { ApplicationStatus };
 
 // GET /api/v1/applications 응답의 개별 항목
 export interface ApplicationApiItem {

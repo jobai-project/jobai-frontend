@@ -11,7 +11,7 @@ interface UserProfile {
   email: string;
   jobConditions: {
     positions: string[];
-    locations: string[];
+    jobCategories: string[];
     experiences: string[];
   };
 }
@@ -20,6 +20,61 @@ interface ProfileSectionProps {
   user: UserProfile;
   onNameChange: (name: string) => void;
   onJobConditionsChange: (conditions: UserProfile['jobConditions']) => void;
+}
+
+// 이력서 활성 변경 / 삭제 공용 확인 모달 - 지원 현황 페이지의 DeleteConfirmModal과 동일한 디자인
+function ResumeConfirmModal({
+  filename,
+  title,
+  description,
+  confirmLabel,
+  onConfirm,
+  onCancel,
+}: {
+  filename: string;
+  title: string;
+  description: string;
+  confirmLabel: string;
+  onConfirm: () => void;
+  onCancel: () => void;
+}) {
+  return (
+    <div
+      className="fixed inset-0 z-[200] bg-black/40 flex items-center justify-center"
+      onClick={onCancel}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="bg-white rounded-2xl p-6 w-[420px] h-[272px] shadow-xl flex flex-col items-center"
+      >
+        <div className="flex justify-center mb-3">
+          <span className="px-3 py-1 rounded-[99px] bg-[#F5F5FF] text-app-primary text-xs font-semibold">
+            {filename}
+          </span>
+        </div>
+
+        <h3 className="text-center text-lg font-bold text-gray-900 mb-1">
+          {title}
+        </h3>
+        <p className="text-center text-sm text-gray-500 mb-7">
+          {description}
+        </p>
+
+        <button
+          onClick={onConfirm}
+          className="w-[324px] h-[45px] py-3 mb-2 rounded-xl bg-app-primary text-white font-semibold hover:opacity-90 transition-opacity"
+        >
+          {confirmLabel}
+        </button>
+        <button
+          onClick={onCancel}
+          className="w-[324px] h-[45px] py-3 rounded-xl bg-gray-100 text-app-text-muted font-semibold hover:bg-app-hover transition-colors"
+        >
+          취소
+        </button>
+      </div>
+    </div>
+  );
 }
 
 export default function ProfileSection({
@@ -33,17 +88,26 @@ export default function ProfileSection({
   const [progress, setProgress] = useState(0);
   const [uploadError, setUploadError] = useState<string | null>(null);
 
-  // 이력서: 서버 상태는 TanStack Query 훅으로 관리(B2 기존 패턴). 활성/삭제/업로드
-  // 성공 시 각 훅의 onSuccess 가 ['resumes'] 무효화 → isActive 는 서버가 진실.
+  const [activateTargetId, setActivateTargetId] = useState<number | null>(null);
+  const [deleteTargetId, setDeleteTargetId] = useState<number | null>(null);
+
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const showToast = (message: string) => {
+    setToastMessage(message);
+    setTimeout(() => setToastMessage(null), 2000);
+  };
+
   const { data: resumeData, isLoading: resumesLoading } = useResumes();
   const upload = useUploadResume(setProgress);
   const activate = useActivateResume();
   const remove = useDeleteResume();
 
-  // 백엔드가 최신순 반환하나 방어적으로 uploadedAt 내림차순 유지.
   const resumes = [...(resumeData ?? [])].sort((a, b) =>
     b.uploadedAt.localeCompare(a.uploadedAt),
   );
+
+  const activateTarget = resumes.find((r) => r.resumeId === activateTargetId);
+  const deleteTarget = resumes.find((r) => r.resumeId === deleteTargetId);
 
   const handleFile = (file: File | undefined) => {
     if (!file) return;
@@ -57,17 +121,9 @@ export default function ProfileSection({
       return;
     }
     setProgress(0);
-    // status 로 완료 판정하지 않는다 — 업로드 성공 = 목록 refetch 로 새 이력서를
-    // isActive:true 로 다시 받아 표시(훅 onSuccess 의 invalidate).
     upload.mutate(file, {
       onError: () => setUploadError('업로드에 실패했어요. 다시 시도해 주세요.'),
     });
-  };
-
-  const handleDelete = (resumeId: number) => {
-    // 복구 불가(S3 파일 동반 삭제) — 확인 절차 필수. 공통 모달 없어 window.confirm 대체(B4).
-    if (!window.confirm('삭제하면 복구할 수 없어요. 삭제할까요?')) return;
-    remove.mutate(resumeId);
   };
 
   return (
@@ -104,7 +160,7 @@ export default function ProfileSection({
           />
         ) : (
           <div className="space-y-4">
-            {/* 직무 - 가로 */}
+            {/* 지역 - 가로 */}
             <div className="flex items-center gap-3">
               <div className="text-sm text-gray-400 min-w-12 mr-6">지역</div>
               <div className="flex gap-[6px] flex-wrap">
@@ -116,19 +172,19 @@ export default function ProfileSection({
               </div>
             </div>
 
-            {/* 지역 - 가로 */}
+            {/* 희망 직무 - 가로 */}
             <div className="flex items-center gap-3">
-              <div className="text-sm text-gray-400 min-w-12 mr-6">기업 형태</div>
+              <div className="text-sm text-gray-400 min-w-12 mr-6">희망 직무</div>
               <div className="flex gap-2 flex-wrap">
-                {user.jobConditions.locations.map((loc, idx) => (
+                {user.jobConditions.jobCategories.map((cat, idx) => (
                   <span key={idx} className="inline-block px-2.5 py-1.5 bg-[#F5F5FF] text-app-primary font-semibold text-xs rounded-[7px]">
-                    {loc}
+                    {cat}
                   </span>
                 ))}
               </div>
             </div>
 
-            {/* 경력 - 드롭다운 */}
+            {/* 고용 형태 - 가로 */}
             <div className="flex items-center gap-3">
               <div className="text-sm text-gray-400 min-w-12 mr-6">고용 형태</div>
               <div className="flex gap-2 flex-wrap">
@@ -158,9 +214,8 @@ export default function ProfileSection({
             resumes.map((resume) => (
               <div key={resume.resumeId} className="flex items-center justify-between py-2">
                 <div className="flex items-center gap-3">
-                  {/* 삭제 아이콘(팀원 디자인) — 서버 삭제로 연결(확인창 포함) */}
                   <button
-                    onClick={() => handleDelete(resume.resumeId)}
+                    onClick={() => setDeleteTargetId(resume.resumeId)}
                     disabled={remove.isPending}
                     className="p-0 hover:opacity-80 disabled:opacity-50"
                   >
@@ -177,17 +232,15 @@ export default function ProfileSection({
                     <div className="text-sm font-medium text-gray-800 mb-2">
                       {resume.originalFilename}
                     </div>
-                    {/* fileSize 는 이미 "1.2 MB" 문자열 — 다시 포맷하지 않는다. */}
                     <div className="text-sm font-normal text-gray-400">
                       {resume.fileSize} · {resume.uploadedAt}
                     </div>
                   </div>
                 </div>
 
-                {/* 활성 토글(팀원 디자인) — 비활성일 때만 서버 활성화 호출(중복 요청 방지) */}
                 <button
                   onClick={() => {
-                    if (!resume.isActive) activate.mutate(resume.resumeId);
+                    if (!resume.isActive) setActivateTargetId(resume.resumeId);
                   }}
                   disabled={activate.isPending}
                   className={`px-3 py-1.5 text-xs font-semibold rounded-[7px] transition-colors disabled:opacity-50 ${
@@ -203,7 +256,6 @@ export default function ProfileSection({
           )}
         </div>
 
-        {/* 업로드 진행률 바 (onProgress 0~100) */}
         {upload.isPending && (
           <div className="mt-4 h-1 w-full bg-app-border rounded-full overflow-hidden">
             <div
@@ -232,6 +284,47 @@ export default function ProfileSection({
           className="hidden"
         />
       </div>
+
+      {/* 활성 변경 확인 모달 */}
+      {activateTarget && (
+        <ResumeConfirmModal
+          filename={activateTarget.originalFilename}
+          title="이력서를 변경할까요?"
+          description="기존 활성 이력서는 비활성으로 변경돼요."
+          confirmLabel="변경"
+          onConfirm={() => {
+            activate.mutate(activateTarget.resumeId, {
+              onSuccess: () => showToast('활성 이력서를 변경했어요'),
+            });
+            setActivateTargetId(null);
+          }}
+          onCancel={() => setActivateTargetId(null)}
+        />
+      )}
+
+      {/* 삭제 확인 모달 */}
+      {deleteTarget && (
+        <ResumeConfirmModal
+          filename={deleteTarget.originalFilename}
+          title="이력서를 삭제할까요?"
+          description="삭제한 이력서는 복구할 수 없어요."
+          confirmLabel="삭제"
+          onConfirm={() => {
+            remove.mutate(deleteTarget.resumeId, {
+              onSuccess: () => showToast('이력서를 삭제했어요'),
+            });
+            setDeleteTargetId(null);
+          }}
+          onCancel={() => setDeleteTargetId(null)}
+        />
+      )}
+
+      {/* 완료 토스트 */}
+      {toastMessage && (
+        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[300] bg-gray-500 text-white text-sm font-medium px-4 py-2.5 rounded-[25px] shadow-lg whitespace-nowrap">
+          {toastMessage}
+        </div>
+      )}
     </div>
   );
 }
