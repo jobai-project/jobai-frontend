@@ -1,5 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { getMyPageInfo, updateJobPreferences, updateMemberName } from '@/api/member';
+import {
+  getMyPageInfo,
+  updateJobPreferences,
+  updateMemberName,
+  saveOnboardingJobCategory,
+} from '@/api/member';
 
 // 마이페이지(E1)·희망조건(E3). staleTime 은 main.tsx 전역 60초 사용.
 export const memberKeys = { me: ['member', 'me'] as const };
@@ -25,6 +30,19 @@ export const useUpdateName = () => {
     mutationFn: updateMemberName,
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: memberKeys.me });
+    },
+  });
+};
+
+// 희망 직무만 독립적으로 교체(PATCH /onboarding/job-category).
+// 지역·고용형태는 건드리지 않으므로 job-preferences PUT과 별도로 안전하게 호출 가능.
+export const useUpdateJobCategory = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: saveOnboardingJobCategory,
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: memberKeys.me });
+      qc.invalidateQueries({ queryKey: ['jobList'] });
     },
   });
 };

@@ -11,7 +11,7 @@ interface UserProfile {
   email: string;
   jobConditions: {
     positions: string[];
-    locations: string[];
+    jobCategories: string[];
     experiences: string[];
   };
 }
@@ -23,7 +23,6 @@ interface ProfileSectionProps {
 }
 
 // 이력서 활성 변경 / 삭제 공용 확인 모달 - 지원 현황 페이지의 DeleteConfirmModal과 동일한 디자인
-// 모듈 스코프에 정의(리렌더링마다 재생성 방지)
 function ResumeConfirmModal({
   filename,
   title,
@@ -89,26 +88,20 @@ export default function ProfileSection({
   const [progress, setProgress] = useState(0);
   const [uploadError, setUploadError] = useState<string | null>(null);
 
-  // 활성 변경 / 삭제는 클릭 즉시 실행하지 않고, 대상 id만 저장해두었다가
-  // 확인 모달에서 확정할 때 실제 mutate를 호출한다.
   const [activateTargetId, setActivateTargetId] = useState<number | null>(null);
   const [deleteTargetId, setDeleteTargetId] = useState<number | null>(null);
 
-  // 활성 변경/삭제 완료 후 잠깐 보여주는 토스트
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const showToast = (message: string) => {
     setToastMessage(message);
     setTimeout(() => setToastMessage(null), 2000);
   };
 
-  // 이력서: 서버 상태는 TanStack Query 훅으로 관리(B2 기존 패턴). 활성/삭제/업로드
-  // 성공 시 각 훅의 onSuccess 가 ['resumes'] 무효화 → isActive 는 서버가 진실.
   const { data: resumeData, isLoading: resumesLoading } = useResumes();
   const upload = useUploadResume(setProgress);
   const activate = useActivateResume();
   const remove = useDeleteResume();
 
-  // 백엔드가 최신순 반환하나 방어적으로 uploadedAt 내림차순 유지.
   const resumes = [...(resumeData ?? [])].sort((a, b) =>
     b.uploadedAt.localeCompare(a.uploadedAt),
   );
@@ -128,8 +121,6 @@ export default function ProfileSection({
       return;
     }
     setProgress(0);
-    // status 로 완료 판정하지 않는다 — 업로드 성공 = 목록 refetch 로 새 이력서를
-    // isActive:true 로 다시 받아 표시(훅 onSuccess 의 invalidate).
     upload.mutate(file, {
       onError: () => setUploadError('업로드에 실패했어요. 다시 시도해 주세요.'),
     });
@@ -169,7 +160,7 @@ export default function ProfileSection({
           />
         ) : (
           <div className="space-y-4">
-            {/* 직무 - 가로 */}
+            {/* 지역 - 가로 */}
             <div className="flex items-center gap-3">
               <div className="text-sm text-gray-400 min-w-12 mr-6">지역</div>
               <div className="flex gap-[6px] flex-wrap">
@@ -181,19 +172,19 @@ export default function ProfileSection({
               </div>
             </div>
 
-            {/* 지역 - 가로 */}
+            {/* 희망 직무 - 가로 */}
             <div className="flex items-center gap-3">
-              <div className="text-sm text-gray-400 min-w-12 mr-6">기업 형태</div>
+              <div className="text-sm text-gray-400 min-w-12 mr-6">희망 직무</div>
               <div className="flex gap-2 flex-wrap">
-                {user.jobConditions.locations.map((loc, idx) => (
+                {user.jobConditions.jobCategories.map((cat, idx) => (
                   <span key={idx} className="inline-block px-2.5 py-1.5 bg-[#F5F5FF] text-app-primary font-semibold text-xs rounded-[7px]">
-                    {loc}
+                    {cat}
                   </span>
                 ))}
               </div>
             </div>
 
-            {/* 경력 - 드롭다운 */}
+            {/* 고용 형태 - 가로 */}
             <div className="flex items-center gap-3">
               <div className="text-sm text-gray-400 min-w-12 mr-6">고용 형태</div>
               <div className="flex gap-2 flex-wrap">
@@ -223,7 +214,6 @@ export default function ProfileSection({
             resumes.map((resume) => (
               <div key={resume.resumeId} className="flex items-center justify-between py-2">
                 <div className="flex items-center gap-3">
-                  {/* 삭제 아이콘 — 클릭 시 바로 삭제하지 않고 확인 모달을 연다 */}
                   <button
                     onClick={() => setDeleteTargetId(resume.resumeId)}
                     disabled={remove.isPending}
@@ -242,14 +232,12 @@ export default function ProfileSection({
                     <div className="text-sm font-medium text-gray-800 mb-2">
                       {resume.originalFilename}
                     </div>
-                    {/* fileSize 는 이미 "1.2 MB" 문자열 — 다시 포맷하지 않는다. */}
                     <div className="text-sm font-normal text-gray-400">
                       {resume.fileSize} · {resume.uploadedAt}
                     </div>
                   </div>
                 </div>
 
-                {/* 활성 토글 — 비활성일 때 클릭하면 바로 활성화하지 않고 확인 모달을 연다 */}
                 <button
                   onClick={() => {
                     if (!resume.isActive) setActivateTargetId(resume.resumeId);
@@ -268,7 +256,6 @@ export default function ProfileSection({
           )}
         </div>
 
-        {/* 업로드 진행률 바 (onProgress 0~100) */}
         {upload.isPending && (
           <div className="mt-4 h-1 w-full bg-app-border rounded-full overflow-hidden">
             <div
@@ -334,7 +321,7 @@ export default function ProfileSection({
 
       {/* 완료 토스트 */}
       {toastMessage && (
-        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[300] bg-gray-500 text-white text-sm font-medium px-4 py-2.5 rounded-[25px] shadow-lg">
+        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[300] bg-gray-500 text-white text-sm font-medium px-4 py-2.5 rounded-[25px] shadow-lg whitespace-nowrap">
           {toastMessage}
         </div>
       )}

@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 
 interface JobConditions {
   positions: string[]; // 지역
-  locations: string[]; // 기업 형태
+  jobCategories: string[]; // 희망 직무 (단일 선택)
   experiences: string[]; // 고용 형태
 }
 
@@ -13,10 +13,10 @@ interface JobConditionsEditorProps {
 }
 
 const REGION_OPTIONS = ['전체', '서울', '경기', '인천', '대전', '충남', '충북', '세종', '제주', '울산', '전북', '전남', '광주', '경북', '경남', '강원'];
-const COMPANY_TYPE_OPTIONS = ['공기업', '사기업'];
+const JOB_CATEGORY_OPTIONS = ['개발자', '디자이너', '기획자'];
 const EMPLOYMENT_TYPE_OPTIONS = ['인턴', '신입', '경력직', '계약직'];
 
-type FieldKey = 'positions' | 'locations' | 'experiences';
+type FieldKey = 'positions' | 'jobCategories' | 'experiences';
 
 export default function JobConditionsEditor({
   conditions,
@@ -26,6 +26,13 @@ export default function JobConditionsEditor({
   const [temp, setTemp] = useState<JobConditions>(conditions);
   const [openField, setOpenField] = useState<FieldKey | null>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
+
+  // 희망 직무가 비어있는 채로 저장을 시도할 때 안내하는 토스트
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const showToast = (message: string) => {
+    setToastMessage(message);
+    setTimeout(() => setToastMessage(null), 2000);
+  };
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -58,6 +65,11 @@ export default function JobConditionsEditor({
     });
   };
 
+  // 희망 직무는 단일 선택 - 클릭하면 기존 선택을 무시하고 그 하나로 교체한다.
+  const selectJobCategory = (option: string) => {
+    setTemp((prev) => ({ ...prev, jobCategories: [option] }));
+  };
+
   const ALL_REGIONS = REGION_OPTIONS.filter((r) => r !== '전체');
 
   const isAllRegionsSelected = ALL_REGIONS.every((r) => temp.positions.includes(r));
@@ -80,6 +92,16 @@ export default function JobConditionsEditor({
     return temp[field].includes(option);
   };
 
+  const handleOptionClick = (field: FieldKey, option: string) => {
+    if (field === 'positions') {
+      handleRegionClick(option);
+    } else if (field === 'jobCategories') {
+      selectJobCategory(option);
+    } else {
+      toggleItem(field, option);
+    }
+  };
+
   const OptionList = ({
     field,
     options,
@@ -97,9 +119,7 @@ export default function JobConditionsEditor({
         return (
           <button
             key={option}
-            onClick={() =>
-              field === 'positions' ? handleRegionClick(option) : toggleItem(field, option)
-            }
+            onClick={() => handleOptionClick(field, option)}
             className={`h-[45px] flex items-center justify-between text-sm px-2 py-1 rounded-md ${
               selected ? 'bg-[#F5F5FF] text-app-primary font-semibold' : 'text-app-text'
             }`}
@@ -118,12 +138,14 @@ export default function JobConditionsEditor({
     options,
     columns,
     panelWidth,
+    addButtonLabel = '추가',
   }: {
     field: FieldKey;
     label: string;
     options: string[];
     columns?: number;
     panelWidth: string;
+    addButtonLabel?: string;
   }) => (
     <div className="flex items-center gap-3">
       <div className="text-sm text-gray-400 min-w-12">{label}</div>
@@ -155,14 +177,14 @@ export default function JobConditionsEditor({
           ))
         )}
 
-        {/* 추가 버튼 + 드롭다운을 함께 relative로 감싸 버튼 바로 밑에 고정 */}
+        {/* 추가/변경 버튼 + 드롭다운을 함께 relative로 감싸 버튼 바로 밑에 고정 */}
         <div className="relative inline-block">
           <button
             onClick={() => setOpenField(openField === field ? null : field)}
             className="inline-flex items-center gap-1.5 px-2.5 py-1.5 border border-dashed border-app-border rounded-[7px] font-semibold text-xs text-gray-500 hover:bg-app-bg transition-colors"
           >
-            <img src="/gray-plus-icon.png" alt="추가" className="w-3 h-3" />
-            추가
+            <img src="/gray-plus-icon.png" alt={addButtonLabel} className="w-3 h-3" />
+            {addButtonLabel}
           </button>
 
           {openField === field && (
@@ -186,10 +208,24 @@ export default function JobConditionsEditor({
     </div>
   );
 
+  const handleSave = () => {
+    if (temp.jobCategories.length === 0) {
+      showToast('희망 직무를 선택해주세요');
+      return;
+    }
+    onSave(temp);
+  };
+
   return (
-    <div ref={wrapperRef} className="space-y-4">
+    <div ref={wrapperRef} className="space-y-4 relative">
       <FieldRow field="positions" label="지역" options={REGION_OPTIONS} columns={3} panelWidth="560px" />
-      <FieldRow field="locations" label="기업 형태" options={COMPANY_TYPE_OPTIONS} panelWidth="200px" />
+      <FieldRow
+        field="jobCategories"
+        label="희망 직무"
+        options={JOB_CATEGORY_OPTIONS}
+        panelWidth="200px"
+        addButtonLabel="변경"
+      />
       <FieldRow field="experiences" label="고용 형태" options={EMPLOYMENT_TYPE_OPTIONS} panelWidth="200px" />
 
       {/* 하단 취소/저장 */}
@@ -202,12 +238,19 @@ export default function JobConditionsEditor({
           취소
         </button>
         <button
-          onClick={() => onSave(temp)}
+          onClick={handleSave}
           className="px-4 py-2 text-sm font-semibold text-white bg-app-primary rounded-lg hover:opacity-90 transition-opacity"
         >
           저장
         </button>
       </div>
+
+      {/* 희망 직무 필수 안내 토스트 */}
+      {toastMessage && (
+        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[300] bg-gray-900 text-white text-sm font-medium px-4 py-2.5 rounded-lg shadow-lg">
+          {toastMessage}
+        </div>
+      )}
     </div>
   );
 }
