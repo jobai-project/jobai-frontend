@@ -124,7 +124,7 @@ export default function ApplicationStatusPage() {
   };
 
   // blur/선택 확정 시점에 실제 API 호출
-  const handleCommitField = async (id: string, field: keyof ApplicationItem) => {
+  const handleCommitField = async (id: string, field: keyof ApplicationItem, valueOverride?: string,) => {
     const item = data.find((d) => d.id === id);
     if (!item) return;
 
@@ -136,12 +136,6 @@ export default function ApplicationStatusPage() {
       // status는 기본값(PLANNED 등)이 항상 있으니, company와 position 둘 다
       // 채워졌을 때만 생성을 시도한다.
       if (!item.company.trim() || !item.position.trim()) {
-        // 회사명·직무가 둘 다 비어있는(사용자가 아무 것도 안 쓰고 손을 뗀) 빈 임시
-        // 행은 화면에 "유령 행"으로 남지 않도록 이 시점에 자동으로 제거한다.
-        // 둘 중 하나라도 채워져 있으면 아직 작성 중일 수 있으니 지우지 않고 둔다.
-        if (!item.company.trim() && !item.position.trim()) {
-          setData((prev) => prev.filter((d) => d.id !== id));
-        }
         return;
       }
 
@@ -149,7 +143,7 @@ export default function ApplicationStatusPage() {
         const { applicationId } = await createMutation.mutateAsync({
           companyName: item.company,
           jobTitle: item.position || '',
-          status: STAGE_TO_STATUS[item.stage] ?? 'PLANNED',
+          status: STAGE_TO_STATUS[valueOverride ?? item.stage] ?? 'PLANNED',
           appliedAt: formatDateForApi(item.appliedDate),
           interviewAt: formatDateForApi(item.nextSchedule),
           memo: item.memo || null,
@@ -178,7 +172,8 @@ export default function ApplicationStatusPage() {
     } else if (field === 'position') {
       updateMutation.mutate({ applicationId, payload: { jobTitle: item.position } });
     } else if (field === 'stage') {
-      const status = STAGE_TO_STATUS[item.stage];
+      const stageValue = valueOverride ?? item.stage;
+      const status = STAGE_TO_STATUS[stageValue];
       if (status) {
         updateMutation.mutate({ applicationId, payload: { status } });
       }
