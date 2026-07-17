@@ -32,7 +32,7 @@ export default function Step1BasicInfo({ state, dispatch }: StepProps) {
         />
       </div>
 
-      {/* §6 희망하는 채용 형태 (단일 선택 라디오) */}
+      {/* §6 희망하는 채용 형태 (checkbox 토글 다중선택. E4 계약이 1~4개 배열이므로 다중선택이 정합) */}
       <div className="flex flex-col items-start gap-2 self-stretch">
         <h3 className="font-pretendard text-[18px] font-medium leading-[150%] tracking-[-0.36px] text-[#303D4C]">
           희망하는 채용 형태를 선택해주세요.
