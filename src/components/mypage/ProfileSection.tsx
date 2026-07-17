@@ -18,7 +18,7 @@ interface UserProfile {
 
 interface ProfileSectionProps {
   user: UserProfile;
-  onNameChange: (name: string) => void;
+  onNameChange: (name: string) => Promise<void>;
   onJobConditionsChange: (conditions: UserProfile['jobConditions']) => void;
 }
 

@@ -28,7 +28,7 @@ export default function UpcomingScheduleCard() {
       <div className="flex items-center gap-1.5">
         <img src="/calendar-icon.png" alt="" aria-hidden className="h-6 w-6" />
         <span className="text-[15px] font-semibold text-[#171F29]">
-          다가오는 일정
+          다가오는 다음 일정
         </span>
       </div>
 

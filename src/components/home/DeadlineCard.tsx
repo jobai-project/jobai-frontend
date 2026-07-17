@@ -39,7 +39,7 @@ export default function DeadlineCard() {
           <img src={timeIcon} alt="" className="h-6 w-6 flex-shrink-0" />
           곧 마감되는 스크랩 공고
         </span>
-        <ChevronIcon className="h-6 w-6 flex-shrink-0 rotate-180 text-app-text-subtle" />
+        <ChevronIcon className="h-6 w-6 flex-shrink-0 text-app-text-subtle" />
       </button>
 
       {/* 🔴 순서 중요: 로딩 → 목록 → E-1(스크랩 0건) → E-2(임박 없음) */}

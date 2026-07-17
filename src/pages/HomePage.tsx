@@ -157,6 +157,7 @@ export default function HomePage() {
           </div>
 
           <FilterBar />
+          <div className="h-7" />
 
           {isError ? (
             <NoResults title="공고를 불러오지 못했습니다" description="잠시 후 다시 시도해 주세요." />

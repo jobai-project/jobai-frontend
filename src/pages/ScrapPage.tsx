@@ -136,17 +136,19 @@ export default function ScrapPage() {
             <img src="/arrowL-icon.png" alt="이전" className="w-16 h-16 object-contain" />
           </button>
 
-          {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-            <button
-              key={page}
-              onClick={() => setCurrentPage(page)}
-              className={`w-8 h-8 text-[16px] font-semibold ${
-                currentPage === page ? 'text-app-text' : 'text-gray-300'
-              }`}
-            >
-              {page}
-            </button>
-          ))}
+          <div className="flex items-center gap-1">
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+              <button
+                key={page}
+                onClick={() => setCurrentPage(page)}
+                className={`w-8 h-8 text-[16px] font-semibold ${
+                  currentPage === page ? 'text-app-text' : 'text-gray-300'
+                }`}
+              >
+                {page}
+              </button>
+            ))}
+          </div>
 
           <button
             type="button"
