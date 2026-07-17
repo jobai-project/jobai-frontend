@@ -1,12 +1,12 @@
 // 온보딩 제출 요청 타입 (E4·E5·E6). 값은 전부 한글 라벨(실측 확정).
-// careerType: 서버가 string[]로 받음(복수 선택 가능). 예: ['신입'], ['신입','경력직']
-// ❓ TODO(BE): careerType 정본 값 세트(2종 vs 4종) 확정 시 union으로 교체.
+
+// ✅ Swagger 실측: E4·E3 공통. 서버가 4종만 허용하며 검증한다(위반 시 400).
+export type CareerType = '인턴' | '신입' | '경력직' | '계약직';
+
 export interface OnboardingBasicInfoRequest {
-  // ⚠️ E4는 Swagger 확인 결과 단일 문자열. E1/E3는 계약 미확인 상태로 string[] 유지.
-  // 🔴 TODO(BE 확인): E1/E3의 careerType 실제 타입. MyPage.tsx:93이 배열을 전송 중이며
-  //    서버 검증이 없어 오염 저장 가능성 있음. 확인 전까지 현행 유지.
-  careerType: string; // 한글 라벨. 예: '신입'
-  locations: string[]; // 한글 시도명. 예: ['서울']
+  // ✅ Swagger 실측: 1개 이상 4개 이하 배열. 원소는 CareerType 4종(서버 검증 있음).
+  careerType: CareerType[]; // 예: ['신입'], ['신입','계약직']
+  locations: string[]; // 한글 시도명. 필수. 전체 삭제 시 [] 명시 전송(누락하면 400)
 }
 
 export interface OnboardingJobCategoryRequest {
@@ -28,6 +28,9 @@ export interface MemberProfile {
 }
 
 export interface JobPreference {
+  // ❓ TODO(B1): E1 **응답**의 careerType 실제 타입 미확인. E3 **요청**은 배열 확정이나
+  //    응답 계약은 별개. ce875fb(jjung0476)가 근거 기록 없이 배열화(Phase 1 감사 G1·G3).
+  //    §5 검증 4번(GET /members/me 실측)에서 확정 예정. 그 전까지 현행 유지·임의 변경 금지.
   careerType: string[]; // 온보딩 전 빈 배열. 복수 선택 가능
   jobCategories: string[]; // 한글. 예: ["개발자"]
   locations: string[]; // 한글 시도명. 예: ["서울"]
@@ -50,7 +53,7 @@ export interface MemberMeResponse {
 
 // ── E3 요청 (PUT /api/v1/members/me/job-preferences) — 전체 교체, 세 필드 모두 필수 ──
 export interface UpdateJobPreferencesRequest {
-  careerType: string[];
+  careerType: string[]; // TODO(union): 4종 확정됨. MyPage.tsx:93 edited.experiences 타입 정리 후 CareerType[] 승격
   jobCategories: string[];
   locations: string[];
 }

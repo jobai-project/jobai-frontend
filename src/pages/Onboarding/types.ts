@@ -1,3 +1,5 @@
+import type { CareerType } from '@/types/member';
+
 // 경력 (Figma 라디오: 신입 / 1-3년 / 3-5년 / 5년 이상 → 단일 선택)
 // Step1 UI 미노출·서버 제출(E4~E6) 미전송이고, conditionStore 제거 후 소비처가 없는 죽은 값.
 // 필드 제거는 별도 작업 — 지금은 데이터 모델/기본값만 유지한다.
@@ -13,7 +15,7 @@ export const EXPERIENCE_OPTIONS: { value: ExperienceLevel; label: string }[] = [
 // 채용 형태 (Figma 1단계 §6 라디오: 인턴 / 신입 / 경력직 / 계약직 → 단일 선택)
 export type EmploymentType = 'INTERN' | 'NEWCOMER' | 'EXPERIENCED' | 'CONTRACT';
 
-export const EMPLOYMENT_OPTIONS: { value: EmploymentType; label: string }[] = [
+export const EMPLOYMENT_OPTIONS: { value: EmploymentType; label: CareerType }[] = [
   { value: 'INTERN', label: '인턴' },
   { value: 'NEWCOMER', label: '신입' },
   { value: 'EXPERIENCED', label: '경력직' },
