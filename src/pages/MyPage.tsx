@@ -128,7 +128,7 @@ export default function MyPage() {
           )}
         </>
       ) : (
-        <NotificationSettings />
+        <NotificationSettings email={profile.email} />
       )}
     </div>
   );

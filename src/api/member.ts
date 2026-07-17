@@ -7,6 +7,7 @@ import type {
   MemberMeResponse,
   UpdateJobPreferencesRequest,
   UpdateNameRequest,
+  NotificationSettingsResponse,
 } from '@/types/member';
 
 // 온보딩 제출 3단계 PATCH. 인터셉터가 (res)=>res 라 res.data.result 수동 언랩.
@@ -69,6 +70,14 @@ export const updateMemberName = async (body: UpdateNameRequest) => {
   const res = await apiClient.patch<ApiEnvelope<string>>(
     '/api/v1/members/me/name',
     body,
+  );
+  return res.data.result;
+};
+
+// GET — 알림 설정 조회 (이메일/Slack/Discord 토글 + 매칭 점수 기준)
+export const getNotificationSettings = async (): Promise<NotificationSettingsResponse> => {
+  const res = await apiClient.get<ApiEnvelope<NotificationSettingsResponse>>(
+    '/api/v1/members/me/notification-settings',
   );
   return res.data.result;
 };

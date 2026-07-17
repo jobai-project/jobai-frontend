@@ -1,13 +1,18 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import type { OnboardingNotificationSettingsRequest } from '@/types/member';
 import {
   getMyPageInfo,
   updateJobPreferences,
   updateMemberName,
   saveOnboardingJobCategory,
+  getNotificationSettings, 
+  saveOnboardingNotificationSettings,
 } from '@/api/member';
 
 // 마이페이지(E1)·희망조건(E3). staleTime 은 main.tsx 전역 60초 사용.
 export const memberKeys = { me: ['member', 'me'] as const };
+
+const NOTIFICATION_SETTINGS_QUERY_KEY = ['notificationSettings'] as const;
 
 export const useMyPageInfo = () =>
   useQuery({ queryKey: memberKeys.me, queryFn: getMyPageInfo });
@@ -43,6 +48,24 @@ export const useUpdateJobCategory = () => {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: memberKeys.me });
       qc.invalidateQueries({ queryKey: ['jobList'] });
+    },
+  });
+};
+
+export const useNotificationSettings = () => {
+  return useQuery({
+    queryKey: NOTIFICATION_SETTINGS_QUERY_KEY,
+    queryFn: getNotificationSettings,
+  });
+};
+ 
+export const useUpdateNotificationSettings = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: OnboardingNotificationSettingsRequest) =>
+      saveOnboardingNotificationSettings(payload),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: NOTIFICATION_SETTINGS_QUERY_KEY });
     },
   });
 };

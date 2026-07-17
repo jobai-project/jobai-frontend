@@ -57,3 +57,13 @@ export interface UpdateJobPreferencesRequest {
 export interface UpdateNameRequest {
   name: string;
 }
+
+// GET /api/v1/members/me/notification-settings 응답
+export interface NotificationSettingsResponse {
+  emailEnabled: boolean;
+  slackEnabled: boolean;
+  discordEnabled: boolean;
+  matchScoreThreshold: number;
+  slackWebhookUrl: string | null;
+  discordWebhookUrl: string | null;
+}
