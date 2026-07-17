@@ -138,7 +138,13 @@ export default function JobCard({ job, masked = false }: JobCardProps) {
   }
 
   return (
-    <Link to={`/jobs/${job.source}/${jobId}`} className={CARD_CLASS}>
+    // 상세는 matchScore 를 API 로 못 얻는다(상세 응답에 없음) → 목록 점수를 state 로 전달.
+    // JobCard 는 목록·검색·스크랩 공용이라 matchScore 없는 화면 대비 ?? null.
+    <Link
+      to={`/jobs/${job.source}/${jobId}`}
+      state={{ matchScore: job.matchScore ?? null }}
+      className={CARD_CLASS}
+    >
       {inner}
     </Link>
   );

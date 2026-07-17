@@ -3,11 +3,14 @@ import { memo, ReactNode } from 'react';
 interface ScoreGauge2Props {
   score: number | null; // null = 점수 없음(스코어링 미실행) → 블러 "??" (C1=B)
   children?: ReactNode;
+  // 도넛 지름(px). 기본 80(ScrapTable 회귀 방지). 상세 카드(ScoreBox)는 Figma 92 전달.
+  // r·stroke 는 size 에 비례(기존 40/13 비율 유지).
+  size?: number;
 }
 
-function ScoreGauge2({ score, children }: ScoreGauge2Props) {
-  const radius = 40;
-  const strokeWidth = 13;
+function ScoreGauge2({ score, children, size = 80 }: ScoreGauge2Props) {
+  const radius = size / 2;
+  const strokeWidth = (13 / 80) * size;
   const normalizedRadius = radius - strokeWidth / 2;
   const circumference = normalizedRadius * 2 * Math.PI;
   const svgSize = radius * 2;

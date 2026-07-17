@@ -44,7 +44,7 @@ export default function JobSummarySection({ jobId }: JobSummarySectionProps) {
 
       {requested && isFetching ? (
         // §3 로딩 — bg-blue-500(불투명, /90 제거), 스피너→star 18px
-        <div className="flex items-center justify-center gap-2 self-stretch rounded-xl bg-blue-500 px-10 py-3 text-white">
+        <div className="flex items-center justify-center gap-2 self-stretch rounded-[12px] bg-blue-500 px-[40px] py-[12px] text-white">
           {/* ❓ TODO: 로딩 애니메이션 유지 여부 확인 → 잠정 animate-pulse 유지 */}
           <img src="/star.svg" alt="" aria-hidden className="h-[18px] w-[18px] animate-pulse" />
           <span className="font-pretendard text-[16px] font-semibold">
@@ -56,7 +56,7 @@ export default function JobSummarySection({ jobId }: JobSummarySectionProps) {
         <button
           type="button"
           onClick={handleSummary}
-          className="flex items-center justify-center gap-1.5 self-stretch rounded-xl bg-blue-500 px-10 py-3 font-pretendard text-[16px] font-semibold leading-[130%] tracking-[-0.32px] text-white transition hover:opacity-90"
+          className="flex items-center justify-center gap-1.5 self-stretch rounded-[12px] bg-blue-500 px-[40px] py-[12px] font-pretendard text-[16px] font-semibold leading-[130%] tracking-[-0.32px] text-white transition hover:opacity-90"
         >
           {/* ❓ TODO: star 아이콘 정체 미확인(lucide Star 추정) → 기존 /star.svg 18px 사용 */}
           <img src="/star.svg" alt="" aria-hidden className="h-[18px] w-[18px]" />

@@ -1,9 +1,11 @@
 import { Link, useParams } from 'react-router-dom';
 import { useJobDetail } from '@/hooks/useJobDetail';
 import { useJobSummary } from '@/hooks/useJobSummary';
+import { useJobMatchScore } from '@/hooks/useJobMatchScore';
 import BackButton from '@/components/common/BackButton';
 import BookmarkButton from '@/components/common/BookmarkButton';
 import JobInfo from '@/components/job_detail/JobInfo';
+import ScoreBox from '@/components/job_detail/ScoreBox';
 import JobSummarySection from '@/components/job_detail/JobSummarySection';
 import DetailContent from '@/components/job_detail/DetailContent';
 import type { CompanyType } from '@/types/job';
@@ -24,6 +26,9 @@ export default function JobDetailPage() {
   // 완료 시 원문 본문(DetailContent)을 언마운트한다(§6 확정).
   const { data: summary } = useJobSummary(jobId);
   const summaryDone = !!summary;
+
+  // 상세 API 엔 matchScore 없음(A1) → 목록에서 3단 폴백으로 전달받음. 없으면 null → "??" 블러.
+  const matchScore = useJobMatchScore(jobSource, jobId);
 
   // 잘못된 source(예: /jobs/XXX/1) 는 요청하지 않고 바로 404.
   const invalid = !jobSource || !Number.isFinite(jobId);
@@ -64,8 +69,10 @@ export default function JobDetailPage() {
   }
 
   return (
-    <div className="relative">
-      <div className="mb-4 flex items-center justify-between">
+    <div>
+      {/* P3 상단바(Figma 1576:12770) — bg-gray-50 + 전체폭. MainLayout main p-40 를 음수 margin 으로 탈출.
+          ❓ TODO(P3): Figma drop-shadow 값 미추출 → shadow 생략. 확정 후 추가. */}
+      <div className="-mx-[40px] -mt-[40px] flex items-center justify-between bg-gray-50 px-[40px] pb-[20px] pt-[40px]">
         <BackButton variant="pill" label="목록으로" />
 
         {/* A-2 사이트 바로가기 → applyUrl (없으면 비활성). bg-app-primary(=#4741FF), rounded-full, h-46, 18px */}
@@ -77,7 +84,7 @@ export default function JobDetailPage() {
             className="flex h-[46px] items-center gap-2 rounded-full bg-app-primary px-6 text-[18px] font-semibold text-white transition-colors hover:opacity-90"
           >
             사이트 바로가기
-            {/* ❓ Figma 화살표 아이콘 정체 미확인 → 기존 arrow-right 유지 */}
+            {/* ❓ TODO(B5): Figma C05 아이콘(24px) 미추출 → 기존 arrow-right 유지 */}
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none" className="text-white">
               <path
                 d="M14.25 9H3.75M14.25 9L10.5 5.25M14.25 9L10.5 12.75"
@@ -99,61 +106,63 @@ export default function JobDetailPage() {
         )}
       </div>
 
-      <div className="mt-6">
-        <div className="min-w-0">
-          <div className="mb-5 flex items-center gap-3">
-            {/* A-1 공고 제목 — 32 Bold, tracking -0.64, #000 (text-app-text #172129 → text-black) */}
-            <h1 className="text-[32px] font-bold tracking-[-0.64px] text-black">{job.title}</h1>
-            {/* A-1 북마크 — 아이콘 36px(size=lg) */}
-            <BookmarkButton source={job.source} sourceId={job.id} size="lg" />
-          </div>
-
-          <JobInfo job={job} />
-
-          {/* AI 요약(온디맨드) — 사기업 전용. 본문과 독립(버튼 클릭 전 호출 없음). */}
-          {job.source === 'PRIVATE' && (
-            <div className="mt-[52px]">
-              <JobSummarySection jobId={job.id} />
-            </div>
-          )}
-
-          {/* 원문 본문 — content(디코드+sanitize). §6: AI 요약 완료 시 언마운트(탭+섹션으로 대체). */}
-          {!summaryDone && (
-            <div className="w-full py-6">
-              <DetailContent content={job.content} />
-            </div>
-          )}
-
-          {/* 공공 전용 부가 필드 — 값 있을 때만 조건부 렌더 */}
-          {job.source === 'PUBLIC' && (
-            <dl className="grid grid-cols-[auto_1fr] gap-x-8 gap-y-3 text-sm">
-              {job.workExperience && (
-                <>
-                  <dt className="text-app-text-muted">경력</dt>
-                  <dd className="text-app-text font-medium">{job.workExperience}</dd>
-                </>
-              )}
-              {job.applyQualification && (
-                <>
-                  <dt className="text-app-text-muted">지원자격</dt>
-                  <dd className="text-app-text font-medium">{job.applyQualification}</dd>
-                </>
-              )}
-              {job.applicationMethod && (
-                <>
-                  <dt className="text-app-text-muted">지원방법</dt>
-                  <dd className="text-app-text font-medium">{job.applicationMethod}</dd>
-                </>
-              )}
-              {job.disqualificationReason && (
-                <>
-                  <dt className="text-app-text-muted">결격사유</dt>
-                  <dd className="text-app-text font-medium">{job.disqualificationReason}</dd>
-                </>
-              )}
-            </dl>
-          )}
+      {/* P1 상단 2컬럼 영역(Figma 1428:14118) — py-52, gap-32 */}
+      <div className="flex flex-col gap-[32px] py-[52px]">
+        {/* 제목행(1428:14119) — 32 Bold + 북마크 36px */}
+        <div className="flex items-center gap-[20px]">
+          <h1 className="text-[32px] font-bold tracking-[-0.64px] text-black">{job.title}</h1>
+          <BookmarkButton source={job.source} sourceId={job.id} size="lg" />
         </div>
+
+        {/* 2컬럼(1428:14122) — 좌 공고정보 716 / 우 AI 점수 348. 고정 gap 아님(justify-between) */}
+        <div className="flex flex-wrap items-start justify-between gap-y-[20px]">
+          <div className="w-[716px]">
+            <JobInfo job={job} />
+          </div>
+          <div className="w-[348px]">
+            <ScoreBox score={matchScore} />
+          </div>
+        </div>
+      </div>
+
+      {/* P6 하단 — AI 요약 + 원문 본문(Figma 1428:14195) gap-40.
+          ❓ TODO(P6): Figma 본문 폭 756 > 좌컬럼 716 모순 → w-full 로 두고 확정 대기. */}
+      <div className="flex flex-col gap-[40px] pb-[64px]">
+        {/* AI 요약(온디맨드) — 사기업 전용. 본문과 독립(버튼 클릭 전 호출 없음). */}
+        {job.source === 'PRIVATE' && <JobSummarySection jobId={job.id} />}
+
+        {/* 원문 본문 — content(디코드+sanitize). §6: AI 요약 완료 시 언마운트(탭+섹션으로 대체). */}
+        {!summaryDone && <DetailContent content={job.content} />}
+
+        {/* 공공 전용 부가 필드 — 값 있을 때만 조건부 렌더 */}
+        {job.source === 'PUBLIC' && (
+          <dl className="grid grid-cols-[auto_1fr] gap-x-8 gap-y-3 text-sm">
+            {job.workExperience && (
+              <>
+                <dt className="text-app-text-muted">경력</dt>
+                <dd className="text-app-text font-medium">{job.workExperience}</dd>
+              </>
+            )}
+            {job.applyQualification && (
+              <>
+                <dt className="text-app-text-muted">지원자격</dt>
+                <dd className="text-app-text font-medium">{job.applyQualification}</dd>
+              </>
+            )}
+            {job.applicationMethod && (
+              <>
+                <dt className="text-app-text-muted">지원방법</dt>
+                <dd className="text-app-text font-medium">{job.applicationMethod}</dd>
+              </>
+            )}
+            {job.disqualificationReason && (
+              <>
+                <dt className="text-app-text-muted">결격사유</dt>
+                <dd className="text-app-text font-medium">{job.disqualificationReason}</dd>
+              </>
+            )}
+          </dl>
+        )}
       </div>
     </div>
   );

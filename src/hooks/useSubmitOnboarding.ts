@@ -23,19 +23,19 @@ export function useSubmitOnboarding() {
     //    희망조건이 빈 채로 '완료'가 되어 기존 '?? / 재온보딩' 버그가 재현된다.
     // 부분 실패 시 롤백하지 않고 throw → UI 실패 표시 → 재시도(각 PATCH 는 멱등 부분교체).
     mutationFn: async (s: OnboardingState) => {
-      const career = s.employmentType[0];
-      // ⚠️ 가드: employmentType 빈 배열이면 careerType undefined → E4가 400.
-      //    TODO(UX): Step1에서 채용형태 필수 강제 or 제출 버튼 비활성(디자인 확인).
-      if (!career) {
+      // ⚠️ 가드: E4는 careerType 1개 이상 필수(0개면 400).
+      // TODO(UX): Step1에서 채용형태 필수 강제 or 제출 버튼 비활성(디자인 확인).
+      if (s.employmentType.length === 0) {
         throw new Error('채용 형태를 최소 1개 선택해주세요.');
       }
 
       // 라벨 상수(EMPLOYMENT_TYPE_LABELS/ROLE_LABELS)는 없음 → 기존 OPTIONS/ROLES 배열에서
       // 라벨 도출(UI 표시값과 전송값의 단일 소스 유지). 값은 반드시 한글 라벨(영문은 502).
-      // ⚠️ TODO(BE): employmentType 은 다중선택 배열인데 careerType 은 단일 문자열 →
-      //    현재 [0]만 전송, 사용자가 2개↑ 고르면 나머지 유실. (A)BE 배열화 (B)Step1 단일선택.
+      // ✅ BE 배열화 반영 완료 → 다중선택 전량 전송(기존 [0] 유실 버그 해소).
       await saveOnboardingBasicInfo({
-        careerType: [EMPLOYMENT_OPTIONS.find((o) => o.value === career)!.label],
+        careerType: s.employmentType.map(
+          (v) => EMPLOYMENT_OPTIONS.find((o) => o.value === v)!.label,
+        ),
         locations: s.locations,
       });
       await saveOnboardingJobCategory({

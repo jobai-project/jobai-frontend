@@ -12,48 +12,66 @@ function JobInfo({ job }: JobInfoProps) {
   const beginDate = job.source === 'PUBLIC' ? job.beginDate : null;
   const jobRole = job.source === 'PRIVATE' ? job.jobCategory : job.jobRole;
 
+  // 라벨/값 공통 타이포 — 라벨 18 SemiBold #687685(app-text-muted) / 값 18 Regular #000.
+  const label = 'text-[18px] font-semibold text-app-text-muted';
+  const value = 'text-[18px] font-normal text-black';
+
   return (
-    <div>
-      <div className="mb-6 flex items-center gap-3">
-        {/* A-1 회사명 — 24 SemiBold #000 (Bold→SemiBold, 16→24) */}
-        <h2 className="text-[24px] font-semibold text-black">{job.company}</h2>
-        {/* ❓ B-2 업종 라벨(IT/플랫폼)은 BLOCKED(필드 미확인) → 추가하지 않음 */}
+    <div className="flex flex-col gap-[32px]">
+      {/* Figma 1428:14125 회사행 — 회사명 24 SemiBold #000 + 업종(IT/플랫폼) 14 Regular #5b5b5b */}
+      <div className="flex items-end gap-[20px]">
+        <h2 className="text-[24px] font-semibold tracking-[-0.48px] text-black">
+          {job.company}
+        </h2>
+        {/* TODO(D2): 업종 라벨(IT/플랫폼) — companySize/industry 필드 미확정(검색 G3 동일 이슈) → 미렌더 */}
       </div>
 
-      {/* A-1 정보 라벨 18 SemiBold #687685(토큰 유지) / 값 18 Regular #000 */}
-      <div className="grid grid-cols-[auto_1fr_auto_1fr] gap-x-8 gap-y-3">
-        <div className="text-[18px] font-semibold text-app-text-muted">기업형태</div>
-        <div className="text-[18px] font-normal text-black">
-          {job.source === 'PUBLIC' ? '공기업' : '사기업'}
-        </div>
-
-        <div className="text-[18px] font-semibold text-app-text-muted">접수기간</div>
-        <div className="flex flex-col gap-y-1">
-          {beginDate && (
-            <div>
-              {/* A-1 시작일/마감일 라벨 16 #9B9B9B · 값 16 #545454. ❓ 두 색 토큰 없음 → arbitrary */}
-              <span className="mr-1 text-[16px] text-[#9B9B9B]">시작일</span>
-              <span className="text-[16px] text-[#545454]">{beginDate}</span>
-            </div>
-          )}
-          <div>
-            <span className="mr-1 text-[16px] text-[#9B9B9B]">마감일</span>
-            <span className="text-[16px] text-[#545454]">{deadlineText}</span>
+      {/* Figma 1428:14128 — 좌블록 w-348(기업형태·고용형태·근무지역) / 우블록 w-253(접수기간·모집직무) */}
+      <div className="flex gap-[20px]">
+        {/* 좌블록 */}
+        <div className="flex w-[348px] flex-col gap-[20px]">
+          <div className="flex items-center gap-[20px]">
+            <span className={label}>기업형태</span>
+            {/* 기업형태는 현행(source 파생) 유지 — 규모(대기업)는 별도 필드로 미확정(D2) */}
+            <span className={value}>{job.source === 'PUBLIC' ? '공기업' : '사기업'}</span>
+          </div>
+          <div className="flex items-center gap-[20px]">
+            <span className={label}>고용형태</span>
+            <span className={value}>{job.employmentType || '-'}</span>
+          </div>
+          <div className="flex items-center gap-[20px]">
+            <span className={label}>근무지역</span>
+            <span className={value}>{job.location || '-'}</span>
           </div>
         </div>
 
-        <div className="text-[18px] font-semibold text-app-text-muted">고용형태</div>
-        <div className="text-[18px] font-normal text-black">{job.employmentType || '-'}</div>
+        {/* 우블록 */}
+        <div className="flex w-[253px] flex-col gap-[32px]">
+          {/* 접수기간 — 시작일은 PUBLIC(beginDate) 전용 → PRIVATE 은 행 자체 미렌더("-" 금지) */}
+          <div className="flex items-start gap-[20px]">
+            <span className={label}>접수기간</span>
+            <div className="flex flex-col gap-[12px]">
+              {beginDate && (
+                <div className="flex items-center gap-[20px]">
+                  {/* 시작일/마감일 16px — 라벨 #9B9B9B / 값 #545454 (토큰 없음 → arbitrary) */}
+                  <span className="text-[16px] text-[#9B9B9B]">시작일</span>
+                  <span className="text-[16px] text-[#545454]">{beginDate}</span>
+                </div>
+              )}
+              <div className="flex items-center gap-[20px]">
+                <span className="text-[16px] text-[#9B9B9B]">마감일</span>
+                <span className="text-[16px] text-[#545454]">{deadlineText}</span>
+              </div>
+            </div>
+          </div>
 
-        <div className="text-[18px] font-semibold text-app-text-muted">근무지역</div>
-        <div className="text-[18px] font-normal text-black">{job.location || '-'}</div>
-
-        {jobRole && (
-          <>
-            <div className="text-[18px] font-semibold text-app-text-muted">모집직무</div>
-            <div className="text-[18px] font-normal text-black">{jobRole}</div>
-          </>
-        )}
+          {jobRole && (
+            <div className="flex items-center gap-[20px]">
+              <span className={label}>모집직무</span>
+              <span className={value}>{jobRole}</span>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
