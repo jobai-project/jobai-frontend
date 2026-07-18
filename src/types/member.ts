@@ -18,6 +18,8 @@ export interface OnboardingNotificationSettingsRequest {
   slackEnabled: boolean; // 항상 false (UI 미배선)
   discordEnabled: boolean; // 항상 false (UI 미배선)
   matchScoreThreshold: number; // 0~100
+  slackWebhookUrl?: string | null;
+  discordWebhookUrl?: string | null;
 }
 
 // ── E1 응답 (GET /api/v1/members/me) ──
