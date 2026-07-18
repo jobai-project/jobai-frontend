@@ -6,7 +6,7 @@
 1. 이지민
 2. 김민정
 ---
-## 사용할 기술 스택
+## 사용한 기술 스택
 - 개발 툴: VS Code
 - 사용 언어: TypeScript
 - 프레임워크/빌드 도구: React, Vite
@@ -16,7 +16,7 @@
 - 백엔드 연동: Spring Security 기반 API (쿠키/HttpOnly accessToken 인증)
 - 작업물 저장 및 공유: GitHub
 ---
-## 사용할 라이브러리
+## 사용한 라이브러리
 - TanStack Query: 서버 상태 캐싱/동기화(GET/PATCH/PUT/DELETE 요청 관리)
 - Zustand: 인증 상태(authStore), 온보딩 상태(onboardingStore) 등 전역 클라이언트 상태 관리
 - axios: API 요청 공통 클라이언트(쿠키 인증, 인터셉터)
