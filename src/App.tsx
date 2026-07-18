@@ -58,14 +58,9 @@ export default function App() {
               {/* / 는 HomeEntry로 이동됨. 나머지 보호 라우트는 그대로. */}
               <Route path="/jobs/:source/:id" element={<JobDetailPage />} />
 
-              {/* // 추가해야함 라우트 */}
               <Route path="/application" element={<ApplicationStatusPage />} />
               <Route path="/scrap" element={<ScrapPage />} />
               <Route path="/profile" element={<MyPage />} />
-              <Route
-                path="/insight"
-                element={<PlaceholderPage icon="📊" title="시장 인사이트" />}
-              />
             </Route>
           </Route>
         </Route>
