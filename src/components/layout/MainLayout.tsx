@@ -1,6 +1,7 @@
 import { Outlet } from 'react-router-dom';
 import type { ReactNode } from 'react';
 import Sidebar from './Sidebar';
+import MatchNotificationListener from '@/components/common/MatchNotificationListener';
 
 interface MainLayoutProps {
   // 게스트(비로그인) 모드 — Sidebar에 전달해 보호 탭을 /login으로 유도 (spec §2·§3).
@@ -12,6 +13,7 @@ interface MainLayoutProps {
 export default function MainLayout({ guest = false, children }: MainLayoutProps) {
   return (
     <div className="flex min-h-screen justify-center">
+      <MatchNotificationListener />
       <div className="grid min-h-screen w-[1440px] grid-cols-[276px_1fr] bg-gray-50">
         <Sidebar guest={guest} />
         <main className="p-[40px]">{children ?? <Outlet />}</main>
