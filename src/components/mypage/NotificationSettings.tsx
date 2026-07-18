@@ -11,7 +11,6 @@ interface NotificationState {
 }
 
 interface NotificationSettingsProps {
-  // 로그인 시 사용한 이메일 (마이페이지 "내 정보"의 profile.email과 동일 값)
   email: string;
 }
 
@@ -70,20 +69,23 @@ function WebhookUrlModal({
   );
 }
 
+const LOADING_SKELETON = (
+  <div className="space-y-6">
+    <div className="h-[220px] w-[700px] animate-pulse rounded-2xl bg-[#F2F4F6]" />
+    <div className="h-[102px] w-[700px] animate-pulse rounded-2xl bg-[#F2F4F6]" />
+  </div>
+);
+
 export default function NotificationSettings({ email }: NotificationSettingsProps) {
   const { data, isLoading, isError } = useNotificationSettings();
   const updateSettings = useUpdateNotificationSettings();
 
-  // 서버에서 받아온 값으로 로컬 편집 상태를 채운다. 슬라이더 드래그 중에는
-  // 이 로컬 상태만 바뀌고, 서버 재조회로 다시 덮어써지지 않도록 data 변경 시에만 동기화한다.
-  const [settings, setSettings] = useState<NotificationState>({
-    email: true,
-    slack: false,
-    discord: false,
-    minScore: 70,
-    slackWebhookUrl: null,
-    discordWebhookUrl: null,
-  });
+  // 하드코딩된 초기값을 화면에 잠깐이라도 보여주지 않기 위해 null로 시작한다.
+  // (탭을 벗어났다 돌아오면 이 컴포넌트가 완전히 새로 마운트되는데, 이때
+  //  기본값 { email: true, ... } 같은 게 실제 서버 값이 오기 전에 잠깐 그려지면
+  //  "토글이 잘못된 상태로 보였다가 바뀐다"는 현상으로 나타난다. null로 두고
+  //  data가 도착하기 전까지는 로딩 스켈레톤만 보여줘서 이 깜빡임 자체를 없앤다.)
+  const [settings, setSettings] = useState<NotificationState | null>(null);
 
   useEffect(() => {
     if (data) {
@@ -99,49 +101,73 @@ export default function NotificationSettings({ email }: NotificationSettingsProp
   }, [data]);
 
   const [isEditing, setIsEditing] = useState(false);
-  const [snapshot, setSnapshot] = useState<NotificationState>(settings);
+  const [snapshot, setSnapshot] = useState<NotificationState | null>(null);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  // 웹훅 연결 모달 - 어떤 채널을 위해 열렸는지만 추적(null이면 닫힘)
+  const showToast = (message: string) => {
+    setToastMessage(message);
+    setTimeout(() => setToastMessage(null), 2500);
+  };
+
   const [webhookModalChannel, setWebhookModalChannel] = useState<'slack' | 'discord' | null>(null);
+
+  const sliderValueRef = useRef(70);
+
+  if (isLoading || !settings) {
+    return LOADING_SKELETON;
+  }
+
+  if (isError) {
+    return (
+      <div className="flex h-[220px] w-[700px] items-center justify-center rounded-2xl border border-[#EBECFF]/90 bg-white text-sm text-app-text-muted shadow-[0_4px_12px_rgba(124,119,255,0.08)]">
+        알림 설정을 불러오지 못했어요.
+      </div>
+    );
+  }
 
   const isSlackConnected = settings.slackWebhookUrl != null;
   const isDiscordConnected = settings.discordWebhookUrl != null;
 
-  // 슬라이더는 드래그하는 동안 매 픽셀마다 API를 부르지 않고, 손을 뗀
-  // 시점(release)에만 최종 값을 저장한다. 드래그 중 값은 sliderValueRef로 추적.
-  const sliderValueRef = useRef(settings.minScore);
-
   // 저장은 항상 현재 알고 있는 전체 상태를 같이 보낸다(부분 필드만 보내면 나머지가
   // 서버에서 null/false로 덮어써질 수 있는 전체교체형 API이므로).
-  const persist = (next: NotificationState) => {
-    updateSettings.mutate({
-      emailEnabled: next.email,
-      slackEnabled: next.slack,
-      discordEnabled: next.discord,
-      matchScoreThreshold: next.minScore,
-      slackWebhookUrl: next.slackWebhookUrl,
-      discordWebhookUrl: next.discordWebhookUrl,
-    });
-  };
+  const buildPayload = (next: NotificationState) => ({
+    emailEnabled: next.email,
+    slackEnabled: next.slack,
+    discordEnabled: next.discord,
+    matchScoreThreshold: next.minScore,
+    slackWebhookUrl: next.slackWebhookUrl,
+    discordWebhookUrl: next.discordWebhookUrl,
+  });
 
   const toggleChannel = (channel: 'email' | 'slack' | 'discord') => {
     setSettings((prev) => {
+      if (!prev) return prev;
       const next = { ...prev, [channel]: !prev[channel] };
-      persist(next); // 토글은 클릭 즉시 저장
+      updateSettings.mutate(buildPayload(next), {
+        onError: () => {
+          // 저장 실패 시 로컬 상태를 원래대로 되돌리고 알려준다.
+          setSettings((current) =>
+            current ? { ...current, [channel]: !current[channel] } : current,
+          );
+          showToast('설정 저장에 실패했어요. 다시 시도해주세요.');
+        },
+      });
       return next;
     });
   };
 
   const handleSliderChange = (value: number) => {
     sliderValueRef.current = value;
-    setSettings((prev) => ({ ...prev, minScore: value })); // 화면만 즉시 갱신, 저장은 아직 안 함
+    setSettings((prev) => (prev ? { ...prev, minScore: value } : prev));
   };
 
   const handleSliderRelease = () => {
-    // 손을 뗀 시점의 최종 값으로 한 번만 저장
     setSettings((prev) => {
+      if (!prev) return prev;
       const next = { ...prev, minScore: sliderValueRef.current };
-      persist(next);
+      updateSettings.mutate(buildPayload(next), {
+        onError: () => showToast('점수 저장에 실패했어요. 다시 시도해주세요.'),
+      });
       return next;
     });
   };
@@ -152,7 +178,7 @@ export default function NotificationSettings({ email }: NotificationSettingsProp
   };
 
   const handleCancel = () => {
-    setSettings(snapshot);
+    if (snapshot) setSettings(snapshot);
     setIsEditing(false);
   };
 
@@ -160,38 +186,23 @@ export default function NotificationSettings({ email }: NotificationSettingsProp
     setIsEditing(false);
   };
 
-  // 웹훅 URL 제출 - 저장 성공 시 자동으로 연결 상태(연결됨)로 전환된다.
   const handleWebhookSubmit = (url: string) => {
     const channel = webhookModalChannel;
     if (!channel) return;
 
     setSettings((prev) => {
+      if (!prev) return prev;
       const next = {
         ...prev,
         [channel === 'slack' ? 'slackWebhookUrl' : 'discordWebhookUrl']: url,
       };
-      persist(next);
+      updateSettings.mutate(buildPayload(next), {
+        onError: () => showToast('연결 저장에 실패했어요. 다시 시도해주세요.'),
+      });
       return next;
     });
     setWebhookModalChannel(null);
   };
-
-  if (isLoading) {
-    return (
-      <div className="space-y-6">
-        <div className="h-[220px] w-[700px] animate-pulse rounded-2xl bg-[#F2F4F6]" />
-        <div className="h-[102px] w-[700px] animate-pulse rounded-2xl bg-[#F2F4F6]" />
-      </div>
-    );
-  }
-
-  if (isError) {
-    return (
-      <div className="flex h-[220px] w-[700px] items-center justify-center rounded-2xl border border-[#EBECFF]/90 bg-white text-sm text-app-text-muted shadow-[0_4px_12px_rgba(124,119,255,0.08)]">
-        알림 설정을 불러오지 못했어요.
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-6">
@@ -337,7 +348,6 @@ export default function NotificationSettings({ email }: NotificationSettingsProp
           </div>
         </div>
 
-        {/* 편집 모드일 때만 하단 구분선 + 취소/저장 */}
         {isEditing && (
           <>
             <div className="border-t border-gray-200 mt-5 mb-4" />
@@ -390,7 +400,6 @@ export default function NotificationSettings({ email }: NotificationSettingsProp
         </div>
       </div>
 
-      {/* 웹훅 URL 입력 모달 */}
       {webhookModalChannel && (
         <WebhookUrlModal
           title={webhookModalChannel === 'slack' ? 'Slack 계정 연결하기' : 'Discord 계정 연결하기'}
@@ -401,6 +410,12 @@ export default function NotificationSettings({ email }: NotificationSettingsProp
           onSubmit={handleWebhookSubmit}
           onCancel={() => setWebhookModalChannel(null)}
         />
+      )}
+
+      {toastMessage && (
+        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[300] bg-gray-900 text-white text-sm font-medium px-4 py-2.5 rounded-lg shadow-lg">
+          {toastMessage}
+        </div>
       )}
     </div>
   );
