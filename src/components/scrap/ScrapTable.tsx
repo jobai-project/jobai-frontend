@@ -11,6 +11,7 @@ interface ScrapTableProps {
   onRemove: (source: ScrapSource, sourceId: number) => void;
   onDeleteSelected: () => void; // 벌크 삭제(§1.5) — ScrapPage가 useDeleteScraps로 처리
   onSortToggle: () => void;
+  onItemClick: (source: ScrapSource, sourceId: number) => void; // 행 클릭 시 상세 페이지 이동
   activeTab: 'all' | 'ongoing' | 'deadline';
 }
 
@@ -29,6 +30,7 @@ function ScrapTable({
   onRemove,
   onDeleteSelected,
   onSortToggle,
+  onItemClick,
   activeTab,
 }: ScrapTableProps) {
   return (
@@ -77,8 +79,15 @@ function ScrapTable({
       {items.length > 0 ? (
         items.map((item) => (
           <div key={item.key}>
-            <div className="h-[91px] grid grid-cols-[40px_2.5fr_1.2fr_1.2fr_1.2fr_70px] gap-3 px-6 items-center hover:bg-app-bg transition-colors">
-              <div className="flex items-center justify-center">
+            <div
+              onClick={() => onItemClick(item.source, item.sourceId)}
+              className="h-[91px] grid grid-cols-[40px_2.5fr_1.2fr_1.2fr_1.2fr_70px] gap-3 px-6 items-center hover:bg-app-bg transition-colors cursor-pointer"
+            >
+              {/* 체크박스 클릭이 행 클릭(상세 이동)으로 번지지 않도록 stopPropagation */}
+              <div
+                className="flex items-center justify-center"
+                onClick={(e) => e.stopPropagation()}
+              >
                 <input
                   type="checkbox"
                   checked={selectedKeys.has(item.key)}
@@ -88,16 +97,16 @@ function ScrapTable({
               </div>
 
               <div className="min-w-0 ms-5">
-                <div className="font-semibold text-app-text text-[18px] truncate mb-[6px]">
+                <div className="font-semibold text-app-text text-[16px] truncate mb-[6px]">
                   {item.title}
                 </div>
-                <div className="text-[16px] text-gray-600">{item.companyName}</div>
+                <div className="text-[14px] text-gray-600">{item.companyName}</div>
               </div>
 
-              <div className="text-[16px] text-app-text text-center">{item.employmentType}</div>
+              <div className="text-[14px] text-app-text text-center">{item.employmentType}</div>
 
               {/* 마감 기한: S1이 deadline(날짜) 제공(v5). null이면 상시. dday는 탭/정렬 전용 */}
-              <div className="text-[16px] text-app-text text-center">{item.deadline ?? '상시'}</div>
+              <div className="text-[14px] text-app-text text-center">{item.deadline ?? '상시'}</div>
 
               <div className="flex items-center justify-center">
                 <div className="transform scale-[0.7] origin-center">
@@ -105,9 +114,13 @@ function ScrapTable({
                 </div>
               </div>
 
+              {/* 제거 버튼 클릭도 행 클릭(상세 이동)으로 번지지 않도록 stopPropagation */}
               <button
                 type="button"
-                onClick={() => onRemove(item.source, item.sourceId)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onRemove(item.source, item.sourceId);
+                }}
                 className="flex items-center justify-self-end w-7 h-7 hover:bg-app-hover rounded transition-colors"
                 aria-label="제거"
               >

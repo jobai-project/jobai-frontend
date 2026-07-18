@@ -87,6 +87,11 @@ export default function ScrapPage() {
 
   const handleSortToggle = () => setSortAsc((v) => !v);
 
+  // 스크랩 행 클릭 시 해당 공고 상세 페이지로 이동
+  const handleItemClick = (source: ScrapSource, sourceId: number) => {
+    navigate(`/jobs/${source}/${sourceId}`);
+  };
+
   if (isLoading) {
     return (
       <div className="pt-12">
@@ -121,6 +126,7 @@ export default function ScrapPage() {
           onRemove={handleRemove}
           onDeleteSelected={handleDeleteSelected}
           onSortToggle={handleSortToggle}
+          onItemClick={handleItemClick}
           activeTab={activeTab}
         />
       )}
