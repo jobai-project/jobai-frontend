@@ -70,8 +70,10 @@ export interface OnboardingState {
   resumeStatus: ResumeStatus;
   // step4
   notifyEmail: boolean;
-  slackWebhook: string | null;
-  discordWebhook: string | null;
+  notifySlack: boolean;      
+  notifyDiscord: boolean;    
+  slackWebhookUrl: string | null;   
+  discordWebhookUrl: string | null;
   scoreThreshold: number; // 0~100, 기본 70
 }
 
@@ -85,7 +87,9 @@ export const INITIAL_ONBOARDING: OnboardingState = {
   resumeFileName: null,
   resumeStatus: 'IDLE',
   notifyEmail: true,
-  slackWebhook: null,
-  discordWebhook: null,
+  notifySlack: false,
+  notifyDiscord: false,
+  slackWebhookUrl: null,
+  discordWebhookUrl: null,
   scoreThreshold: 70,
 };

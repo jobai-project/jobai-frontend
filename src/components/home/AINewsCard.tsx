@@ -62,7 +62,7 @@ export default function AINewsCard() {
                   </div>
                 </div>
                 {/* 항목 chevron 24 rotate-180 */}
-                <ChevronIcon className="h-6 w-6 flex-shrink-0 rotate-180 text-app-text-subtle" />
+                <ChevronIcon className="h-6 w-6 flex-shrink-0 text-app-text-subtle" />
               </div>
             );
             return (

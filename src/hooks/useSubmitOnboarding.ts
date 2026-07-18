@@ -46,9 +46,11 @@ export function useSubmitOnboarding() {
       // experience 는 UI 미렌더 죽은 값 → 전송하지 않는다.
       await saveOnboardingNotificationSettings({
         emailEnabled: s.notifyEmail,
-        slackEnabled: false, // UI OFF 고정
-        discordEnabled: false, // UI OFF 고정
+        slackEnabled: s.notifySlack,        
+        discordEnabled: s.notifyDiscord,    
         matchScoreThreshold: s.scoreThreshold,
+        slackWebhookUrl: s.slackWebhookUrl,       
+        discordWebhookUrl: s.discordWebhookUrl, 
       });
     },
     onSuccess: () => {
