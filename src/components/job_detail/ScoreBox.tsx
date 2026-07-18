@@ -4,10 +4,18 @@ import ScoreGauge2 from '../common/ScoreGauge2';
 interface ScoreBoxProps {
   // null = 점수 없음(게스트·추천 목록 밖 공고) → ScoreGauge2 "??" 블러(Phase1 A6).
   score: number | null;
+  // 상세 API scoreReason(개행 구분). PUBLIC은 필드 없음 → null → 근거 영역 미렌더.
+  reason?: string | null;
 }
 
 // Figma 1428:14168 "AI 공고 점수" 카드. 점수는 목록에서 전달받음(useJobMatchScore).
-function ScoreBox({ score }: ScoreBoxProps) {
+function ScoreBox({ score, reason }: ScoreBoxProps) {
+  // 개행 분리 → 공백 제거 → 빈 줄 제거. 인덱스 하드코딩 없이 항목 수에 무관하게 렌더.
+  const reasons = (reason ?? '')
+    .split('\n')
+    .map((s) => s.trim())
+    .filter(Boolean);
+
   return (
     <div
       className="flex flex-col gap-[16px] rounded-[16px] border border-blue-100 p-[20px] shadow-homecard"
@@ -38,15 +46,21 @@ function ScoreBox({ score }: ScoreBoxProps) {
           </ScoreGauge2>
         </div>
 
-        {/* TODO(D1): 근거 불릿 4개 데이터 소스 미확정 — 백엔드 확인 대기(Phase1 A3/A5).
-            아래 문구는 하드코딩 mock(Figma 문구가 여기서 역수입됨) → 렌더 금지, 삭제도 금지.
-        <div className="flex-1 space-y-2 text-[13px] font-medium text-slate-600 leading-tight">
-          <div className="flex items-start gap-1"><span className="text-slate-400">·</span><span>기술 스택 Python, Django, AWS 일치 (매칭 3/5개)</span></div>
-          <div className="flex items-start gap-1"><span className="text-slate-400">·</span><span>경력 3년 요구 중 2년 보유</span></div>
-          <div className="flex items-start gap-1"><span className="text-slate-400">·</span><span>백엔드 직무 일치</span></div>
-          <div className="flex items-start gap-1"><span className="text-slate-400">·</span><span>요구사항 80% 충족</span></div>
-        </div>
-        */}
+        {/* 근거 리스트(Figma 1428:14182) — 도넛과 gap-28(items-center). scoreReason 개행 항목.
+            reason 없음(PUBLIC·미산출)이면 미렌더. 마커 '・'(U+30FB), 14 Medium gray-700, gap-8. */}
+        {reasons.length > 0 && (
+          <ul className="flex min-w-0 flex-1 flex-col gap-[8px]">
+            {reasons.map((line, i) => (
+              <li
+                key={i}
+                className="flex items-start font-pretendard text-[14px] font-medium leading-[1.3] tracking-[-0.28px] text-gray-700"
+              >
+                <span aria-hidden>・</span>
+                <span>{line}</span>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
     </div>
   );

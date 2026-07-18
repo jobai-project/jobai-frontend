@@ -30,6 +30,9 @@ export default function JobDetailPage() {
   // 상세 API 엔 matchScore 없음(A1) → 목록에서 3단 폴백으로 전달받음. 없으면 null → "??" 블러.
   const matchScore = useJobMatchScore(jobSource, jobId);
 
+  // 점수 근거 — PRIVATE 상세 응답에만 scoreReason 존재. PUBLIC엔 필드 없음 → null.
+  const scoreReason = job?.source === 'PRIVATE' ? job.scoreReason : null;
+
   // 잘못된 source(예: /jobs/XXX/1) 는 요청하지 않고 바로 404.
   const invalid = !jobSource || !Number.isFinite(jobId);
 
@@ -162,7 +165,7 @@ export default function JobDetailPage() {
 
           {/* 점수영역 — sticky. self-start로 세로 stretch 방지(sticky 성립 조건). top-52 = 감사 확정값 */}
           <div className="w-[348px] self-start sticky top-[52px]">
-            <ScoreBox score={matchScore} />
+            <ScoreBox score={matchScore} reason={scoreReason} />
           </div>
         </div>
       </div>
