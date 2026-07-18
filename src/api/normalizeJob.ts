@@ -19,6 +19,7 @@ import type {
   ScrapRanking,
 } from '@/types/jobApi';
 import { deadlineToDday } from '@/utils/dDay';
+import { getCompanyName } from '@/utils/companyNames';
 
 // 목록 정규화 (게스트/회원 공용).
 // matchScore 통일이 핵심: 게스트(필드 undefined)·이력서X(null)·이력서O(점수)를
@@ -26,7 +27,7 @@ import { deadlineToDday } from '@/utils/dDay';
 export const normalizeJobSummary = (raw: RawJobSummary): JobSummary => ({
   id: raw.id,
   source: raw.source,
-  company: raw.companyName,
+  company: getCompanyName(raw.companyName),
   title: raw.title,
   matchScore: raw.matchScore ?? null,
   dDay: raw.dDay,
@@ -38,7 +39,7 @@ export const normalizeJobSummary = (raw: RawJobSummary): JobSummary => ({
 const normalizeRelatedJob = (raw: RawRelatedJob): RelatedJob => ({
   id: raw.id,
   source: raw.source,
-  company: raw.companyName,
+  company: getCompanyName(raw.companyName),
   title: raw.title,
 });
 
@@ -69,7 +70,7 @@ export const normalizeTechCardsResult = (
 export const normalizeSearchJob = (raw: RawSearchJob): JobSummary => ({
   id: raw.id,
   source: raw.source,
-  company: raw.company,
+  company: getCompanyName(raw.company),
   title: raw.title,
   matchScore: raw.matchScore ?? null,
   dDay: deadlineToDday(raw.deadline),
@@ -85,7 +86,7 @@ export const normalizeScrapRanking = (raw: RawScrapRanking): ScrapRanking => ({
   source: raw.source,
   sourceId: raw.sourceId,
   title: raw.title,
-  companyName: raw.companyName,
+  companyName: getCompanyName(raw.companyName),
   scrapCount: raw.scrapCount,
 });
 
@@ -96,7 +97,7 @@ export const normalizePrivateJobDetail = (
   id: raw.id,
   source: 'PRIVATE',
   title: raw.title,
-  company: raw.company,
+  company: getCompanyName(raw.company),
   location: raw.location,
   employmentType: raw.employmentType,
   content: raw.description,
@@ -117,7 +118,7 @@ export const normalizePublicJobDetail = (
   id: raw.id,
   source: 'PUBLIC',
   title: raw.title,
-  company: raw.companyName,
+  company: getCompanyName(raw.companyName),
   location: raw.workRegion,
   employmentType: raw.recrutType,
   content: raw.htmlContent,
