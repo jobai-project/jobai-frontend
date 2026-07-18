@@ -6,11 +6,68 @@ interface NotificationState {
   slack: boolean;
   discord: boolean;
   minScore: number;
+  slackWebhookUrl: string | null;
+  discordWebhookUrl: string | null;
 }
 
 interface NotificationSettingsProps {
   // 로그인 시 사용한 이메일 (마이페이지 "내 정보"의 profile.email과 동일 값)
   email: string;
+}
+
+// Slack/Discord 웹훅 URL 입력 모달 - 다른 확인 모달(DeleteConfirmModal 등)과 동일한 디자인 톤
+function WebhookUrlModal({
+  title,
+  description,
+  initialValue,
+  onSubmit,
+  onCancel,
+}: {
+  title: string;
+  description: string;
+  initialValue: string;
+  onSubmit: (url: string) => void;
+  onCancel: () => void;
+}) {
+  const [url, setUrl] = useState(initialValue);
+
+  return (
+    <div
+      className="fixed inset-0 z-[200] bg-black/40 flex items-center justify-center"
+      onClick={onCancel}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="bg-white rounded-2xl p-6 w-[420px] shadow-xl flex flex-col items-center"
+      >
+        <h3 className="text-center text-lg font-bold text-gray-900 mb-1">{title}</h3>
+        <p className="text-center text-sm text-gray-500 mb-5">{description}</p>
+
+        <input
+          type="text"
+          value={url}
+          onChange={(e) => setUrl(e.target.value)}
+          placeholder="https://hooks.slack.com/services/..."
+          autoFocus
+          className="w-[324px] px-3 py-2.5 mb-5 border border-app-border rounded-lg text-sm"
+        />
+
+        <button
+          onClick={() => url.trim() && onSubmit(url.trim())}
+          disabled={!url.trim()}
+          className="w-[324px] h-[45px] py-3 mb-2 rounded-xl bg-app-primary text-white font-semibold hover:opacity-90 transition-opacity disabled:opacity-50"
+        >
+          보내기
+        </button>
+        <button
+          onClick={onCancel}
+          className="w-[324px] h-[45px] py-3 rounded-xl bg-gray-100 text-app-text-muted font-semibold hover:bg-app-hover transition-colors"
+        >
+          취소
+        </button>
+      </div>
+    </div>
+  );
 }
 
 export default function NotificationSettings({ email }: NotificationSettingsProps) {
@@ -24,6 +81,8 @@ export default function NotificationSettings({ email }: NotificationSettingsProp
     slack: false,
     discord: false,
     minScore: 70,
+    slackWebhookUrl: null,
+    discordWebhookUrl: null,
   });
 
   useEffect(() => {
@@ -33,6 +92,8 @@ export default function NotificationSettings({ email }: NotificationSettingsProp
         slack: data.slackEnabled,
         discord: data.discordEnabled,
         minScore: data.matchScoreThreshold,
+        slackWebhookUrl: data.slackWebhookUrl,
+        discordWebhookUrl: data.discordWebhookUrl,
       });
     }
   }, [data]);
@@ -40,21 +101,26 @@ export default function NotificationSettings({ email }: NotificationSettingsProp
   const [isEditing, setIsEditing] = useState(false);
   const [snapshot, setSnapshot] = useState<NotificationState>(settings);
 
-  // Slack/Discord는 webhook이 실제로 연결되어 있을 때만 토글 가능하다.
-  // (연결 안 됐으면 "계정 연결하기" 버튼만 누를 수 있고, 스위치는 클릭이 안 먹힌다.)
-  const isSlackConnected = data?.slackWebhookUrl != null;
-  const isDiscordConnected = data?.discordWebhookUrl != null;
+  // 웹훅 연결 모달 - 어떤 채널을 위해 열렸는지만 추적(null이면 닫힘)
+  const [webhookModalChannel, setWebhookModalChannel] = useState<'slack' | 'discord' | null>(null);
+
+  const isSlackConnected = settings.slackWebhookUrl != null;
+  const isDiscordConnected = settings.discordWebhookUrl != null;
 
   // 슬라이더는 드래그하는 동안 매 픽셀마다 API를 부르지 않고, 손을 뗀
   // 시점(release)에만 최종 값을 저장한다. 드래그 중 값은 sliderValueRef로 추적.
   const sliderValueRef = useRef(settings.minScore);
 
+  // 저장은 항상 현재 알고 있는 전체 상태를 같이 보낸다(부분 필드만 보내면 나머지가
+  // 서버에서 null/false로 덮어써질 수 있는 전체교체형 API이므로).
   const persist = (next: NotificationState) => {
     updateSettings.mutate({
       emailEnabled: next.email,
       slackEnabled: next.slack,
       discordEnabled: next.discord,
       matchScoreThreshold: next.minScore,
+      slackWebhookUrl: next.slackWebhookUrl,
+      discordWebhookUrl: next.discordWebhookUrl,
     });
   };
 
@@ -92,6 +158,22 @@ export default function NotificationSettings({ email }: NotificationSettingsProp
 
   const handleSave = () => {
     setIsEditing(false);
+  };
+
+  // 웹훅 URL 제출 - 저장 성공 시 자동으로 연결 상태(연결됨)로 전환된다.
+  const handleWebhookSubmit = (url: string) => {
+    const channel = webhookModalChannel;
+    if (!channel) return;
+
+    setSettings((prev) => {
+      const next = {
+        ...prev,
+        [channel === 'slack' ? 'slackWebhookUrl' : 'discordWebhookUrl']: url,
+      };
+      persist(next);
+      return next;
+    });
+    setWebhookModalChannel(null);
   };
 
   if (isLoading) {
@@ -172,16 +254,24 @@ export default function NotificationSettings({ email }: NotificationSettingsProp
                 >
                   Slack
                 </div>
-                {/* 지금은 연결 여부(slackWebhookUrl) 구분 없이 항상 "계정 연결하기"로
-                    표시한다. 나중에 webhook 연결 상태에 따라 "연결됨"과 분기할 예정. */}
-                <button
-                  onClick={() => {
-                    // TODO: Slack 계정 연결 플로우 연결
-                  }}
-                  className="text-sm font-normal text-app-primary hover:underline"
-                >
-                  계정 연결하기
-                </button>
+
+                {!isSlackConnected ? (
+                  <button
+                    onClick={() => setWebhookModalChannel('slack')}
+                    className="text-sm font-normal text-app-primary hover:underline"
+                  >
+                    계정 연결하기
+                  </button>
+                ) : isEditing ? (
+                  <button
+                    onClick={() => setWebhookModalChannel('slack')}
+                    className="text-sm font-normal text-app-primary hover:underline"
+                  >
+                    계정 재연결하기
+                  </button>
+                ) : (
+                  <div className="text-sm font-normal text-gray-400">연결됨</div>
+                )}
               </div>
             </div>
             <button
@@ -211,16 +301,24 @@ export default function NotificationSettings({ email }: NotificationSettingsProp
                 >
                   Discord
                 </div>
-                {/* 지금은 연결 여부(discordWebhookUrl) 구분 없이 항상 "계정 연결하기"로
-                    표시한다. 나중에 webhook 연결 상태에 따라 "연결됨"과 분기할 예정. */}
-                <button
-                  onClick={() => {
-                    // TODO: Discord 계정 연결 플로우 연결
-                  }}
-                  className="text-sm font-normal text-app-primary hover:underline"
-                >
-                  계정 연결하기
-                </button>
+
+                {!isDiscordConnected ? (
+                  <button
+                    onClick={() => setWebhookModalChannel('discord')}
+                    className="text-sm font-normal text-app-primary hover:underline"
+                  >
+                    계정 연결하기
+                  </button>
+                ) : isEditing ? (
+                  <button
+                    onClick={() => setWebhookModalChannel('discord')}
+                    className="text-sm font-normal text-app-primary hover:underline"
+                  >
+                    계정 재연결하기
+                  </button>
+                ) : (
+                  <div className="text-sm font-normal text-gray-400">연결됨</div>
+                )}
               </div>
             </div>
             <button
@@ -291,6 +389,19 @@ export default function NotificationSettings({ email }: NotificationSettingsProp
           </div>
         </div>
       </div>
+
+      {/* 웹훅 URL 입력 모달 */}
+      {webhookModalChannel && (
+        <WebhookUrlModal
+          title={webhookModalChannel === 'slack' ? 'Slack 계정 연결하기' : 'Discord 계정 연결하기'}
+          description="Webhook URL을 입력하고 보내기를 누르면 연결돼요."
+          initialValue={
+            (webhookModalChannel === 'slack' ? settings.slackWebhookUrl : settings.discordWebhookUrl) ?? ''
+          }
+          onSubmit={handleWebhookSubmit}
+          onCancel={() => setWebhookModalChannel(null)}
+        />
+      )}
     </div>
   );
 }
