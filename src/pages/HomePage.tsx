@@ -1,4 +1,3 @@
-import { useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useJobSearch } from '@/hooks/useJobSearch';
 import { useRecommendedJobs } from '@/hooks/useInfiniteJobList';
@@ -9,14 +8,12 @@ import type { JobSummary } from '@/types/jobApi';
 import WelcomeCard from '@/components/home/WelcomeCard';
 import DeadlineCard from '@/components/home/DeadlineCard';
 import AINewsCard from '@/components/home/AINewsCard';
-import TrendingScrap, {
-  type TrendingScrapItem,
-} from '@/components/home/TrendingScrap';
+import TrendingScrap from '@/components/home/TrendingScrap';
 import FilterBar from '@/components/home/FilterBar';
 import JobList from '@/components/home/JobList';
 import SearchResultList from '@/components/search/SearchResultList';
 import NoResults from '@/components/home/NoResults';
-import { mockJobs } from '@/data/mockJobs';
+import { useScrapRankings } from '@/hooks/useScrapRankings';
 import TopBar from '@/components/layout/TopBar';
 import Footer from '@/components/layout/Footer';
 
@@ -79,19 +76,8 @@ export default function HomePage() {
     if (active.hasNextPage && !active.isFetchingNextPage) active.fetchNextPage();
   }, !!active.hasNextPage);
 
-  const trendingItems = useMemo<TrendingScrapItem[]>(
-    () =>
-      [...mockJobs]
-        .sort((a, b) => b.score - a.score)
-        .slice(0, 5)
-        .map((j, i) => ({
-          id: j.id,
-          rank: i + 1,
-          title: j.title,
-          company: j.company,
-        })),
-    []
-  );
+  // 홈 인기 스크랩 순위(공개 API). 로딩/에러 시 빈 배열 → TrendingScrap 미렌더(§4).
+  const { data: trendingItems = [] } = useScrapRankings();
 
   return (
     <>

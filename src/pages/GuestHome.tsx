@@ -1,18 +1,15 @@
-import { useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import TopBar from '@/components/layout/TopBar';
 import Footer from '@/components/layout/Footer';
 import FilterBar from '@/components/home/FilterBar';
 import JobList from '@/components/home/JobList';
 import NoResults from '@/components/home/NoResults';
-import TrendingScrap, {
-  type TrendingScrapItem,
-} from '@/components/home/TrendingScrap';
+import TrendingScrap from '@/components/home/TrendingScrap';
 import { useLatestJobs } from '@/hooks/useInfiniteJobList';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import { useTechCards, toTechGlanceRows } from '@/hooks/useTechCards';
+import { useScrapRankings } from '@/hooks/useScrapRankings';
 import { parseCompanyType, type CompanyType } from '@/types/job';
-import { mockJobs } from '@/data/mockJobs';
 
 // 우측 chevron (size-24). rotate-180 은 사용처에서 부여.
 function ChevronIcon({ className }: { className?: string }) {
@@ -64,15 +61,8 @@ export default function GuestHome() {
   const goLogin = () => navigate('/login');
 
   // §2 실시간 순위 — 회원 홈과 동일한 TrendingScrap 재사용. 게스트 전용 분기 없음.
-  // (실시간 순위는 이번 명세 범위 밖 → mockJobs 유지)
-  const trendingItems = useMemo<TrendingScrapItem[]>(
-    () =>
-      [...mockJobs]
-        .sort((a, b) => b.score - a.score)
-        .slice(0, 5)
-        .map((j, i) => ({ id: j.id, rank: i + 1, title: j.title, company: j.company })),
-    []
-  );
+  // 공개 API(useScrapRankings) → 게스트도 순위 노출. 클릭 시 컴포넌트가 /login 으로 유도.
+  const { data: trendingItems = [] } = useScrapRankings();
 
   // 게스트 공고 그리드 — latest-jobs API. matchScore 필드 없음 → 정규화에서 null → 카드 블러.
   const [searchParams] = useSearchParams();

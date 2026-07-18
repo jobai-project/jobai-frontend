@@ -109,6 +109,32 @@ export interface SearchJobsResult {
   searchInfo: SearchInfo;
 }
 
+// ── 홈 인기 스크랩 순위 (GET /api/v1/home/scrap-rankings) 원시 응답 ──────
+// 인증 불필요·파라미터 없음. rankings 최대 5개(스크랩수 내림차순, 마감 제외).
+// source 는 'PRIVATE'|'PUBLIC'(=CompanyType, 상세 라우트용). mockJobs 의 크롤 출처(SARAMIN 등)와 무관.
+export interface RawScrapRanking {
+  rank: number;
+  source: CompanyType; // 'PRIVATE' | 'PUBLIC'
+  sourceId: number;
+  title: string;
+  companyName: string;
+  scrapCount: number;
+}
+export interface RawScrapRankingsResult {
+  rankings: RawScrapRanking[];
+}
+
+// ── 인기 스크랩 순위 도메인 타입 ──
+// 목록 정규화와 달리 companyName 을 그대로 유지(상세이동엔 source+sourceId 만 필요).
+export interface ScrapRanking {
+  rank: number;
+  source: CompanyType;
+  sourceId: number;
+  title: string;
+  companyName: string;
+  scrapCount: number;
+}
+
 // ── 상세 API 원시 응답 ────────────────────────────────────────────────
 export interface RawPrivateJobDetail {
   id: number;

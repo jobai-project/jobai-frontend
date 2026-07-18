@@ -15,6 +15,8 @@ import type {
   RawTechCardsResult,
   TechCardsResult,
   RawSearchJob,
+  RawScrapRanking,
+  ScrapRanking,
 } from '@/types/jobApi';
 import { deadlineToDday } from '@/utils/dDay';
 
@@ -74,6 +76,17 @@ export const normalizeSearchJob = (raw: RawSearchJob): JobSummary => ({
   location: raw.location,
   employmentType: raw.employmentType,
   jobCategory: raw.jobCategory,
+});
+
+// 홈 인기 스크랩 순위 정규화. Raw 와 필드 동일(companyName 유지) — source 는 PUBLIC/PRIVATE 그대로.
+// rank 는 응답값을 그대로 사용(프론트에서 index+1 로 매기지 않음).
+export const normalizeScrapRanking = (raw: RawScrapRanking): ScrapRanking => ({
+  rank: raw.rank,
+  source: raw.source,
+  sourceId: raw.sourceId,
+  title: raw.title,
+  companyName: raw.companyName,
+  scrapCount: raw.scrapCount,
 });
 
 // 사기업 상세 정규화. 본문은 text.
