@@ -171,6 +171,9 @@ export interface RawPublicJobDetail {
   isClosed: boolean;
   companyType: string | null; // 대부분 빈 값
   beginDate: string | null;
+  // 라이브 실측(public-jobs/1): matchScore·scoreReason 필드 존재(현재 값 null=미산출). optional 안전 폴백.
+  matchScore?: number | null;
+  scoreReason?: string | null;
 }
 
 // ── 상세용 공통 타입 (판별 유니온: source 로 구분) ───────────────────
@@ -185,14 +188,14 @@ interface JobDetailBase {
   contentFormat: 'text' | 'html'; // 사기업 text / 공공 html
   deadline: string | null; // null = 상시모집
   applyUrl: string | null;
+  // 상세 응답 점수 — PRIVATE·PUBLIC 공통(라이브 실측 확인). null = 미산출(이력서 미임베딩/scoring 전).
+  matchScore: number | null;
+  scoreReason: string | null;
 }
 
 export interface PrivateJobDetail extends JobDetailBase {
   source: 'PRIVATE';
   jobCategory: string | null;
-  // 상세 응답 점수. Base 미승격: public-jobs 응답 동일필드 존재 여부 미확인(1-2 ❓) — 확인 후 승격 검토.
-  matchScore: number | null;
-  scoreReason: string | null;
   // summary 는 본문 타입에서 분리 — 별도 /summary 엔드포인트(useJobSummary)로 조회(④).
   createdAt: string;
 }

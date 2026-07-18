@@ -1,7 +1,6 @@
 import { Link, useParams } from 'react-router-dom';
 import { useJobDetail } from '@/hooks/useJobDetail';
 import { useJobSummary } from '@/hooks/useJobSummary';
-import { useJobMatchScore } from '@/hooks/useJobMatchScore';
 import BackButton from '@/components/common/BackButton';
 import BookmarkButton from '@/components/common/BookmarkButton';
 import JobInfo from '@/components/job_detail/JobInfo';
@@ -27,11 +26,10 @@ export default function JobDetailPage() {
   const { data: summary } = useJobSummary(jobId);
   const summaryDone = !!summary;
 
-  // 상세 API 엔 matchScore 없음(A1) → 목록에서 3단 폴백으로 전달받음. 없으면 null → "??" 블러.
-  const matchScore = useJobMatchScore(jobSource, jobId);
-
-  // 점수 근거 — PRIVATE 상세 응답에만 scoreReason 존재. PUBLIC엔 필드 없음 → null.
-  const scoreReason = job?.source === 'PRIVATE' ? job.scoreReason : null;
+  // 게이지 점수·근거 — 상세 응답(PRIVATE·PUBLIC 공통) 한 곳에서 읽는다. null = 미산출 → "??" 블러.
+  // (guard 이전이라 job 이 undefined 일 수 있어 옵셔널 체이닝 + ?? null)
+  const matchScore = job?.matchScore ?? null;
+  const scoreReason = job?.scoreReason ?? null;
 
   // 잘못된 source(예: /jobs/XXX/1) 는 요청하지 않고 바로 404.
   const invalid = !jobSource || !Number.isFinite(jobId);

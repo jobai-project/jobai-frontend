@@ -2,13 +2,13 @@ import { memo } from 'react';
 import ScoreGauge2 from '../common/ScoreGauge2';
 
 interface ScoreBoxProps {
-  // null = 점수 없음(게스트·추천 목록 밖 공고) → ScoreGauge2 "??" 블러(Phase1 A6).
+  // null = 점수 미산출(이력서 미임베딩/scoring 전) → ScoreGauge2 "??" 블러(Phase1 A6).
   score: number | null;
-  // 상세 API scoreReason(개행 구분). PUBLIC은 필드 없음 → null → 근거 영역 미렌더.
+  // 상세 API scoreReason(개행 구분). 미산출 시 null → 근거 영역 미렌더.
   reason?: string | null;
 }
 
-// Figma 1428:14168 "AI 공고 점수" 카드. 점수는 목록에서 전달받음(useJobMatchScore).
+// Figma 1428:14168 "AI 공고 점수" 카드. 점수는 상세 응답(job.matchScore)에서 전달받음.
 function ScoreBox({ score, reason }: ScoreBoxProps) {
   // 개행 분리 → 공백 제거 → 빈 줄 제거. 인덱스 하드코딩 없이 항목 수에 무관하게 렌더.
   const reasons = (reason ?? '')

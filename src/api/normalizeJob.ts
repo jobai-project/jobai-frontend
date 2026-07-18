@@ -132,4 +132,7 @@ export const normalizePublicJobDetail = (
   isClosed: raw.isClosed,
   companyType: raw.companyType,
   beginDate: raw.beginDate,
+  // 점수 경로 통일 — PRIVATE 와 동일하게 상세 응답값 사용(폴백 훅 제거). null = 미산출.
+  matchScore: raw.matchScore ?? null,
+  scoreReason: raw.scoreReason ?? null,
 });
