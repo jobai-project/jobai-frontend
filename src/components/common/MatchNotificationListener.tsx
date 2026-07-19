@@ -27,7 +27,13 @@ export default function MatchNotificationListener() {
       heartbeatIncoming: 4000,
       heartbeatOutgoing: 4000,
 
+      debug: (str) => {
+        console.log('[STOMP]', str);
+      },
+
       onConnect: () => {
+        console.log('[notification-socket] STOMP CONNECT 성공');
+
         client.subscribe('/user/queue/notifications', (message) => {
           let parsed: MatchNotification | null = null;
           try {
@@ -38,6 +44,8 @@ export default function MatchNotificationListener() {
           }
           if (!parsed) return;
 
+          console.log('[notification-socket] 메시지 수신:', parsed);
+
           // 지금은 MATCH 타입만 화면에 표시. 나중에 다른 type이 추가되면
           // 여기서 분기해서 다르게 처리하면 된다.
           if (parsed.type === 'MATCH') {
@@ -46,6 +54,8 @@ export default function MatchNotificationListener() {
             dismissTimerRef.current = setTimeout(() => setToast(null), 6000);
           }
         });
+
+        console.log('[notification-socket] subscribed notifications');
       },
 
       onStompError: (frame) => {
@@ -53,6 +63,9 @@ export default function MatchNotificationListener() {
       },
       onWebSocketError: (event) => {
         console.error('[notification-socket] WebSocket 에러:', event);
+      },
+      onWebSocketClose: (event) => {
+        console.error('[notification-socket] WebSocket 닫힘:', event);
       },
     });
 

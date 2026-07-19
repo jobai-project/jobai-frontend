@@ -1,5 +1,3 @@
-
-
 import { memo, useRef, useEffect, useState } from 'react';
 
 interface ApplicationItem {
@@ -422,13 +420,14 @@ function ApplicationStatusTable({
       className="w-[808px] h-[715px] border border-[#EBECFF]/90 rounded-2xl overflow-hidden flex flex-col bg-white shadow-[0_4px_12px_rgba(124,119,255,0.08)]"
     >
       {/* 테이블 헤더 */}
-      <div className="grid grid-cols-[108px_144px_98px_140px_135px_150px] gap-0 px-6 py-4 ml-2 bg-app-bg font-medium text-sm text-[#8995A2] items-start">
+      <div className="grid grid-cols-[108px_144px_98px_140px_135px_150px_28px] gap-0 px-6 py-4 ml-2 bg-app-bg font-medium text-sm text-[#8995A2] items-start">
         <div>기업</div>
         <div>직무</div>
         <div>단계</div>
         <div>지원일(마감일)</div>
         <div>다음 일정</div>
         <div>메모</div>
+        <div />
       </div>
 
       <div className="mx-8">
@@ -441,7 +440,7 @@ function ApplicationStatusTable({
           {data.map((item) => (
             <div key={item.id} className="h-[50px]">
               <div
-                className={`group grid grid-cols-[108px_144px_98px_140px_135px_150px] gap-0 px-6 h-full items-start pt-3 transition-colors rounded-[8px] ${
+                className={`group grid grid-cols-[108px_144px_98px_140px_135px_150px_28px] gap-0 px-6 h-full items-start pt-3 transition-colors rounded-[8px] ${
                   editing.itemId === item.id ? 'bg-[#F5F5FF] border border-blue-200' : 'hover:bg-app-bg'
                 }`}
               >
@@ -512,26 +511,24 @@ function ApplicationStatusTable({
                   stageColors={stageColors}
                 />
 
-                {/* 메모 */}
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <EditableCell
-                      item={item}
-                      field="memo"
-                      value={item.memo}
-                      onChange={(value) => onUpdateItem(item.id, 'memo', value)}
-                      onCommit={() => onCommitField(item.id, 'memo')}
-                      editing={editing}
-                      setEditing={setEditing}
-                      requestEdit={requestEdit}
-                      stageColors={stageColors}
-                    />
-                  </div>
+                {/* 메모 - 다른 필드와 완전히 동일한 순수 칸 (감싸는 flex/삭제버튼 없음) */}
+                <EditableCell
+                  item={item}
+                  field="memo"
+                  value={item.memo}
+                  onChange={(value) => onUpdateItem(item.id, 'memo', value)}
+                  onCommit={() => onCommitField(item.id, 'memo')}
+                  editing={editing}
+                  setEditing={setEditing}
+                  requestEdit={requestEdit}
+                  stageColors={stageColors}
+                />
 
-                  {/* 삭제 버튼 - 행을 지우는 유일한 방법 */}
+                {/* 삭제 버튼 - 메모와 완전히 분리된 독립 칸(7번째 컬럼). 행을 지우는 유일한 방법 */}
+                <div className="flex items-start justify-center">
                   <button
                     onClick={() => setDeleteTargetId(item.id)}
-                    className="ml-2 p-1 text-app-text-muted hover:text-app-text opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="p-1 text-app-text-muted hover:text-app-text opacity-0 group-hover:opacity-100 transition-opacity"
                   >
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                       <path
