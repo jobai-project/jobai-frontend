@@ -13,6 +13,7 @@ import { useAuthStore } from '@/stores/authStore';
 import { useOnboardingStore } from '@/stores/onboardingStore';
 import { getMe } from '@/api/auth';
 import BookmarkToast from '@/components/common/BookmarkToast';
+import MatchNotificationListener from '@/components/common/MatchNotificationListener';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import OnboardingGate from '@/components/auth/OnboardingGate';
 
@@ -25,7 +26,6 @@ export default function App() {
   // 앱 진입 시 세션 복구: 쿠키가 남아 있으면 /auth/me 한 번으로 자동 로그인 복구.
   // 온보딩 완료 여부가 user.onboarded로 오면 서버 값을 우선한다.
   useEffect(() => {
-    
     getMe()
       .then((user) => {
         setUser(user);
@@ -67,8 +67,11 @@ export default function App() {
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
 
-      {/* 전역 토스트 — 레이아웃 바깥에 1회만 마운트 */}
+      {/* 전역 토스트/알림 — 레이아웃 바깥에 1회만 마운트해서 라우트 이동과 무관하게
+          계속 살아있도록 한다 (MainLayout 안에 있으면 홈↔다른 페이지 이동 시마다
+          MainLayout 자체가 언마운트/재마운트되면서 웹소켓 연결이 끊겼다 재연결됨). */}
       <BookmarkToast />
+      <MatchNotificationListener />
     </>
   );
 }
