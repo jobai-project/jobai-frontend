@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { COMPANY_FILTER_OPTIONS } from '@/types/job';
 import { EMPLOYMENT_OPTIONS } from '@/pages/Onboarding/types';
+import { useMyPageInfo } from '@/hooks/useMember';
 
 // 드롭다운 chevron (size-20)
 function CaretIcon({ open }: { open: boolean }) {
@@ -21,16 +22,6 @@ function ResetIcon() {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true" className="h-6 w-6">
       <path fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" d="M4.5 9a7.5 7.5 0 1 1-.6 4M4.5 4.5V9H9" />
-    </svg>
-  );
-}
-
-// 내 조건 적용 target 아이콘 (size-24)
-function TargetIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true" className="h-6 w-6">
-      <circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" strokeWidth="1.7" />
-      <circle cx="12" cy="12" r="3.5" fill="none" stroke="currentColor" strokeWidth="1.7" />
     </svg>
   );
 }
@@ -62,6 +53,8 @@ interface FilterBarProps {
 export default function FilterBar({ guest = false }: FilterBarProps) {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
+  // 회원 홈에서만 조회(게스트는 발화 차단) — '내 조건 적용'이 읽는 저장 조건 소스.
+  const { data: myPageData } = useMyPageInfo({ enabled: !guest });
   const [openKey, setOpenKey] = useState<string | null>(null);
   // deferred-apply: 열린 패널의 임시 선택값. URL은 '적용하기' 커밋 시에만 변경(§2-1).
   const [pending, setPending] = useState<string[]>([]);
@@ -131,10 +124,33 @@ export default function FilterBar({ guest = false }: FilterBarProps) {
     setOpenKey(null);
   };
 
+  // 회원 저장 조건(지역·고용형태)을 홈 필터(URL)에 반영. 직무·기업형태는 이번 범위 아님.
   const applyMyConditions = () => {
     // 게스트: 조건이 없으므로 로그인 유도.
-    // TODO(회원): 회원 홈에서 온보딩 조건을 필터로 반영하는 동작 연동(A6 별건).
-    if (guest) navigate('/login');
+    if (guest) {
+      navigate('/login');
+      return;
+    }
+    const pref = myPageData?.jobPreference;
+    if (!pref) return;
+
+    const next = new URLSearchParams(searchParams);
+    // 지역 — 한글 시도명 그대로(값=URL 형식 동일). 비어 있으면 기존 값 유지(덮어쓰지 않음).
+    if (pref.locations?.length) {
+      next.delete('location');
+      pref.locations.forEach((loc) => next.append('location', loc));
+    }
+    // 고용형태 — 마이페이지 한글 라벨 → 필터 코드값 변환. 매칭 없는 값은 skip.
+    if (pref.careerType?.length) {
+      next.delete('employmentType');
+      pref.careerType.forEach((kor) => {
+        const code = EMPLOYMENT_OPTIONS.find((o) => o.label === kor)?.value;
+        if (code) next.append('employmentType', code);
+      });
+    }
+    // companyType 은 소스 없음 → 손대지 않음(기존 값 유지).
+    setSearchParams(next, { replace: true });
+    setOpenKey(null);
   };
 
   const companyLabel = companyUrl.length ? `기업형태 ${companyUrl.length}` : '기업형태';
@@ -209,16 +225,16 @@ export default function FilterBar({ guest = false }: FilterBarProps) {
         <button
           type="button"
           onClick={applyMyConditions}
-          className="flex items-center gap-1 text-[14px] text-app-text-muted transition-colors hover:text-app-text"
+          className="flex items-center gap-1 text-[14px] text-[#4741FF] transition-opacity hover:opacity-80"
         >
-          <TargetIcon />
+          <img src="/target-fill.svg" alt="" aria-hidden className="h-6 w-6" />
           내 조건 적용
         </button>
         <span aria-hidden="true" className="h-[18px] w-px bg-gray-200" />
         <button
           type="button"
           onClick={reset}
-          className="flex items-center gap-1 text-[14px] text-gray-500 transition-colors hover:text-app-text"
+          className="flex items-center gap-1 text-[14px] text-[#8995A2] transition-colors hover:text-app-text"
         >
           <ResetIcon />
           초기화

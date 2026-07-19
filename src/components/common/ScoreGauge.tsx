@@ -62,20 +62,26 @@ export default function ScoreGauge({
     const radius = 28;
     const circumference = Math.PI * radius;
     const offset = circumference * (1 - clamped / 100);
+    // 아크 끝점(노브) 좌표 — 중심(40,40)·r28 상단 반원. 왼쪽(12,40)=0점 → 오른쪽(68,40)=100점.
+    // 각도 a = π + (score/100)·π (SVG y-down 기준). 검증: 0→좌, 50→상단, 100→우.
+    const knobAngle = Math.PI * (1 + clamped / 100);
+    const knobX = 40 + radius * Math.cos(knobAngle);
+    const knobY = 40 + radius * Math.sin(knobAngle);
 
     return (
       <div className="relative h-14 w-20 flex-shrink-0">
         <svg viewBox="0 0 80 50" className="h-full w-full">
           <defs>
+            {/* 좌(보라)→우(파랑). 우측 끝=dot쪽=파랑 */}
             <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#A78BFA" />
-              <stop offset="100%" stopColor="#7C3AED" />
+              <stop offset="0%" stopColor="#AD81FF" />
+              <stop offset="100%" stopColor="#4741FF" />
             </linearGradient>
           </defs>
           <path
             d="M 12 40 A 28 28 0 0 1 68 40"
             fill="none"
-            stroke="#E5E7EB"
+            stroke="#D0D6DD"
             strokeWidth="6"
             strokeLinecap="round"
           />
@@ -88,6 +94,8 @@ export default function ScoreGauge({
             strokeDasharray={circumference}
             strokeDashoffset={offset}
           />
+          {/* 끝점 노브 — 진행 아크 끝에 위치. fill 파랑 + 흰 테두리 */}
+          <circle cx={knobX} cy={knobY} r={4} fill="#4741FF" stroke="#FFFFFF" strokeWidth={1.25} />
         </svg>
         <div className="absolute inset-x-0 bottom-0 flex items-baseline justify-center">
           <span className="text-base font-bold text-app-text">{clamped}</span>

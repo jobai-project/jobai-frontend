@@ -14,8 +14,13 @@ export const memberKeys = { me: ['member', 'me'] as const };
 
 const NOTIFICATION_SETTINGS_QUERY_KEY = ['notificationSettings'] as const;
 
-export const useMyPageInfo = () =>
-  useQuery({ queryKey: memberKeys.me, queryFn: getMyPageInfo });
+// enabled 기본 true(하위호환) — FilterBar 는 게스트에서 발화 차단용으로 { enabled: !guest } 전달.
+export const useMyPageInfo = (options?: { enabled?: boolean }) =>
+  useQuery({
+    queryKey: memberKeys.me,
+    queryFn: getMyPageInfo,
+    enabled: options?.enabled ?? true,
+  });
 
 export const useUpdateJobPreferences = () => {
   const qc = useQueryClient();

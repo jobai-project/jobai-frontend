@@ -12,7 +12,7 @@ interface JobConditionsEditorProps {
   onCancel: () => void;
 }
 
-const REGION_OPTIONS = ['전체', '서울', '경기', '인천', '대전', '충남', '충북', '세종', '제주', '울산', '전북', '전남', '광주', '경북', '경남', '강원'];
+const REGION_OPTIONS = ['전체', '서울', '경기', '인천', '대전', '충남', '충북', '세종', '제주', '부산', '대구', '울산', '전북', '전남', '광주', '경북', '경남', '강원'];
 const JOB_CATEGORY_OPTIONS = ['개발자', '디자이너', '기획자'];
 const EMPLOYMENT_TYPE_OPTIONS = ['인턴', '신입', '경력직', '계약직'];
 
