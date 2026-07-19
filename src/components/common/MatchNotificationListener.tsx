@@ -22,7 +22,7 @@ export default function MatchNotificationListener() {
 
   useEffect(() => {
     const client = new Client({
-      webSocketFactory: () => new SockJS(`${API_BASE_URL}/ws`, null, { withCredentials: true } as any),
+      webSocketFactory: () => new SockJS(`${API_BASE_URL}/ws`, null, { transports: ['websocket', 'xhr-streaming', 'xhr-polling'] }),
       reconnectDelay: 5000,
       heartbeatIncoming: 4000,
       heartbeatOutgoing: 4000,

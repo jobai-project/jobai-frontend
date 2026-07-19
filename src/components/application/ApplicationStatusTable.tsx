@@ -513,7 +513,7 @@ function ApplicationStatusTable({
                 />
 
                 {/* 메모 */}
-                <div className="flex items-center justify-between">
+                <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <EditableCell
                       item={item}
