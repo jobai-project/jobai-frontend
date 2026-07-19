@@ -1,6 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom';
 import BookmarkButton from '@/components/common/BookmarkButton';
-import ScoreGauge from '@/components/common/ScoreGauge';
+import ScoreGauge2 from '@/components/common/ScoreGauge2';
 import type { JobSummary } from '@/types/jobApi';
 import { toScrapKey, type Scrap } from '@/types/scrap';
 
@@ -40,7 +40,6 @@ function GuestScoreTooltip() {
 
 export default function JobCard({ job, masked = false }: JobCardProps) {
   const jobId = String(job.id); // Link 는 string 경로 필요
-  const noScore = job.matchScore === null; // 게스트 or 이력서 미업로드
   // 스크랩 추가 시 목록에 낙관적으로 넣을 데이터(onSettled invalidate가 서버값으로 정정).
   const scrapOptimistic: Scrap = {
     key: toScrapKey(job.source, job.id),
@@ -68,39 +67,21 @@ export default function JobCard({ job, masked = false }: JobCardProps) {
         />
       )}
 
-      {/* GC-2 상단 행 — 점수 그룹(북마크는 masked 시 숨김·absolute) */}
+      {/* GC-2 상단 행 — 점수 게이지(북마크는 masked 시 숨김·absolute) */}
       <div className="flex w-full items-start justify-between">
-        {noScore ? (
-          // 점수 없음 → 블러 게이지 플레이스홀더(GC-3). 게이지 그룹 93×47.84 근사 +
-          // "??" 24 SemiBold + "점" 16 Regular. 게스트일 때만 로그인 유도 툴팁 노출.
-          <div className="relative h-12 w-[93px] flex-shrink-0">
-            <svg viewBox="0 0 93 48" aria-hidden className="h-full w-full blur-[3px]">
-              <defs>
-                <linearGradient id="guest-gauge" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stopColor="#A78BFA" />
-                  <stop offset="100%" stopColor="#7C3AED" />
-                </linearGradient>
-              </defs>
-              <path d="M 8 44 A 38 38 0 0 1 85 44" fill="none" stroke="#E6E8EB" strokeWidth="6" strokeLinecap="round" />
-              <path
-                d="M 8 44 A 38 38 0 0 1 85 44"
-                fill="none"
-                stroke="url(#guest-gauge)"
-                strokeWidth="6"
-                strokeLinecap="round"
-                strokeDasharray="120"
-                strokeDashoffset="55"
-              />
-            </svg>
-            <div className="absolute inset-x-0 bottom-0 flex items-baseline justify-center">
-              <span className="text-[24px] font-semibold tracking-[-0.48px] text-gray-900">??</span>
-              <span className="ml-0.5 text-[16px] font-normal text-gray-900">점</span>
+        {/* 원형 게이지 72px(상세와 동일 ScoreGauge2·12시·반시계). matchScore null 이면
+            ScoreGauge2 가 "??" 블러 자체 렌더. 게스트 마스킹 시 로그인 유도 툴팁 오버레이. */}
+        <div className="relative flex-shrink-0">
+          <ScoreGauge2 score={job.matchScore} size={72}>
+            <div className="flex items-baseline">
+              <span className="text-[16px] font-medium tracking-[-0.32px] text-gray-900">
+                {job.matchScore}
+              </span>
+              <span className="text-[10px] font-normal text-gray-900">점</span>
             </div>
-            {masked && <GuestScoreTooltip />}
-          </div>
-        ) : (
-          <ScoreGauge score={job.matchScore as number} variant="semicircle" />
-        )}
+          </ScoreGauge2>
+          {masked && <GuestScoreTooltip />}
+        </div>
       </div>
 
       {/* GC-5 본문 — flex-col gap-16 */}

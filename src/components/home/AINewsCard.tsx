@@ -1,5 +1,15 @@
 import { useTechCards, toTechGlanceRows } from '@/hooks/useTechCards';
 
+// "오늘 새로 올라온 공고가 12건 있어요" → "12건"만 파랑. 매치 없으면 원문 그대로.
+// 뉴스 행 등 "\d+건" 없는 headline 은 분할해도 원문 그대로 렌더되어 영향 없음.
+function renderHeadlineWithHighlight(text: string) {
+  return text.split(/(\d+건)/).map((part, i) =>
+    /^\d+건$/.test(part)
+      ? <span key={i} className="text-[#4741FF]">{part}</span>
+      : part
+  );
+}
+
 // 우측 chevron (size-24). rotate-180 은 사용처에서 부여.
 function ChevronIcon({ className }: { className?: string }) {
   return (
@@ -54,7 +64,7 @@ export default function AINewsCard() {
                 <div className="flex min-w-0 flex-col gap-2">
                   {/* 항목 제목 — 14 Medium/-0.28px/black */}
                   <div className="truncate text-sm font-medium leading-[150%] tracking-[-0.28px] text-black">
-                    {row.title}
+                    {renderHeadlineWithHighlight(row.title)}
                   </div>
                   {/* 항목 서브 — 12 Regular/-0.24px/gray-600 */}
                   <div className="truncate text-xs font-normal leading-[150%] tracking-[-0.24px] text-gray-600">
@@ -67,7 +77,7 @@ export default function AINewsCard() {
             );
             return (
               <li
-                key={row.badge}
+                key={`${row.badge}-${i}`}
                 className={i < rows.length - 1 ? 'border-b-[0.7px] border-gray-200' : ''}
               >
                 {row.url ? (

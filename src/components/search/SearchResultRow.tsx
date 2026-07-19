@@ -1,30 +1,11 @@
 import { Link } from 'react-router-dom';
 import BookmarkButton from '@/components/common/BookmarkButton';
-import ScoreGauge from '@/components/common/ScoreGauge';
+import ScoreGauge2 from '@/components/common/ScoreGauge2';
 import type { JobSummary } from '@/types/jobApi';
 import { toScrapKey, type Scrap } from '@/types/scrap';
 
-// matchScore === null 시 블러 "??" (JobCard 폴백과 동일 시각). ScoreGauge는 number만 받아
-// null 처리가 없어(= JobCard도 인라인) 여기서 재현. semicircle 규격에 맞춘 최소 복제.
-const C = Math.PI * 28;
-function BlurScore() {
-  return (
-    <div className="relative h-14 w-20 flex-shrink-0">
-      <svg viewBox="0 0 80 50" className="h-full w-full blur-[2px]">
-        <path d="M 12 40 A 28 28 0 0 1 68 40" fill="none" stroke="#E5E7EB" strokeWidth="6" strokeLinecap="round" />
-        <path d="M 12 40 A 28 28 0 0 1 68 40" fill="none" stroke="#C4B5FD" strokeWidth="6" strokeLinecap="round" strokeDasharray={C} strokeDashoffset={C * 0.4} />
-      </svg>
-      <div className="absolute inset-x-0 bottom-0 flex items-baseline justify-center">
-        <span className="text-base font-bold text-app-text">??</span>
-        <span className="ml-0.5 text-[10px] text-app-text-muted">점</span>
-      </div>
-    </div>
-  );
-}
-
 export default function SearchResultRow({ job }: { job: JobSummary }) {
   const jobId = String(job.id);
-  const noScore = job.matchScore === null;
 
   // 메타 좌측: 값 있는 것만 ' ・ '로 (§4.2 null 안전).
   // TODO(G3): '대기업'(companySize) 응답에 없음 → Phase 2-B. TODO(G4): '신입'(careerLevel) 응답에 없음 → Phase 2-B.
@@ -52,7 +33,15 @@ export default function SearchResultRow({ job }: { job: JobSummary }) {
       to={`/jobs/${job.source}/${jobId}`}
       className="flex items-center gap-[32px] rounded-lg border border-[#F5F5FF] bg-white p-[20px] shadow-guestcard transition hover:shadow-homecard"
     >
-      {noScore ? <BlurScore /> : <ScoreGauge score={job.matchScore as number} variant="semicircle" />}
+      {/* 원형 게이지 72px(상세와 동일 ScoreGauge2·12시·반시계). null 이면 "??" 블러 자체 렌더. */}
+      <ScoreGauge2 score={job.matchScore} size={72}>
+        <div className="flex items-baseline">
+          <span className="text-[16px] font-medium tracking-[-0.32px] text-[#171F29]">
+            {job.matchScore}
+          </span>
+          <span className="text-[10px] font-normal text-[#171F29]">점</span>
+        </div>
+      </ScoreGauge2>
 
       <div className="flex min-w-0 flex-1 flex-col gap-[12px]">
         <div className="flex w-full flex-col gap-[4px]">

@@ -224,7 +224,7 @@ export default function GuestHome() {
                 );
                 return (
                   <li
-                    key={row.badge}
+                    key={`${row.badge}-${i}`}
                     className={i < techRows.length - 1 ? 'border-b-[0.7px] border-gray-200' : ''}
                   >
                     {row.url ? (

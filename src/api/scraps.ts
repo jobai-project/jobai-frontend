@@ -9,13 +9,14 @@ import type {
   ScrapSource,
 } from '@/types/scrap';
 import { toScrapKey } from '@/types/scrap';
+import { getCompanyName } from '@/utils/companyNames';
 
 /* ── normalize ─────────────────────────────────────── */
 export const normalizeScrap = (raw: RawScrapItem): Scrap => ({
   key: toScrapKey(raw.source, raw.sourceId),
   source: raw.source,
   sourceId: raw.sourceId,
-  companyName: raw.companyName,
+  companyName: getCompanyName(raw.companyName),
   title: raw.title,
   location: raw.location,
   employmentType: raw.employmentType,
@@ -29,7 +30,7 @@ export const normalizeUpcomingScrap = (raw: RawUpcomingScrap): Scrap => ({
   key: toScrapKey(raw.source, raw.sourceId),
   source: raw.source,
   sourceId: raw.sourceId,
-  companyName: raw.companyName,
+  companyName: getCompanyName(raw.companyName),
   title: raw.title,
   location: raw.location,
   employmentType: raw.employmentType,
