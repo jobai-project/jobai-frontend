@@ -82,7 +82,8 @@ export default function HomePage() {
   return (
     <>
       <TopBar>
-        {!isSearching && <TrendingScrap items={trendingItems} />}
+        {/* 실시간 스크랩 순위 — 검색 중에도 홈과 동일하게 검색바 아래 항상 표시(Figma 1657:20904). */}
+        <TrendingScrap items={trendingItems} />
       </TopBar>
 
       {isSearching ? (
