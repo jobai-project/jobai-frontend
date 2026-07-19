@@ -59,18 +59,19 @@ export default function ScoreGauge({
   const gradientId = useId();
 
   if (variant === 'semicircle') {
-    const radius = 28;
+    // Figma 게이지 노드 93×47.843(node 690:4166) 기준 — 중심(46.5,44)·r38.5 상단 반원.
+    // 좌(8,44)=0점 → 우(85,44)=100점. 카드의 null 블러 플레이스홀더와 동일 footprint.
+    const radius = 38.5;
     const circumference = Math.PI * radius;
     const offset = circumference * (1 - clamped / 100);
-    // 아크 끝점(노브) 좌표 — 중심(40,40)·r28 상단 반원. 왼쪽(12,40)=0점 → 오른쪽(68,40)=100점.
-    // 각도 a = π + (score/100)·π (SVG y-down 기준). 검증: 0→좌, 50→상단, 100→우.
+    // 아크 끝점(노브) 좌표. 각도 a = π + (score/100)·π (SVG y-down). 검증: 0→좌, 50→상단, 100→우.
     const knobAngle = Math.PI * (1 + clamped / 100);
-    const knobX = 40 + radius * Math.cos(knobAngle);
-    const knobY = 40 + radius * Math.sin(knobAngle);
+    const knobX = 46.5 + radius * Math.cos(knobAngle);
+    const knobY = 44 + radius * Math.sin(knobAngle);
 
     return (
-      <div className="relative h-14 w-20 flex-shrink-0">
-        <svg viewBox="0 0 80 50" className="h-full w-full">
+      <div className="relative h-12 w-[93px] flex-shrink-0">
+        <svg viewBox="0 0 93 48" className="h-full w-full">
           <defs>
             {/* 좌(보라)→우(파랑). 우측 끝=dot쪽=파랑 */}
             <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="0%">
@@ -79,14 +80,14 @@ export default function ScoreGauge({
             </linearGradient>
           </defs>
           <path
-            d="M 12 40 A 28 28 0 0 1 68 40"
+            d="M 8 44 A 38.5 38.5 0 0 1 85 44"
             fill="none"
             stroke="#D0D6DD"
             strokeWidth="6"
             strokeLinecap="round"
           />
           <path
-            d="M 12 40 A 28 28 0 0 1 68 40"
+            d="M 8 44 A 38.5 38.5 0 0 1 85 44"
             fill="none"
             stroke={`url(#${gradientId})`}
             strokeWidth="6"
@@ -95,11 +96,12 @@ export default function ScoreGauge({
             strokeDashoffset={offset}
           />
           {/* 끝점 노브 — 진행 아크 끝에 위치. fill 파랑 + 흰 테두리 */}
-          <circle cx={knobX} cy={knobY} r={4} fill="#4741FF" stroke="#FFFFFF" strokeWidth={1.25} />
+          <circle cx={knobX} cy={knobY} r={5} fill="#4741FF" stroke="#FFFFFF" strokeWidth={1.5} />
         </svg>
         <div className="absolute inset-x-0 bottom-0 flex items-baseline justify-center">
-          <span className="text-base font-bold text-app-text">{clamped}</span>
-          <span className="ml-0.5 text-[10px] text-app-text-muted">점</span>
+          {/* Figma 692:4171 숫자 24 SemiBold / 점 16 Regular, gray-900 */}
+          <span className="text-[24px] font-semibold tracking-[-0.48px] text-gray-900">{clamped}</span>
+          <span className="ml-0.5 text-[16px] font-normal text-gray-900">점</span>
         </div>
       </div>
     );
