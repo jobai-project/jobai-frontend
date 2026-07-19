@@ -35,6 +35,8 @@ export default function MatchNotificationListener() {
         console.log('[notification-socket] STOMP CONNECT 성공');
 
         client.subscribe('/user/queue/notifications', (message) => {
+          console.log('[notification-socket] message.body 원본:', message.body);
+
           let parsed: MatchNotification | null = null;
           try {
             parsed = JSON.parse(message.body);
@@ -44,14 +46,14 @@ export default function MatchNotificationListener() {
           }
           if (!parsed) return;
 
-          console.log('[notification-socket] 메시지 수신:', parsed);
+          console.log('[notification-socket] 메시지 수신(파싱됨):', parsed);
 
           // 지금은 MATCH 타입만 화면에 표시. 나중에 다른 type이 추가되면
           // 여기서 분기해서 다르게 처리하면 된다.
           if (parsed.type === 'MATCH') {
             if (dismissTimerRef.current) clearTimeout(dismissTimerRef.current);
             setToast(parsed);
-            dismissTimerRef.current = setTimeout(() => setToast(null), 6000);
+            dismissTimerRef.current = setTimeout(() => setToast(null), 10000);
           }
         });
 
