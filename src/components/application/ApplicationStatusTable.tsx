@@ -420,7 +420,7 @@ function ApplicationStatusTable({
       className="w-[808px] h-[715px] border border-[#EBECFF]/90 rounded-2xl overflow-hidden flex flex-col bg-white shadow-[0_4px_12px_rgba(124,119,255,0.08)]"
     >
       {/* 테이블 헤더 */}
-      <div className="grid grid-cols-[108px_144px_98px_112px_135px_150px_28px] gap-0 px-6 py-4 ml-2 bg-app-bg font-medium text-sm text-[#8995A2] items-start">
+      <div className="grid grid-cols-[108px_144px_98px_124px_124px_150px_28px] gap-0 px-6 py-4 ml-2 bg-app-bg font-medium text-sm text-[#8995A2] items-start">
         <div>기업</div>
         <div>직무</div>
         <div>단계</div>
@@ -440,7 +440,7 @@ function ApplicationStatusTable({
           {data.map((item) => (
             <div key={item.id} className="min-h-[50px]">
               <div
-                className={`group grid grid-cols-[108px_144px_98px_112px_135px_150px_28px] gap-0 px-6 min-h-[50px] items-start pt-3 pb-2 transition-colors rounded-[8px] ${
+                className={`group grid grid-cols-[108px_144px_98px_124px_124px_150px_28px] gap-0 px-6 min-h-[50px] items-center py-2 transition-colors rounded-[8px] ${
                   editing.itemId === item.id ? 'bg-[#F5F5FF] border border-blue-200' : 'hover:bg-app-bg'
                 }`}
               >
