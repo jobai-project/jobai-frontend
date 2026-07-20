@@ -195,10 +195,16 @@ function EditableCell({
 
   if (isEditing) {
     const isRequiredField = field === 'company' || field === 'position';
+    const isDateField = field === 'appliedDate' || field === 'nextSchedule';
+    // formatDateForApi와 동일한 기준: 점이든 하이픈이든 입력하면 하이픈으로
+    // 정규화한 뒤 yyyy-mm-dd 형태인지 검사한다(서버에 실제로 저장되는 값 기준과 일치시킴).
+    const isValidDate = (v: string) => /^\d{4}-\d{2}-\d{2}$/.test(v.trim().replace(/\./g, '-'));
 
     // 회사명/직무는 예외 없이 항상 채워야 벗어날 수 있다.
     // (행을 포기하고 싶으면 휴지통 아이콘으로 명시적으로 삭제해야 한다 — 텍스트를
     //  비운 채로 벗어나는 것만으로는 절대 행이 사라지지 않는다.)
+    // 지원일/다음 일정은 비어있으면 그냥 통과, 값이 있는데 형식(yyyy.mm.dd)이
+    // 안 맞으면 벗어나지 못하게 막는다.
     const tryLeave = () => {
       if (isRequiredField && value.trim() === '') {
         onValidationFail?.(
@@ -209,6 +215,15 @@ function EditableCell({
         });
         return false;
       }
+
+      if (isDateField && value.trim() !== '' && !isValidDate(value)) {
+        onValidationFail?.('날짜 형식이랑 맞지 않습니다.\nex) 2026.07.25');
+        requestAnimationFrame(() => {
+          inputRef.current?.focus();
+        });
+        return false;
+      }
+
       onCommit();
       return true;
     };
@@ -335,18 +350,28 @@ function ApplicationStatusTable({
 
   useEffect(() => {
     if (!toastMessage) return;
-    const timer = setTimeout(() => setToastMessage(null), 2000);
+    const timer = setTimeout(() => setToastMessage(null), 2500);
     return () => clearTimeout(timer);
   }, [toastMessage]);
 
   // 지금 편집 중인 필드가 회사명/직무이고 비어있으면 예외 없이 항상 막는다.
   // (임시 행이든 저장된 행이든 동일 — 행을 지우고 싶으면 휴지통 아이콘을 써야 한다.)
   const isCurrentEditBlocked = () => {
-    if (editing.field !== 'company' && editing.field !== 'position') return false;
     const item = data.find((d) => d.id === editing.itemId);
     if (!item) return false;
-    const value = editing.field === 'company' ? item.company : item.position;
-    return value.trim() === '';
+
+    if (editing.field === 'company' || editing.field === 'position') {
+      const value = editing.field === 'company' ? item.company : item.position;
+      return value.trim() === '';
+    }
+
+    if (editing.field === 'appliedDate' || editing.field === 'nextSchedule') {
+      const value = editing.field === 'appliedDate' ? item.appliedDate : item.nextSchedule;
+      if (value.trim() === '') return false; // 비어있으면 통과
+      return !/^\d{4}-\d{2}-\d{2}$/.test(value.trim().replace(/\./g, '-'));
+    }
+
+    return false;
   };
 
   // 편집 상태를 다른 셀로 옮기려는 모든 시도(다른 열 클릭, 다른 행 클릭,
@@ -362,9 +387,11 @@ function ApplicationStatusTable({
     }
 
     if (isCurrentEditBlocked()) {
-      showToast(
-        editing.field === 'company' ? '회사명을 입력해주세요' : '직무를 입력해주세요',
-      );
+      if (editing.field === 'company' || editing.field === 'position') {
+        showToast(editing.field === 'company' ? '회사명을 입력해주세요' : '직무를 입력해주세요');
+      } else {
+        showToast('날짜 형식이랑 맞지 않습니다.\nex) 2026.07.25');
+      }
       return; // 전환 자체를 막음 — 편집 상태 그대로 유지
     }
 
@@ -492,6 +519,7 @@ function ApplicationStatusTable({
                   value={item.appliedDate}
                   onChange={(value) => onUpdateItem(item.id, 'appliedDate', value)}
                   onCommit={() => onCommitField(item.id, 'appliedDate')}
+                  onValidationFail={showToast}
                   editing={editing}
                   setEditing={setEditing}
                   requestEdit={requestEdit}
@@ -505,6 +533,7 @@ function ApplicationStatusTable({
                   value={item.nextSchedule}
                   onChange={(value) => onUpdateItem(item.id, 'nextSchedule', value)}
                   onCommit={() => onCommitField(item.id, 'nextSchedule')}
+                  onValidationFail={showToast}
                   editing={editing}
                   setEditing={setEditing}
                   requestEdit={requestEdit}
@@ -554,9 +583,9 @@ function ApplicationStatusTable({
           {/* 예시 행 - 실제 데이터가 아니라 형식만 안내하는 장식용.
               data 배열에 들어있지 않으므로 아이템 개수(빈 상태 판정)에 전혀 영향 없고,
               클릭/편집도 되지 않는다. */}
-          <div className="grid grid-cols-[108px_144px_98px_124px_124px_150px_28px] ml-2 gap-0 px-6 min-h-[50px] items-center py-2 select-none">
+          <div className="grid grid-cols-[108px_144px_98px_124px_124px_150px_28px] gap-0 px-6 ml-2 min-h-[50px] items-center py-2 select-none">
             <div className="text-sm text-gray-300">카카오</div>
-            <div className="text-sm text-gray-300">백엔드 개발자</div>
+            <div className="text-sm text-gray-300">프론트 개발자</div>
             <div>
               <span className="inline-block px-3 py-1 rounded-[7px] text-xs font-medium bg-gray-100 text-gray-300">
                 지원예정
@@ -599,9 +628,9 @@ function ApplicationStatusTable({
         />
       )}
 
-      {/* 필수값 안내 토스트 */}
+      {/* 필수값/형식 안내 토스트 */}
       {toastMessage && (
-        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[300] bg-gray-900 text-white text-sm font-medium px-4 py-2.5 rounded-lg shadow-lg">
+        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[300] bg-gray-900 text-white text-sm font-medium px-4 py-2.5 rounded-lg shadow-lg whitespace-pre-line text-center">
           {toastMessage}
         </div>
       )}
