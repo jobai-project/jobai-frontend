@@ -94,7 +94,15 @@ export default function ApplicationStatusPage() {
       filtered = filtered.filter((item) => item.stage === '최종합격');
     }
 
-    return filtered;
+    // 지원일(appliedDate) 기준 오름차순 정렬. 날짜 형식이 "YYYY.MM.DD"라
+    // 문자열 비교만으로도 정확히 시간순 정렬이 된다. 아직 지원일이 없는
+    // 임시/빈 행은 맨 뒤로 보낸다.
+    return [...filtered].sort((a, b) => {
+      if (!a.appliedDate && !b.appliedDate) return 0;
+      if (!a.appliedDate) return 1;
+      if (!b.appliedDate) return -1;
+      return a.appliedDate.localeCompare(b.appliedDate);
+    });
   }, [data, activeTab]);
 
   // "공고 추가" 클릭 시에는 서버 요청 없이 로컬 임시 행만 만든다.
