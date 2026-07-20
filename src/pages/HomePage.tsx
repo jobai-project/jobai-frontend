@@ -14,6 +14,8 @@ import JobList from '@/components/home/JobList';
 import SearchResultList from '@/components/search/SearchResultList';
 import NoResults from '@/components/home/NoResults';
 import { useScrapRankings } from '@/hooks/useScrapRankings';
+import { useTechCards } from '@/hooks/useTechCards';
+import { normalizeRelatedJobToSummary } from '@/api/normalizeJob';
 import TopBar from '@/components/layout/TopBar';
 import Footer from '@/components/layout/Footer';
 
@@ -43,6 +45,8 @@ export default function HomePage() {
   ];
   const q = searchParams.get('q')?.trim() ?? '';
   const isSearching = q.length > 0;
+  // 신규 공고 리스트 뷰 — q 우선(검색 중이면 view 무시).
+  const isNewJobsView = !isSearching && searchParams.get('view') === 'new';
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   // 섹션 개인화 이름 — 히어로 인사말과 동일 소스(authStore.user.name) 재사용(§9-2).
   const name = useAuthStore((s) => s.user?.name);
@@ -78,6 +82,12 @@ export default function HomePage() {
 
   // 홈 인기 스크랩 순위(공개 API). 로딩/에러 시 빈 배열 → TrendingScrap 미렌더(§4).
   const { data: trendingItems = [] } = useScrapRankings();
+
+  // 신규 공고(INTERNAL) 리스트 — tech-cards 캐시 재사용(동일 queryKey, 추가 fetch 없음).
+  const { data: techData } = useTechCards();
+  const newJobs = (
+    techData?.cards.find((c) => c.source === 'INTERNAL')?.relatedJobs ?? []
+  ).map(normalizeRelatedJobToSummary);
 
   return (
     <>
@@ -121,6 +131,30 @@ export default function HomePage() {
           </main>
 
           {/* 사이드바 — 검색 중에도 유지(P2). 카드 간격 28px(§6) */}
+          <aside className="flex w-[302px] flex-col gap-[28px]">
+            <DeadlineCard />
+            <AINewsCard />
+          </aside>
+        </div>
+      ) : isNewJobsView ? (
+        // 신규 공고 리스트 뷰 — 검색 레이아웃(705 + 302) 재활용. relatedJobs 정적 map.
+        <div className="flex gap-[77px]">
+          <main className="w-[705px]">
+            <div className="mb-[32px] flex items-center gap-2">
+              <div className="text-base font-bold text-app-text">
+                새로 올라온 공고
+                <span className="ml-1 font-normal text-gray-500">
+                  {newJobs.length}건
+                </span>
+              </div>
+            </div>
+            {newJobs.length === 0 ? (
+              <NoResults />
+            ) : (
+              <SearchResultList jobs={newJobs} />
+            )}
+          </main>
+
           <aside className="flex w-[302px] flex-col gap-[28px]">
             <DeadlineCard />
             <AINewsCard />

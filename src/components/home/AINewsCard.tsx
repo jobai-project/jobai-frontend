@@ -1,3 +1,4 @@
+import { useSearchParams } from 'react-router-dom';
 import { useTechCards, toTechGlanceRows } from '@/hooks/useTechCards';
 
 // "오늘 새로 올라온 공고가 12건 있어요" → "12건"만 파랑. 매치 없으면 원문 그대로.
@@ -24,6 +25,16 @@ function ChevronIcon({ className }: { className?: string }) {
 export default function AINewsCard() {
   const { data, isLoading, isError } = useTechCards();
   const rows = toTechGlanceRows(data?.cards ?? []);
+  const [, setSearchParams] = useSearchParams();
+
+  // 신규 공고 행 클릭 → 리스트 뷰 진입(?view=new). q 우선 규칙상 진입 시 q 제거.
+  const goNewJobs = () =>
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      next.set('view', 'new');
+      next.delete('q');
+      return next;
+    });
 
   return (
     // 카드 컨테이너 — height 306 / w-302 / padding 20 / gap 20 / radius 16 + shadow-homecard + bg-card-radial.
@@ -58,6 +69,33 @@ export default function AINewsCard() {
       ) : (
         <ul className="flex flex-col">
           {rows.map((row, i) => {
+            const isLast = i === rows.length - 1;
+            const borderClass = isLast ? '' : 'border-b-[0.7px] border-gray-200';
+
+            // 신규 공고 행 — 배지 + 헤드라인("N건" 강조), subtext 미표시(Figma 정본).
+            // 클릭 시 relatedJobs 리스트 뷰(?view=new)로 이동. 화살표 우측 상단.
+            if (row.badge === '신규 공고') {
+              return (
+                <li key={`${row.badge}-${i}`} className={borderClass}>
+                  <button
+                    type="button"
+                    onClick={goNewJobs}
+                    className="flex w-full items-start justify-between gap-1 px-1 py-3 text-left"
+                  >
+                    <div className="flex min-w-0 flex-col items-start gap-2">
+                      <span className="rounded-[6px] bg-purple-50 px-2 py-1 text-[11px] font-medium leading-[1.3] tracking-[-0.22px] text-blue-500">
+                        {row.badge}
+                      </span>
+                      <div className="text-[14px] font-medium leading-[150%] tracking-[-0.28px] text-gray-900">
+                        {renderHeadlineWithHighlight(row.title)}
+                      </div>
+                    </div>
+                    <ChevronIcon className="h-6 w-6 flex-shrink-0 text-gray-500" />
+                  </button>
+                </li>
+              );
+            }
+
             // 항목 내용 (제목/서브 + chevron). 테크 뉴스 줄만 originalUrl 새 탭 링크.
             const inner = (
               <div className="flex w-full items-center justify-between gap-1 px-1 py-3">

@@ -40,6 +40,10 @@ export interface RawRelatedJob {
   source: CompanyType; // 'PUBLIC' | 'PRIVATE'
   companyName: string;
   title: string;
+  // 신규 공고(INTERNAL) 리스트 뷰용 — 실측 응답에 포함(location 은 미제공).
+  matchScore: number | null;
+  deadline: string | null; // 'YYYY-MM-DD' | null(상시)
+  employmentType: string | null;
 }
 export interface RawTechCard {
   id: number | null; // INTERNAL 카드는 null
@@ -64,6 +68,10 @@ export interface RelatedJob {
   source: CompanyType;
   company: string; // ← companyName
   title: string;
+  // 원시값 그대로 통과(변환은 normalizeRelatedJobToSummary 에서).
+  matchScore: number | null;
+  deadline: string | null;
+  employmentType: string | null;
 }
 export interface TechCard {
   id: number | null;
