@@ -38,10 +38,9 @@ export default function Footer() {
             <Link to="/profile" className="transition-colors hover:text-app-text">
               마이페이지
             </Link>
-            {/* ❓ TODO: '개인정보 처리방침' 라우트/외부링크 미정 → 확정 전까지 href="#". */}
-            <a href="#" className="font-semibold leading-[1.5] transition-colors hover:text-app-text">
+            <Link to="/privacy" className="font-semibold leading-[1.5] transition-colors hover:text-app-text">
               개인정보 처리방침
-            </a>
+            </Link>
           </nav>
         </div>
       </div>

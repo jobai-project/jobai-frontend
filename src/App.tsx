@@ -9,6 +9,7 @@ import MyPage from '@/pages/MyPage';
 import OnboardingPage from '@/pages/Onboarding/OnboardingPage';
 import LoginPage from '@/pages/Auth/LoginPage';
 import OAuthCallback from '@/pages/Auth/OAuthCallback';
+import PrivacyPolicyPage from '@/pages/PrivacyPolicyPage';
 import { useAuthStore } from '@/stores/authStore';
 import { useOnboardingStore } from '@/stores/onboardingStore';
 import { getMe } from '@/api/auth';
@@ -43,7 +44,9 @@ export default function App() {
         {/* 인증 화면은 사이드바/탑바 없는 전체화면 — MainLayout 밖. 보호하지 않는다. */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/oauth/callback" element={<OAuthCallback />} />
-        <Route path="/oauth2/redirect" element={<OAuthCallback />} />      
+        <Route path="/oauth2/redirect" element={<OAuthCallback />} />
+        {/* 개인정보 처리방침 — 사이드바 없는 독립 전체화면. 비로그인 접근 허용(ProtectedRoute 밖). */}
+        <Route path="/privacy" element={<PrivacyPolicyPage />} />
 
         {/* / 는 공개 진입점. 게스트/회원/온보딩 분기는 HomeEntry가 담당 (spec §1). */}
         <Route path="/" element={<HomeEntry />} />
