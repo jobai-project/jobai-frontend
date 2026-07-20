@@ -99,6 +99,14 @@ export default function ScrapPage() {
 
   const handleSortToggle = () => setSortAsc((v) => !v);
 
+  // 정렬 기준을 바꿀 때, 그 기준에 맞는 자연스러운 기본 방향으로 자동 전환한다.
+  // - 마감기한순 기본: 가까운 날짜 먼저(오름차순)
+  // - 점수순 기본: 높은 점수 먼저(내림차순)
+  const handleSortModeChange = (mode: ScrapSortMode) => {
+    setSortMode(mode);
+    setSortAsc(mode === 'deadline');
+  };
+
   // 스크랩 행 클릭 시 해당 공고 상세 페이지로 이동
   const handleItemClick = (source: ScrapSource, sourceId: number) => {
     navigate(`/jobs/${source}/${sourceId}`);
@@ -138,7 +146,7 @@ export default function ScrapPage() {
           onRemove={handleRemove}
           onDeleteSelected={handleDeleteSelected}
           sortMode={sortMode}
-          onSortModeChange={setSortMode}
+          onSortModeChange={handleSortModeChange}
           onSortToggle={handleSortToggle}
           onItemClick={handleItemClick}
           activeTab={activeTab}
