@@ -56,24 +56,22 @@ export default function DeadlineCard() {
               <button
                 type="button"
                 onClick={() => navigate(`/jobs/${s.source}/${s.sourceId}`)}
-                className="flex w-full items-start justify-between gap-2 py-3 text-left transition hover:bg-white/50"
+                className="grid w-full grid-cols-[1fr_54px] items-baseline gap-x-2 gap-y-1 py-3 text-left transition hover:bg-white/50"
               >
-                <div className="flex min-w-0 flex-1 flex-col gap-1">
-                  <div className="truncate text-base font-medium leading-[150%] tracking-[-0.32px] text-gray-900">
-                    {s.title}
-                  </div>
-                  <div className="truncate text-sm font-normal leading-[150%] tracking-[-0.28px] text-gray-600">
-                    {s.companyName}
-                  </div>
+                {/* row 1: 제목 | D-day */}
+                <div className="min-w-0 truncate text-base font-medium leading-[150%] tracking-[-0.32px] text-gray-900">
+                  {s.title}
                 </div>
-                <div className="flex w-[54px] flex-shrink-0 flex-col items-end gap-1">
-                  <span className="text-[14px] font-medium leading-[150%] tracking-[-0.28px] text-blue-500">
-                    {formatDDay(s.dDay)}
-                  </span>
-                  <span className="whitespace-nowrap text-[10px] font-normal leading-[150%] tracking-[-0.24px] text-gray-600">
-                    {s.deadline ?? ''}
-                  </span>
+                <span className="text-right text-[14px] font-medium leading-[150%] tracking-[-0.28px] text-blue-500">
+                  {formatDDay(s.dDay)}
+                </span>
+                {/* row 2: 회사명 | 마감일 */}
+                <div className="min-w-0 truncate text-sm font-normal leading-[150%] tracking-[-0.28px] text-gray-600">
+                  {s.companyName}
                 </div>
+                <span className="whitespace-nowrap text-right text-[10px] font-normal leading-[150%] tracking-[-0.24px] text-gray-600">
+                  {s.deadline ?? ''}
+                </span>
               </button>
             </li>
           ))}
