@@ -1,6 +1,8 @@
-import { memo } from 'react';
+import { memo, useEffect, useRef, useState } from 'react';
 import ScoreGauge2 from '@/components/common/ScoreGauge2';
 import type { Scrap, ScrapKey, ScrapSource } from '@/types/scrap';
+
+export type ScrapSortMode = 'deadline' | 'score';
 
 interface ScrapTableProps {
   items: Scrap[]; // ScrapItem 폐기 — Scrap 직접 사용 (v3 §2)
@@ -10,7 +12,9 @@ interface ScrapTableProps {
   allSelected: boolean;
   onRemove: (source: ScrapSource, sourceId: number) => void;
   onDeleteSelected: () => void; // 벌크 삭제(§1.5) — ScrapPage가 useDeleteScraps로 처리
-  onSortToggle: () => void;
+  sortMode: ScrapSortMode;
+  onSortModeChange: (mode: ScrapSortMode) => void;
+  onSortToggle: () => void; // 오름차순/내림차순 방향 전환 (기존 그대로)
   onItemClick: (source: ScrapSource, sourceId: number) => void; // 행 클릭 시 상세 페이지 이동
   activeTab: 'all' | 'ongoing' | 'deadline';
 }
@@ -21,6 +25,11 @@ const EMPTY_MESSAGES: Record<string, { title: string; desc?: string }> = {
   deadline: { title: '마감된 공고가 없습니다.' },
 };
 
+const SORT_MODE_LABELS: Record<ScrapSortMode, string> = {
+  deadline: '마감기한순',
+  score: '점수순',
+};
+
 function ScrapTable({
   items,
   selectedKeys,
@@ -29,20 +38,97 @@ function ScrapTable({
   allSelected,
   onRemove,
   onDeleteSelected,
+  sortMode,
+  onSortModeChange,
   onSortToggle,
   onItemClick,
   activeTab,
 }: ScrapTableProps) {
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!dropdownOpen) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [dropdownOpen]);
+
   return (
     <div className="w-[1084px] h-[628px] border border-[#EBECFF]/90 rounded-2xl overflow-hidden bg-white shadow-[0_4px_12px_rgba(124,119,255,0.08)]">
-      <div className="flex items-center justify-end px-6 h-[72px] bg-white">
-        <div
-          className="flex items-center gap-1.5 cursor-pointer hover:opacity-80 transition-opacity"
-          onClick={onSortToggle}
-        >
-          <span className="text-[14px] text-app-text-muted">마감기한순</span>
-          <img src="/sort-icon.png" alt="정렬" className="w-4 h-4" />
+      <div className="flex items-center justify-end gap-2 px-6 h-[72px] bg-white">
+        {/* 정렬 기준 드롭다운 - 화살표는 왼쪽에 (오른쪽은 방향 토글 아이콘 자리) */}
+        <div className="relative" ref={dropdownRef}>
+          <button
+            type="button"
+            onClick={() => setDropdownOpen((v) => !v)}
+            className="flex items-center gap-1 text-[14px] text-app-text-muted hover:opacity-80 transition-opacity"
+          >
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 20 20"
+              className={`transition-transform ${dropdownOpen ? 'rotate-180' : ''}`}
+            >
+              <path
+                d="m6 8 4 4 4-4"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.6"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+            {SORT_MODE_LABELS[sortMode]}
+          </button>
+
+          {dropdownOpen && (
+            <div className="absolute right-0 top-full mt-2 z-20 w-[140px] bg-white rounded-2xl p-2 shadow-[0_0_7.6px_rgba(90,90,90,0.2)]">
+              {(['deadline', 'score'] as const).map((mode) => (
+                <button
+                  key={mode}
+                  type="button"
+                  onClick={() => {
+                    onSortModeChange(mode);
+                    setDropdownOpen(false);
+                  }}
+                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm transition-colors ${
+                    sortMode === mode
+                      ? 'bg-[#F5F5FF] text-app-primary font-semibold'
+                      : 'text-app-text hover:bg-app-bg'
+                  }`}
+                >
+                  {SORT_MODE_LABELS[mode]}
+                  {sortMode === mode && (
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                      <path
+                        d="M2.5 7L5.5 10L11.5 4"
+                        stroke="currentColor"
+                        strokeWidth="1.6"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  )}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
+
+        {/* 오름차순/내림차순 방향 전환 */}
+        <button
+          type="button"
+          onClick={onSortToggle}
+          aria-label="정렬 방향 전환"
+          className="flex items-center p-1 hover:opacity-80 transition-opacity"
+        >
+          <img src="/sort-icon.png" alt="정렬 방향" className="w-4 h-4" />
+        </button>
       </div>
 
       <div className="grid grid-cols-[40px_2.5fr_1.2fr_1.2fr_1.2fr_40px] gap-3 px-6">
