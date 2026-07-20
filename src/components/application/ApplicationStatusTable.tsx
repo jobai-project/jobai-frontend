@@ -550,16 +550,39 @@ function ApplicationStatusTable({
           ))}
         </div>
       ) : (
-        <div className="flex-1 flex flex-col items-center justify-center bg-gradient-to-br from-white via-white to-[#EDEBFF]">
-          <img src="/empty-page.png" alt="빈 상태" className="w-[259px] h-[235px] mb-4" />
-          <p className="text-base font-semibold text-app-text">
-            {EMPTY_MESSAGES[activeTab]?.title ?? '지원 현황이 없습니다'}
-          </p>
-          {EMPTY_MESSAGES[activeTab]?.desc && (
-            <p className="text-sm text-app-text-muted mt-1">
-              {EMPTY_MESSAGES[activeTab].desc}
+        <div className="flex-1 flex flex-col bg-gradient-to-br from-white via-white to-[#EDEBFF]">
+          {/* 예시 행 - 실제 데이터가 아니라 형식만 안내하는 장식용.
+              data 배열에 들어있지 않으므로 아이템 개수(빈 상태 판정)에 전혀 영향 없고,
+              클릭/편집도 되지 않는다. */}
+          <div className="grid grid-cols-[108px_144px_98px_124px_124px_150px_28px] gap-0 px-6 min-h-[50px] items-center py-2 select-none">
+            <div className="text-sm text-gray-300">카카오</div>
+            <div className="text-sm text-gray-300">백엔드 개발자</div>
+            <div>
+              <span className="inline-block px-3 py-1 rounded-[7px] text-xs font-medium bg-gray-100 text-gray-300">
+                지원예정
+              </span>
+            </div>
+            <div className="text-sm text-gray-300">2026.07.25</div>
+            <div className="text-sm text-gray-300">2026.07.25</div>
+            <div className="text-sm text-gray-300">코딩테스트 준비</div>
+            <div />
+          </div>
+
+          <div className="mx-8">
+            <div className="bg-gray-200 h-[0.6px]"></div>
+          </div>
+
+          <div className="flex-1 flex flex-col items-center justify-center">
+            <img src="/empty-page.png" alt="빈 상태" className="w-[259px] h-[235px] mb-4" />
+            <p className="text-base font-semibold text-app-text">
+              {EMPTY_MESSAGES[activeTab]?.title ?? '지원 현황이 없습니다'}
             </p>
-          )}
+            {EMPTY_MESSAGES[activeTab]?.desc && (
+              <p className="text-sm text-app-text-muted mt-1">
+                {EMPTY_MESSAGES[activeTab].desc}
+              </p>
+            )}
+          </div>
         </div>
       )}
 
