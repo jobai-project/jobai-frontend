@@ -554,7 +554,7 @@ function ApplicationStatusTable({
           {/* 예시 행 - 실제 데이터가 아니라 형식만 안내하는 장식용.
               data 배열에 들어있지 않으므로 아이템 개수(빈 상태 판정)에 전혀 영향 없고,
               클릭/편집도 되지 않는다. */}
-          <div className="grid grid-cols-[108px_144px_98px_124px_124px_150px_28px] gap-0 px-6 min-h-[50px] items-center py-2 select-none">
+          <div className="grid grid-cols-[108px_144px_98px_124px_124px_150px_28px] ml-2 gap-0 px-6 min-h-[50px] items-center py-2 select-none">
             <div className="text-sm text-gray-300">카카오</div>
             <div className="text-sm text-gray-300">백엔드 개발자</div>
             <div>
