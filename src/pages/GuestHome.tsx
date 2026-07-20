@@ -1,6 +1,5 @@
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import TopBar from '@/components/layout/TopBar';
-import Footer from '@/components/layout/Footer';
 import FilterBar from '@/components/home/FilterBar';
 import JobList from '@/components/home/JobList';
 import NoResults from '@/components/home/NoResults';
@@ -277,8 +276,6 @@ export default function GuestHome() {
         </section>
       )}
 
-      {/* 홈 전용 푸터 (Footer.spec §6 — 홈에서만) */}
-      <Footer />
     </>
   );
 }

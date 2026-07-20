@@ -17,7 +17,6 @@ import { useScrapRankings } from '@/hooks/useScrapRankings';
 import { useTechCards } from '@/hooks/useTechCards';
 import { normalizeRelatedJobToSummary } from '@/api/normalizeJob';
 import TopBar from '@/components/layout/TopBar';
-import Footer from '@/components/layout/Footer';
 
 // 섹션 타이틀용 ai 아이콘 (size-24, §6 E). mingcute:ai-fill 근사.
 function AiIcon({ className }: { className?: string }) {
@@ -198,9 +197,6 @@ export default function HomePage() {
           )}
         </>
       )}
-
-      {/* 홈 전용 푸터 (Footer.spec §6 — 홈에서만) */}
-      <Footer />
     </>
   );
 }
