@@ -155,7 +155,11 @@ export default function Step4Notification({ state, dispatch }: StepProps) {
                     <img src={ch.icon} alt="" aria-hidden className="h-6 w-6 object-contain" />
                   </span>
                   <div className="flex flex-col">
-                    <span className="font-pretendard text-sm font-medium leading-[150%] tracking-[-0.28px] text-[#303D4C]">
+                    <span
+                      className={`font-pretendard text-sm font-medium leading-[150%] tracking-[-0.28px] ${
+                        on ? 'text-[#303D4C]' : 'text-gray-400'
+                      }`}
+                    >
                       {ch.label}
                     </span>
                     {isEmail ? (
