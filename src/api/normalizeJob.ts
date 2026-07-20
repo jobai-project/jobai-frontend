@@ -41,6 +41,10 @@ const normalizeRelatedJob = (raw: RawRelatedJob): RelatedJob => ({
   source: raw.source,
   company: getCompanyName(raw.companyName),
   title: raw.title,
+  // 원시값 손실 없이 통과 — dDay 변환·폴백은 normalizeRelatedJobToSummary 에서.
+  matchScore: raw.matchScore,
+  deadline: raw.deadline,
+  employmentType: raw.employmentType,
 });
 
 // tech-cards 카드 정규화. nullable 필드는 명세대로 유지:
@@ -77,6 +81,20 @@ export const normalizeSearchJob = (raw: RawSearchJob): JobSummary => ({
   location: raw.location,
   employmentType: raw.employmentType,
   jobCategory: raw.jobCategory,
+});
+
+// 신규 공고(INTERNAL) relatedJobs → JobSummary. SearchResultList(공용) 렌더용.
+// deadline→dDay 변환. location 은 relatedJobs 미제공이라 '' (normalizeSearchJob 는 raw.location
+// 을 그대로 쓰는데 여기선 소스 자체가 없음 → SearchResultRow 가 meta.filter(Boolean)로 자동 제외).
+export const normalizeRelatedJobToSummary = (raw: RelatedJob): JobSummary => ({
+  id: raw.id,
+  source: raw.source,
+  company: raw.company, // 이미 getCompanyName 적용됨(normalizeRelatedJob)
+  title: raw.title,
+  matchScore: raw.matchScore ?? null,
+  dDay: deadlineToDday(raw.deadline),
+  location: '',
+  employmentType: raw.employmentType ?? '',
 });
 
 // 홈 인기 스크랩 순위 정규화. Raw 와 필드 동일(companyName 유지) — source 는 PUBLIC/PRIVATE 그대로.
