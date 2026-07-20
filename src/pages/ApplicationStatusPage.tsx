@@ -1,6 +1,8 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import ApplicationStatusTabNavigation from '@/components/application/ApplicationStatusTabNavigation';
-import ApplicationStatusTable from '@/components/application/ApplicationStatusTable';
+import ApplicationStatusTable, {
+  type ApplicationStatusTableRef,
+} from '@/components/application/ApplicationStatusTable';
 import ApplicationSummaryCard from '@/components/application/ApplicationSummaryCard';
 import UpcomingScheduleCard from '@/components/application/UpcomingScheduleCard';
 import {
@@ -53,6 +55,7 @@ const mapApiItemToApplicationItem = (apiItem: ApplicationApiItem): ApplicationIt
 });
 
 export default function ApplicationStatusPage() {
+  const tableRef = useRef<ApplicationStatusTableRef>(null);
   const [activeTab, setActiveTab] = useState<TabType>('all');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [newlyAddedId, setNewlyAddedId] = useState<string | null>(null);
@@ -109,6 +112,12 @@ export default function ApplicationStatusPage() {
   // (회사명이 필수 입력이라 빈 값으로는 서버에 생성할 수 없음 — 400 오류)
   // 실제 생성은 사용자가 회사명을 입력하고 그 칸에서 벗어나는 시점(handleCommitField)에 일어난다.
   const handleAddRow = () => {
+    // 지금 편집 중인 칸이 검증에 걸려있으면(회사명/직무 미입력, 날짜 형식 오류 등),
+    // 여기서 먼저 막는다 — 테이블의 검증을 우회해서 새 행을 만들 수 없게.
+    if (tableRef.current && !tableRef.current.tryCloseEditing()) {
+      return;
+    }
+
     const tempId = `${TEMP_ID_PREFIX}${Date.now()}`;
     const newItem: ApplicationItem = {
       id: tempId,
@@ -231,6 +240,7 @@ export default function ApplicationStatusPage() {
           </div>
         ) : (
           <ApplicationStatusTable
+            ref={tableRef}
             data={filteredData}
             editingId={editingId}
             onEditingChange={setEditingId}

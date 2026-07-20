@@ -1,4 +1,4 @@
-import { memo, useRef, useEffect, useState } from 'react';
+import { memo, useRef, useEffect, useState, forwardRef, useImperativeHandle } from 'react';
 
 interface ApplicationItem {
   id: string;
@@ -328,7 +328,15 @@ function DeleteConfirmModal({
   );
 }
 
-function ApplicationStatusTable({
+export interface ApplicationStatusTableRef {
+  // 지금 편집 중인 칸을 닫아도 되는지 확인한다. 필수값 미충족/형식 오류로
+  // 막혀있으면 토스트를 띄우고 false를 반환, 문제없으면 커밋 후 닫고 true를 반환.
+  // "공고 추가" 버튼처럼 테이블 바깥에서 새 행을 만들기 전에 반드시 이 함수를
+  // 먼저 호출해서, 편집 중인 칸의 검증을 우회하지 못하게 한다.
+  tryCloseEditing: () => boolean;
+}
+
+const ApplicationStatusTable = forwardRef<ApplicationStatusTableRef, ApplicationStatusTableProps>(function ApplicationStatusTable({
   data,
   onEditingChange,
   onUpdateItem,
@@ -338,7 +346,7 @@ function ApplicationStatusTable({
   newlyAddedId,
   onNewlyAddedHandled,
   activeTab,
-}: ApplicationStatusTableProps) {
+}, ref) {
   const tableRef = useRef<HTMLDivElement>(null);
   const [editing, setEditing] = useState<EditingState>({ itemId: null, field: null });
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
@@ -347,6 +355,28 @@ function ApplicationStatusTable({
   const showToast = (message: string) => {
     setToastMessage(message);
   };
+
+  useImperativeHandle(ref, () => ({
+    tryCloseEditing: () => {
+      if (!editing.itemId) return true; // 편집 중인 게 없으면 바로 통과
+
+      if (isCurrentEditBlocked()) {
+        if (editing.field === 'company' || editing.field === 'position') {
+          showToast(editing.field === 'company' ? '회사명을 입력해주세요' : '직무를 입력해주세요');
+        } else {
+          showToast('날짜 형식이랑 맞지 않습니다.\nex) 2026.07.25');
+        }
+        return false;
+      }
+
+      if (editing.field && editing.field !== 'stage') {
+        onCommitField(editing.itemId, editing.field);
+      }
+      setEditing({ itemId: null, field: null });
+      onEditingChange(null);
+      return true;
+    },
+  }));
 
   useEffect(() => {
     if (!toastMessage) return;
@@ -636,6 +666,6 @@ function ApplicationStatusTable({
       )}
     </div>
   );
-}
+});
 
 export default memo(ApplicationStatusTable);
