@@ -230,6 +230,11 @@ export default function GuestHome() {
                       <a href={row.url} target="_blank" rel="noopener noreferrer" className="block">
                         {inner}
                       </a>
+                    ) : row.badge === '신규 공고' ? (
+                      // 공고 행(url 없음) → 로그인 유도. 히어로·마감카드와 동일한 goLogin 패턴.
+                      <button type="button" onClick={goLogin} className="block w-full text-left">
+                        {inner}
+                      </button>
                     ) : (
                       inner
                     )}
