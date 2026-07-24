@@ -208,6 +208,8 @@ export default function ProfileSection({
         name={user.name}
         email={user.email}
         onNameChange={onNameChange}
+        onWithdrawClick={() => setWithdrawOpen(true)}
+        isWithdrawing={isWithdrawing}
       />
 
       {/* 공고 조건 설정 */}
@@ -358,18 +360,6 @@ export default function ProfileSection({
           onChange={(e) => handleFile(e.target.files?.[0])}
           className="hidden"
         />
-      </div>
-
-      {/* 회원 탈퇴 — 이력서 블록 바로 아래, 프로필 탭 전용(D4). 우측 정렬 텍스트 버튼(카드 없음). */}
-      <div className="w-[700px] flex justify-end">
-        <button
-          type="button"
-          onClick={() => setWithdrawOpen(true)}
-          disabled={isWithdrawing}
-          className="text-sm font-medium text-[#F36975] hover:opacity-80 transition-opacity disabled:opacity-50"
-        >
-          {isWithdrawing ? '탈퇴 처리 중...' : '회원 탈퇴'}
-        </button>
       </div>
 
       {/* 활성 변경 확인 모달 */}

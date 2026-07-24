@@ -7,9 +7,17 @@ interface ProfileBoxProps {
   // 저장 성공/실패를 ProfileBox가 알아야 같은 자리에 에러를 띄우고, 실패 시
   // 수정 상태를 유지할 수 있다. 실패하면 reject(에러 메시지)한다.
   onNameChange: (name: string) => Promise<void>;
+  onWithdrawClick: () => void;
+  isWithdrawing: boolean;
 }
 
-export default function ProfileBox({ name, email, onNameChange }: ProfileBoxProps) {
+export default function ProfileBox({
+  name,
+  email,
+  onNameChange,
+  onWithdrawClick,
+  isWithdrawing,
+}: ProfileBoxProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [tempName, setTempName] = useState(name);
   const [nameError, setNameError] = useState<string | null>(null);
@@ -87,28 +95,46 @@ export default function ProfileBox({ name, email, onNameChange }: ProfileBoxProp
         </div>
       </div>
 
-      {/* 편집 모드일 때만 하단 구분선 + 에러 메시지 + 취소/저장 버튼 */}
+      {/* 편집 모드일 때만 하단 구분선 + 에러 메시지 + 탈퇴 버튼 / 취소/저장 버튼 */}
       {isEditing && (
         <>
           <div className="border-t border-gray-200 mt-5 mb-2" />
           {nameError && (
             <p className="text-xs text-red-500 mb-2">{nameError}</p>
           )}
-          <div className="flex items-center justify-end gap-2">
-            <button
-              onClick={handleCancel}
-              disabled={isSaving}
-              className="h-[30px] flex flex-col justify-center px-4 py-2 text-xs font-semibold text-gray-500 bg-app-bg border border-app-border rounded-[10px] hover:bg-app-hover transition-colors disabled:opacity-50"
-            >
-              취소
-            </button>
-            <button
-              onClick={handleSave}
-              disabled={isSaving}
-              className="px-4 py-2 flex flex-col justify-center text-xs font-semibold text-white bg-app-primary rounded-[10px] hover:opacity-90 transition-opacity disabled:opacity-50"
-            >
-              {isSaving ? '저장 중...' : '저장'}
-            </button>
+          <div className="flex items-center justify-between">
+            {/* 동그라미 친 왼쪽 공간: 회원 탈퇴 안내 문구 + 버튼 */}
+            <div className="flex items-center gap-3">
+              <p className="text-sm text-app-text-muted">
+                회원 탈퇴 시 계정과 모든 데이터가 삭제되며, 복구할 수 없습니다.
+              </p>
+              <button
+                type="button"
+                onClick={onWithdrawClick}
+                disabled={isWithdrawing}
+                className="h-[30px] flex flex-col justify-center px-4 py-2 text-xs font-semibold text-[#F36975] border border-[#F36975] rounded-[10px] hover:bg-[#F36975]/5 transition-colors disabled:opacity-50"
+              >
+                {isWithdrawing ? '탈퇴 처리 중...' : '회원 탈퇴'}
+              </button>
+            </div>
+
+            {/* 오른쪽: 취소/저장 버튼 */}
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleCancel}
+                disabled={isSaving}
+                className="h-[30px] flex flex-col justify-center px-4 py-2 text-xs font-semibold text-gray-500 bg-app-bg border border-app-border rounded-[10px] hover:bg-app-hover transition-colors disabled:opacity-50"
+              >
+                취소
+              </button>
+              <button
+                onClick={handleSave}
+                disabled={isSaving}
+                className="px-4 py-2 flex flex-col justify-center text-xs font-semibold text-white bg-app-primary rounded-[10px] hover:opacity-90 transition-opacity disabled:opacity-50"
+              >
+                {isSaving ? '저장 중...' : '저장'}
+              </button>
+            </div>
           </div>
         </>
       )}
