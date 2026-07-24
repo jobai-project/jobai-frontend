@@ -31,3 +31,34 @@ export function useJobDetail(source: CompanyType | undefined, id: number) {
     },
   });
 }
+
+// 스크랩 → 지원현황 자동 채움 전용. useJobDetail과 같은 엔드포인트·정규화
+// 로직이지만, 훅이 아니라 일반 함수라 이벤트 핸들러 안에서 한 번만 호출할 때 쓴다.
+export async function fetchJobDetailOnce(
+  source: CompanyType,
+  id: number,
+): Promise<JobDetail> {
+  if (source === 'PRIVATE') {
+    const res = await apiClient.get<{ result: RawPrivateJobDetail }>(
+      `/api/v1/private-jobs/${id}`,
+    );
+    return normalizePrivateJobDetail(res.data.result);
+  }
+  const res = await apiClient.get<{ result: RawPublicJobDetail }>(
+    `/api/v1/public-jobs/${id}`,
+  );
+  return normalizePublicJobDetail(res.data.result);
+}
+
+// 정규화된 JobDetail에서 직무 카테고리만 뽑아온다.
+// PrivateJobDetail은 jobCategory, PublicJobDetail은 jobRole 필드에 들어있다.
+export async function fetchJobPositionLabel(
+  source: CompanyType,
+  id: number,
+): Promise<string> {
+  const detail = await fetchJobDetailOnce(source, id);
+  if (detail.source === 'PRIVATE') {
+    return detail.jobCategory ?? '';
+  }
+  return detail.jobRole ?? '';
+}

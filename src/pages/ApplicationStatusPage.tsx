@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import ApplicationStatusTabNavigation from '@/components/application/ApplicationStatusTabNavigation';
 import ApplicationStatusTable, {
   type ApplicationStatusTableRef,
@@ -56,9 +57,25 @@ const mapApiItemToApplicationItem = (apiItem: ApplicationApiItem): ApplicationIt
 
 export default function ApplicationStatusPage() {
   const tableRef = useRef<ApplicationStatusTableRef>(null);
+  const location = useLocation();
   const [activeTab, setActiveTab] = useState<TabType>('all');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [newlyAddedId, setNewlyAddedId] = useState<string | null>(null);
+  // 스크랩 페이지의 "+"로 넘어온 경우, 어느 칸부터 자동 편집을 열지 지정.
+  // 기본은 'company'(직접 추가한 빈 행), 스크랩에서 온 경우는 'appliedDate'
+  // (기업/직무/지원일이 이미 채워져 있으니 그 다음부터 채우면 되기 때문).
+  const [startField, setStartField] = useState<'company' | 'appliedDate'>('company');
+
+  // 스크랩 페이지의 "+"를 통해 이미 생성된 행을 갖고 이 페이지로 넘어온 경우 처리
+  useEffect(() => {
+    const state = location.state as { newlyAddedId?: string; startField?: 'appliedDate' } | null;
+    if (state?.newlyAddedId) {
+      setNewlyAddedId(state.newlyAddedId);
+      setStartField(state.startField ?? 'company');
+      // state를 소비한 뒤 지워서, 새로고침/뒤로가기 시 같은 로직이 재실행되지 않게 한다.
+      window.history.replaceState({}, '');
+    }
+  }, [location.state]);
 
   // 서버 상태(TanStack Query)와 화면에서 바로 편집하는 로컬 상태를 분리한다.
   // - data: 편집 중 타이핑을 즉시 반영하기 위한 로컬 사본(각 keystroke마다 갱신)
@@ -249,6 +266,7 @@ export default function ApplicationStatusPage() {
             onDeleteItem={handleDeleteItem}
             stageColors={STAGE_COLORS}
             newlyAddedId={newlyAddedId}
+            newlyAddedStartField={startField}
             onNewlyAddedHandled={() => setNewlyAddedId(null)}
             activeTab={activeTab}
           />

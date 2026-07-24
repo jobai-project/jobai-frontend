@@ -3,9 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import { useScraps, useToggleScrap, useDeleteScraps } from '@/hooks/useScraps';
 import ScrapTable from '@/components/scrap/ScrapTable';
 import type { ScrapSortMode } from '@/components/scrap/ScrapTable';
+import { fetchJobPositionLabel } from '@/hooks/useJobDetail';
+import { useCreateApplication } from '@/hooks/useApplications';
 import EmptyScrap from '@/components/common/EmptyScrap';
 import ScrapTabNavigation from '@/components/scrap/ScrapTabNavigation';
-import type { ScrapKey, ScrapSource } from '@/types/scrap';
+import type { Scrap, ScrapKey, ScrapSource } from '@/types/scrap';
 
 type TabType = 'all' | 'ongoing' | 'deadline';
 
@@ -112,6 +114,46 @@ export default function ScrapPage() {
     navigate(`/jobs/${source}/${sourceId}`);
   };
 
+  const createApplication = useCreateApplication();
+  const [movingKey, setMovingKey] = useState<string | null>(null);
+
+  // "+" 클릭 - 기업/직무/지원일(마감일)이 자동으로 채워진 지원 현황 행을 만들고,
+  // 지원현황 페이지로 이동해서 지원일 칸부터 편집 상태로 열어준다.
+  // (기업·직무·지원일은 이미 채워져 있으니, 사용자는 단계→다음일정→메모만 채우면 됨)
+  const handleMoveToApplication = async (scrap: Scrap) => {
+    if (movingKey) return; // 중복 클릭 방지
+    setMovingKey(scrap.key);
+
+    try {
+      const position = await fetchJobPositionLabel(scrap.source, scrap.sourceId);
+
+      // 마감일(deadline)을 지원일(마감일) 칸 값으로 사용. 상시(deadline null)면
+      // 오늘 날짜를 기본값으로 채워서, 지원일 칸이 아예 빈 채로 시작되지 않게 한다.
+      const today = new Date().toISOString().slice(0, 10); // yyyy-MM-dd
+      const appliedAt = scrap.deadline ?? today;
+
+      const { applicationId } = await createApplication.mutateAsync({
+        companyName: scrap.companyName,
+        jobTitle: position,
+        status: 'PLANNED',
+        appliedAt,
+        interviewAt: null,
+        memo: null,
+      });
+
+      navigate('/application', {
+        state: {
+          newlyAddedId: String(applicationId),
+          startField: 'appliedDate',
+        },
+      });
+    } catch (error) {
+      console.error('지원 현황으로 옮기기 실패:', error);
+    } finally {
+      setMovingKey(null);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="pt-12">
@@ -149,6 +191,7 @@ export default function ScrapPage() {
           onSortModeChange={handleSortModeChange}
           onSortToggle={handleSortToggle}
           onItemClick={handleItemClick}
+          onMoveToApplication={handleMoveToApplication}
           activeTab={activeTab}
         />
       )}
