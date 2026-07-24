@@ -17,6 +17,10 @@ export const COMPANY_NAME_MAP: Record<string, string> = {
   upstage: '업스테이지',
   doodlin: '두들린',
   gccompany: '여기어때',
+  ably: '에이블리',
+  musinsa: '무신사',      
+  bucketplace: '오늘의집', 
+
 };
 
 /**
