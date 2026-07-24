@@ -34,17 +34,30 @@ export default function NotificationMatchesPage() {
     );
   }
 
-  // SearchResultRow가 기대하는 JobSummary 형태로 매핑 (필드명 companyName → company만 다름)
+  // 서버가 D-day 숫자를 안 주고 deadline(날짜 문자열)만 주므로, 직접 계산한다.
+  // 상시(deadline null)면 D-day도 null로 둔다.
+  const computeDDay = (deadline: string | null): number | null => {
+    if (!deadline) return null;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const target = new Date(deadline);
+    target.setHours(0, 0, 0, 0);
+    const diffMs = target.getTime() - today.getTime();
+    return Math.round(diffMs / (1000 * 60 * 60 * 24));
+  };
+
+  // SearchResultRow가 기대하는 JobSummary 형태로 매핑
+  // (필드명 jobId → id, companyName → company만 다르고, dDay는 deadline으로 직접 계산)
   const jobSummaries: JobSummary[] = data.jobs.map((job) => ({
-    id: job.id,
+    id: job.jobId,
     source: job.source,
     company: job.companyName,
     title: job.title,
     matchScore: job.matchScore,
-    dDay: job.dDay,
+    dDay: computeDDay(job.deadline),
     location: job.location,
     employmentType: job.employmentType,
-    jobCategory: job.jobCategory ?? null,
+    jobCategory: job.jobCategory,
   }));
 
   return (
