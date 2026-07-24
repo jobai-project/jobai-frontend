@@ -16,6 +16,7 @@ interface ScrapTableProps {
   onSortModeChange: (mode: ScrapSortMode) => void;
   onSortToggle: () => void; // 오름차순/내림차순 방향 전환 (기존 그대로)
   onItemClick: (source: ScrapSource, sourceId: number) => void; // 행 클릭 시 상세 페이지 이동
+  onMoveToApplication: (item: Scrap) => void; // "+" 클릭 시 지원 현황으로 옮기기
   activeTab: 'all' | 'ongoing' | 'deadline';
 }
 
@@ -42,6 +43,7 @@ function ScrapTable({
   onSortModeChange,
   onSortToggle,
   onItemClick,
+  onMoveToApplication,
   activeTab,
 }: ScrapTableProps) {
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -131,11 +133,11 @@ function ScrapTable({
         </button>
       </div>
 
-      <div className="grid grid-cols-[40px_2.5fr_1.2fr_1.2fr_1.2fr_40px] gap-3 px-6">
-        <div className="col-span-6 bg-[#EBECFF] h-px"></div>
+      <div className="grid grid-cols-[40px_2.5fr_1.2fr_1.2fr_1.2fr_36px_40px] gap-3 px-6">
+        <div className="col-span-7 bg-[#EBECFF] h-px"></div>
       </div>
 
-      <div className="grid grid-cols-[40px_2.5fr_1.2fr_1.2fr_1.2fr_70px] items-center gap-3 px-6 h-[77px] bg-app-bg font-medium text-[16px] text-app-text">
+      <div className="grid grid-cols-[40px_2.5fr_1.2fr_1.2fr_1.2fr_36px_70px] items-center gap-3 px-6 h-[77px] bg-app-bg font-medium text-[16px] text-app-text">
         <div className="flex items-center justify-center h-full">
           <input
             type="checkbox"
@@ -148,6 +150,7 @@ function ScrapTable({
         <div className="text-center">모집 유형</div>
         <div className="text-center">마감 기한</div>
         <div className="text-center">적합도 점수</div>
+        <div />
         <button
           type="button"
           onClick={onDeleteSelected}
@@ -158,8 +161,8 @@ function ScrapTable({
         </button>
       </div>
 
-      <div className="grid grid-cols-[40px_2.5fr_1.2fr_1.2fr_1.2fr_40px] gap-3 px-6">
-        <div className="col-span-6 bg-[#EBECFF] h-px"></div>
+      <div className="grid grid-cols-[40px_2.5fr_1.2fr_1.2fr_1.2fr_36px_40px] gap-3 px-6">
+        <div className="col-span-7 bg-[#EBECFF] h-px"></div>
       </div>
 
       {items.length > 0 ? (
@@ -167,7 +170,7 @@ function ScrapTable({
           <div key={item.key}>
             <div
               onClick={() => onItemClick(item.source, item.sourceId)}
-              className="h-[91px] grid grid-cols-[40px_2.5fr_1.2fr_1.2fr_1.2fr_70px] gap-3 px-6 items-center hover:bg-app-bg transition-colors cursor-pointer"
+              className="h-[91px] grid grid-cols-[40px_2.5fr_1.2fr_1.2fr_1.2fr_36px_70px] gap-3 px-6 items-center hover:bg-app-bg transition-colors cursor-pointer"
             >
               {/* 체크박스 클릭이 행 클릭(상세 이동)으로 번지지 않도록 stopPropagation */}
               <div
@@ -200,6 +203,23 @@ function ScrapTable({
                 </div>
               </div>
 
+              {/* 지원 현황으로 옮기기 - 점수 칸과 완전히 분리된 전용 칸이라 X와 안 겹침 */}
+              <div className="flex items-center justify-center">
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation(); // 행 클릭(상세 이동)으로 번지지 않게
+                    onMoveToApplication(item);
+                  }}
+                  title="지원 현황으로 옮기기"
+                  className="flex items-center justify-center w-6 h-6 rounded-full border border-app-primary/30 text-app-primary hover:bg-app-primary/10 transition-colors"
+                >
+                  <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
+                    <path d="M7 2V12M2 7H12" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+                  </svg>
+                </button>
+              </div>
+
               {/* 제거 버튼 클릭도 행 클릭(상세 이동)으로 번지지 않도록 stopPropagation */}
               <button
                 type="button"
@@ -214,8 +234,8 @@ function ScrapTable({
               </button>
             </div>
 
-            <div className="grid grid-cols-[40px_2.5fr_1.2fr_1.2fr_1.2fr_40px] gap-3 px-6">
-              <div className="col-span-6 border-b border-gray-200"></div>
+            <div className="grid grid-cols-[40px_2.5fr_1.2fr_1.2fr_1.2fr_36px_40px] gap-3 px-6">
+              <div className="col-span-7 border-b border-gray-200"></div>
             </div>
           </div>
         ))

@@ -22,6 +22,10 @@ interface ApplicationStatusTableProps {
   onDeleteItem: (id: string) => void;
   stageColors: Record<string, string>;
   newlyAddedId: string | null;
+  // 새로 추가된 행을 자동 편집할 때 어느 칸부터 열지. 기본은 'company'(직접
+  // 빈 행 추가), 스크랩에서 넘어온 경우는 'appliedDate'(기업/직무/지원일이
+  // 이미 채워져 있어서 그 다음부터 채우면 됨).
+  newlyAddedStartField?: keyof ApplicationItem;
   onNewlyAddedHandled: () => void;
   activeTab: string;
 }
@@ -344,6 +348,7 @@ const ApplicationStatusTable = forwardRef<ApplicationStatusTableRef, Application
   onDeleteItem,
   stageColors,
   newlyAddedId,
+  newlyAddedStartField = 'company',
   onNewlyAddedHandled,
   activeTab,
 }, ref) {
@@ -437,11 +442,11 @@ const ApplicationStatusTable = forwardRef<ApplicationStatusTableRef, Application
   // 새 행 추가 감지
   useEffect(() => {
     if (newlyAddedId) {
-      setEditing({ itemId: newlyAddedId, field: 'company' });
+      setEditing({ itemId: newlyAddedId, field: newlyAddedStartField });
       onEditingChange(newlyAddedId);
       onNewlyAddedHandled();
     }
-  }, [newlyAddedId, onEditingChange, onNewlyAddedHandled]);
+  }, [newlyAddedId, newlyAddedStartField, onEditingChange, onNewlyAddedHandled]);
 
   // 모달/편집 상태 바깥 클릭 감지 — 여기도 requestEdit과 동일한 규칙(필수값
   // 미충족이면 막고 토스트)을 그대로 적용해 테이블 안/밖 어디든 일관되게 동작한다.

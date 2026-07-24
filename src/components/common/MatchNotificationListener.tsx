@@ -3,9 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 import { API_BASE_URL } from '@/api/axios';
+import { useAuthStore } from '@/stores/authStore';
 
 // 서버가 새 공고를 매칭할 때마다 /user/queue/notifications로 보내주는 실시간 알림.
-// "지금 화면을 보고 있는 사용자"에게 화면 안에서 실시간으로 알려주는 용도
+// (Slack/Discord 알림과는 무관 — 그건 서버가 저장된 webhookUrl로 직접 보내는
+//  별개의 경로. 이건 오직 "지금 화면을 보고 있는 사용자"에게 화면 안에서
+//  실시간으로 알려주는 용도)
 interface MatchNotification {
   type: string; // 'MATCH' 외 다른 타입이 나중에 추가될 수 있어 string으로 둠
   title: string;
@@ -14,13 +17,31 @@ interface MatchNotification {
   createdAt: string;
 }
 
-// 앱 전역(MainLayout)에 한 번만 마운트해서 로그인 세션 동안 계속 연결을 유지한다.
+// 앱 전역(App.tsx)에 한 번만 마운트해서 로그인 세션 동안 연결을 유지한다.
+// isAuthenticated를 구독해서, 로그인 상태일 때만 연결하고 로그아웃되면 즉시 끊는다
+// (그렇게 안 하면 로그아웃 후에도 기존 연결이 계속 살아있어, 이미 끊긴 세션의
+//  알림을 계속 받아버리는 문제가 생긴다).
 export default function MatchNotificationListener() {
   const navigate = useNavigate();
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+
   const [toast, setToast] = useState<MatchNotification | null>(null);
   const dismissTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const clientRef = useRef<Client | null>(null);
 
   useEffect(() => {
+    // 로그아웃 상태(또는 아직 로그인 확인 전) — 연결하지 않는다.
+    // 만약 이전에 연결되어 있었다면(로그인 → 로그아웃 전환) 즉시 끊는다.
+    if (!isAuthenticated) {
+      if (clientRef.current) {
+        console.log('[notification-socket] 로그아웃 감지 — 연결 종료');
+        clientRef.current.deactivate();
+        clientRef.current = null;
+      }
+      return;
+    }
+
+    // 로그인 상태 — 연결 시작
     const client = new Client({
       webSocketFactory: () => new SockJS(`${API_BASE_URL}/ws`),
       reconnectDelay: 5000,
@@ -72,12 +93,14 @@ export default function MatchNotificationListener() {
     });
 
     client.activate();
+    clientRef.current = client;
 
     return () => {
       client.deactivate();
+      clientRef.current = null;
       if (dismissTimerRef.current) clearTimeout(dismissTimerRef.current);
     };
-  }, []);
+  }, [isAuthenticated]);
 
   if (!toast) return null;
 
