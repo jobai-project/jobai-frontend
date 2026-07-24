@@ -19,8 +19,8 @@ const CARD_CLASS =
 function GuestScoreTooltip() {
   const navigate = useNavigate();
   return (
-    <div className="pointer-events-none absolute left-0 top-[-64px] z-20 flex opacity-0 transition-opacity duration-150 group-hover:pointer-events-auto group-hover:opacity-100">
-      <div className="relative inline-flex flex-col items-center justify-center rounded-base border border-gray-800 bg-gray-800 px-4 py-3 shadow-[0_6px_12px_0_rgba(0,0,0,0.20)]">
+    <div className="pointer-events-none absolute left-1/2 top-[-64px] z-20 flex -translate-x-1/2 opacity-0 transition-opacity duration-150 group-hover:pointer-events-auto group-hover:opacity-100">
+      <div className="relative inline-flex items-start justify-center gap-[8px] whitespace-nowrap rounded-base border border-gray-800 bg-gray-800 px-4 py-3 shadow-[0_6px_6px_0_rgba(0,0,0,0.20)]">
         <span className="text-center font-pretendard text-[12px] font-normal leading-[130%] tracking-[-0.24px] text-white">
           로그인하면 점수를 확인할 수 있어요
         </span>
@@ -31,8 +31,8 @@ function GuestScoreTooltip() {
         >
           로그인하기
         </button>
-        {/* 아래 방향 화살표 — 동일 #303D4C(gray-800) CSS 삼각형 */}
-        <span className="absolute left-6 top-full h-0 w-0 border-x-8 border-t-8 border-x-transparent border-t-gray-800" />
+        {/* 아래 방향 화살표 — 동일 #303D4C(gray-800) CSS 삼각형. 하단 중앙(게이지 조준) */}
+        <span className="absolute left-1/2 top-full h-0 w-0 -translate-x-1/2 border-x-8 border-t-8 border-x-transparent border-t-gray-800" />
       </div>
     </div>
   );

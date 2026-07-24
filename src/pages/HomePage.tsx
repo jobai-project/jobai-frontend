@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useJobSearch } from '@/hooks/useJobSearch';
 import { useRecommendedJobs } from '@/hooks/useInfiniteJobList';
@@ -13,6 +14,7 @@ import FilterBar from '@/components/home/FilterBar';
 import JobList from '@/components/home/JobList';
 import SearchResultList from '@/components/search/SearchResultList';
 import NoResults from '@/components/home/NoResults';
+import ScoringSpinner from '@/components/home/ScoringSpinner';
 import { useScrapRankings } from '@/hooks/useScrapRankings';
 import { useTechCards } from '@/hooks/useTechCards';
 import { normalizeRelatedJobToSummary } from '@/api/normalizeJob';
@@ -30,6 +32,10 @@ function AiIcon({ className }: { className?: string }) {
     </svg>
   );
 }
+
+// 온보딩 직후 추천공고 스코어링 대기 폴링 상수.
+const SCORING_POLL_MS = 5000; // 5초 간격 폴링
+const SCORING_TIMEOUT_MS = 6 * 60 * 1000; // 6분 초과 후에도 0건이면 에러 상태(P8)
 
 export default function HomePage() {
   const [searchParams] = useSearchParams();
@@ -58,7 +64,28 @@ export default function HomePage() {
     locations: locations.length ? locations : undefined,
     employmentTypes: employmentTypes.length ? employmentTypes : undefined,
   };
-  const recommended = useRecommendedJobs(filters, isAuthenticated && !isSearching);
+  // 온보딩 직후 스코어링(약 5분) 대기 — totalCount===0 이면 준비 중, 6분 타임아웃 후 에러.
+  // 마운트 시각 기준(새로고침 시 자연 리셋 = P9 ⓐ).
+  const scoringStartRef = useRef(Date.now());
+  const [scoringTimedOut, setScoringTimedOut] = useState(false);
+  useEffect(() => {
+    const t = setTimeout(() => setScoringTimedOut(true), SCORING_TIMEOUT_MS);
+    return () => clearTimeout(t);
+  }, []);
+
+  const recommended = useRecommendedJobs(
+    filters,
+    isAuthenticated && !isSearching,
+    // 함수형 refetchInterval: totalCount===0 && 타임아웃 전에만 폴링, 그 외 false로 즉시 중단
+    // → 완료(totalCount>0) 시 무한스크롤 누적 페이지 재요청 원천 차단.
+    (query) => {
+      const total = query.state.data?.pages?.[0]?.totalCount ?? 0;
+      const elapsed = Date.now() - scoringStartRef.current;
+      return total === 0 && elapsed < SCORING_TIMEOUT_MS && !scoringTimedOut
+        ? SCORING_POLL_MS
+        : false;
+    },
+  );
 
   // 검색(q) → 자연어 검색 API. q 를 query 로 전달, 검색 중일 때만 실행.
   const search = useJobSearch(q, isSearching);
@@ -70,6 +97,14 @@ export default function HomePage() {
 
   const active = isSearching ? search : recommended;
   const { isLoading, isError } = active;
+
+  // 홈 추천 준비/완료 판정 기준(P4/P5). totalCount 미도착 시 0 → "준비 중"으로 흡수(의도).
+  const recommendedTotalCount = recommended.data?.pages?.[0]?.totalCount ?? 0;
+  const handleScoringRetry = () => {
+    scoringStartRef.current = Date.now();
+    setScoringTimedOut(false);
+    recommended.refetch();
+  };
 
   // 검색 결과 전체 건수: 검색 API 응답 res.data.result.totalCount(jobApi.ts:104) —
   // 모든 페이지에 동일 값이 실려오므로 첫 페이지에서 읽음. results.length(누적 로드 수) 아님.
@@ -181,14 +216,26 @@ export default function HomePage() {
 
           {isError ? (
             <NoResults title="공고를 불러오지 못했습니다" description="잠시 후 다시 시도해 주세요." />
-          ) : isLoading ? (
-            <div className="flex flex-col gap-3">
-              {Array.from({ length: 3 }).map((_, i) => (
-                <div key={i} className="h-[124px] animate-pulse rounded-xl border border-app-border bg-app-surface" />
-              ))}
+          ) : isLoading || (recommendedTotalCount === 0 && !scoringTimedOut) ? (
+            // 온보딩 직후 스코어링 대기 = 준비 중 스피너(NoResults 아님). P6로 "매칭 0건" 상태 없음.
+            <ScoringSpinner />
+          ) : recommendedTotalCount === 0 && scoringTimedOut ? (
+            // 6분 초과에도 0건 → 에러성 상태 + 재시도. 공용 NoResults 수정 없이 홈 인라인.
+            <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-app-border-strong bg-app-surface px-6 py-14 text-center">
+              <div className="text-base font-semibold text-app-text-muted">
+                매칭 결과를 준비하지 못했어요
+              </div>
+              <div className="text-[13px] text-app-text-subtle">
+                점수 산출이 지연되고 있어요. 잠시 후 다시 시도해주세요.
+              </div>
+              <button
+                type="button"
+                onClick={handleScoringRetry}
+                className="mt-1 rounded-[8px] bg-app-primary px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90"
+              >
+                다시 시도
+              </button>
             </div>
-          ) : jobs.length === 0 ? (
-            <NoResults />
           ) : (
             <section className="w-full max-w-[1164px]">
               <JobList jobs={jobs} />

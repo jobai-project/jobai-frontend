@@ -122,7 +122,7 @@ export default function GuestHome() {
           {/* 3A-2 콘텐츠 origin left-28 top-42, 내부 w-350, 타이틀↔버튼 gap-52 */}
           <div className="absolute left-[28px] top-[42px] z-10 flex w-[350px] flex-col gap-[52px]">
             <div className="flex flex-col gap-4">
-              {/* 3A-3 타이틀 — 28/140%/-0.56px white. 혼용: AI·24·"공고를 찾아드려요"=SemiBold, 가·시간=Medium */}
+              {/* 3A-3 타이틀 — 28/140%/-0.56px white. 혼용: AI·24=SemiBold, 가·시간·"공고를 찾아드려요"=Medium */}
               <h2 className="font-pretendard text-[28px] leading-[1.4] tracking-[-0.56px] text-white">
                 <span className="block">
                   <span className="font-semibold">AI</span>
@@ -130,7 +130,7 @@ export default function GuestHome() {
                   <span className="font-semibold">24</span>
                   <span className="font-medium">시간</span>
                 </span>
-                <span className="block font-semibold">공고를 찾아드려요</span>
+                <span className="block font-medium">공고를 찾아드려요</span>
               </h2>
               {/* 3A-4 필 — bg-white/10, px-14 py-8, rounded-full, 12/400/130%/-0.24px, blur-2px */}
               <span className="inline-flex items-center gap-1 self-start rounded-full bg-white/10 px-[14px] py-2 font-pretendard text-[12px] font-normal leading-[130%] tracking-[-0.24px] text-white backdrop-blur-[2px]">
@@ -161,22 +161,25 @@ export default function GuestHome() {
             </div>
             <ChevronIcon className="h-6 w-6 flex-shrink-0 text-gray-400" />
           </div>
-          {/* 3B-4 빈 상태 본문 — 중앙정렬, gap-32 */}
+          {/* 3B-4 빈 상태 본문 — 중앙정렬. 아이콘↔[문구·버튼]=32, 문구↔버튼=20 (Figma 2단 구조) */}
           <div className="flex flex-1 flex-col items-center justify-center gap-8">
             {/* 3B-5 북마크-슬래시 아이콘 — 54×52.65 (noscrap.svg 재사용) */}
             <img src="/noscrap.svg" alt="" aria-hidden className="h-[52.65px] w-[54px] select-none" />
-            {/* 3B-6 안내문 — 16 SemiBold/130%/-0.32px/gray-500 */}
-            <p className="text-center text-[16px] font-semibold leading-[1.3] tracking-[-0.32px] text-gray-500">
-              로그인 후 관심 공고를 저장해 보세요
-            </p>
-            {/* 3B-7 버튼 — bg-blue-50, text-blue-500, px-16 py-10, rounded-[12px] */}
-            <button
-              type="button"
-              onClick={goLogin}
-              className="inline-flex items-center rounded-[12px] bg-purple-50 px-4 py-2.5 text-sm font-semibold tracking-[-0.28px] text-blue-500 transition hover:bg-blue-100"
-            >
-              가입하러 가기
-            </button>
+            {/* 문구 + 버튼 묶음 — 내부 간격 20 */}
+            <div className="flex flex-col items-center gap-[20px]">
+              {/* 3B-6 안내문 — 16 SemiBold/130%/-0.32px/gray-500 */}
+              <p className="text-center text-[16px] font-semibold leading-[1.3] tracking-[-0.32px] text-gray-500">
+                로그인 후 관심 공고를 저장해 보세요
+              </p>
+              {/* 3B-7 버튼 — bg-blue-50, text-blue-500, px-16 py-10, rounded-[12px] */}
+              <button
+                type="button"
+                onClick={goLogin}
+                className="inline-flex items-center rounded-[12px] bg-purple-50 px-4 py-2.5 text-sm font-semibold tracking-[-0.28px] text-blue-500 transition hover:bg-blue-100"
+              >
+                가입하러 가기
+              </button>
+            </div>
           </div>
         </div>
 
@@ -206,7 +209,7 @@ export default function GuestHome() {
               {techRows.map((row, i) => {
                 // 항목 내용. 테크 뉴스 줄만 originalUrl 새 탭 링크(§2-2).
                 const inner = (
-                  <div className="flex w-full items-center justify-between gap-1 px-1 py-3">
+                  <div className="flex w-full items-start justify-between gap-1 px-1 py-3">
                     <div className="flex min-w-0 flex-col gap-2">
                       {/* 3C-4 제목 — 14 Medium/-0.28px/black */}
                       <span className="truncate text-[14px] font-medium tracking-[-0.28px] text-black">
@@ -217,8 +220,8 @@ export default function GuestHome() {
                         {row.sub}
                       </span>
                     </div>
-                    {/* 3C-6 chevron 24 rotate-180 */}
-                    <ChevronIcon className="h-6 w-6 flex-shrink-0 rotate-180 text-gray-400" />
+                    {/* 3C-6 chevron 24 (우향, 상세 진입) */}
+                    <ChevronIcon className="h-6 w-6 flex-shrink-0 text-gray-400" />
                   </div>
                 );
                 return (
@@ -230,6 +233,11 @@ export default function GuestHome() {
                       <a href={row.url} target="_blank" rel="noopener noreferrer" className="block">
                         {inner}
                       </a>
+                    ) : row.badge === '신규 공고' ? (
+                      // 공고 행(url 없음) → 로그인 유도. 히어로·마감카드와 동일한 goLogin 패턴.
+                      <button type="button" onClick={goLogin} className="block w-full text-left">
+                        {inner}
+                      </button>
                     ) : (
                       inner
                     )}
@@ -242,7 +250,7 @@ export default function GuestHome() {
       </section>
 
       {/* §7 섹션 헤더 블록 — 타이틀 + 필터 묶음(flex-col gap-16) */}
-      <div className="mb-4 flex flex-col gap-4">
+      <div className="mb-[28px] flex flex-col gap-4">
         {/* 4-2 섹션 타이틀 — ai 아이콘 24 + 20/600/140%/-0.4px/#000, gap-12 */}
         <div className="flex items-center gap-3">
           <AiIcon className="h-6 w-6 flex-shrink-0 text-app-primary" />

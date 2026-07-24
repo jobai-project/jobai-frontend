@@ -1,4 +1,7 @@
-import { useInfiniteQuery } from '@tanstack/react-query';
+import {
+  useInfiniteQuery,
+  type UseInfiniteQueryOptions,
+} from '@tanstack/react-query';
 import { apiClient } from '@/api/axios';
 import { normalizeJobSummary } from '@/api/normalizeJob';
 import type { JobSummary, RawJobSummary } from '@/types/jobApi';
@@ -30,12 +33,17 @@ interface JobListPage {
 export function useInfiniteJobList(
   endpoint: string,
   filters: JobListFilters,
-  options?: { enabled?: boolean },
+  // refetchInterval: 미전달 시 undefined → 폴링 안 함(검색 등 기존 호출부 무영향).
+  options?: {
+    enabled?: boolean;
+    refetchInterval?: UseInfiniteQueryOptions<JobListPage>['refetchInterval'];
+  },
 ) {
   return useInfiniteQuery<JobListPage>({
     queryKey: ['jobList', endpoint, filters],
     initialPageParam: 0,
     enabled: options?.enabled,
+    refetchInterval: options?.refetchInterval,
     queryFn: async ({ pageParam }) => {
       // envelope 는 자동 언랩되지 않으므로(axios.ts:38-39) res.data.result 로 접근.
       const res = await apiClient.get<{ result: RawJobListResult }>(endpoint, {
@@ -59,6 +67,14 @@ export function useInfiniteJobList(
 export const useLatestJobs = (filters: JobListFilters) =>
   useInfiniteJobList('/api/v1/home/latest-jobs', filters);
 
-// 회원(인증 O) — 비로그인 시 호출 안 되도록 enabled 가드
-export const useRecommendedJobs = (filters: JobListFilters, enabled: boolean) =>
-  useInfiniteJobList('/api/v1/home/recommended-jobs', filters, { enabled });
+// 회원(인증 O) — 비로그인 시 호출 안 되도록 enabled 가드.
+// refetchInterval: 온보딩 직후 스코어링 대기 폴링용(HomePage에서 함수형 전달).
+export const useRecommendedJobs = (
+  filters: JobListFilters,
+  enabled: boolean,
+  refetchInterval?: UseInfiniteQueryOptions<JobListPage>['refetchInterval'],
+) =>
+  useInfiniteJobList('/api/v1/home/recommended-jobs', filters, {
+    enabled,
+    refetchInterval,
+  });
