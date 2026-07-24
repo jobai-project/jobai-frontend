@@ -17,6 +17,7 @@ import BookmarkToast from '@/components/common/BookmarkToast';
 import MatchNotificationListener from '@/components/common/MatchNotificationListener';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import OnboardingGate from '@/components/auth/OnboardingGate';
+import NotificationMatchesPage from '@/pages/NotificationMatchesPage';
 
 export default function App() {
   const setUser = useAuthStore((s) => s.setUser);
@@ -63,6 +64,7 @@ export default function App() {
               <Route path="/application" element={<ApplicationStatusPage />} />
               <Route path="/scrap" element={<ScrapPage />} />
               <Route path="/profile" element={<MyPage />} />
+              <Route path="/notifications/matches/:batchId" element={<NotificationMatchesPage />} /> 
             </Route>
           </Route>
         </Route>
