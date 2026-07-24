@@ -1,5 +1,7 @@
 import { apiClient } from '@/api/axios';
 import type { ApiEnvelope } from '@/api/auth'; // 정본 envelope (types/api.ts는 없음)
+import { useAuthStore } from '@/stores/authStore';
+import { useOnboardingStore } from '@/stores/onboardingStore';
 import type {
   OnboardingBasicInfoRequest,
   OnboardingJobCategoryRequest,
@@ -80,4 +82,32 @@ export const getNotificationSettings = async (): Promise<NotificationSettingsRes
     '/api/v1/members/me/notification-settings',
   );
   return res.data.result;
+};
+
+// DELETE — 회원 탈퇴 (hard delete, 비가역). 파라미터·요청 바디 없음. 200 result는 문자열.
+// 성공 시 서버가 accessToken / refreshToken 쿠키를 만료시킨다.
+// 인터셉터가 (res) => res 라 res.data.result 수동 언랩(axios.ts:18) — 파일 기존 스타일 준수.
+export const deleteMember = async (): Promise<string> => {
+  const res = await apiClient.delete<ApiEnvelope<string>>('/api/v1/members/me');
+  return res.data.result;
+};
+
+/**
+ * 회원 탈퇴 후 세션 정리.
+ * handleLogout(src/api/auth.ts:65)과 동일한 순서·방식(전체 리로드)을 따르되, 딱 하나가 다르다:
+ * 로그아웃은 try/finally라 API가 실패해도 정리하지만, 탈퇴는 API가 실패하면 계정이
+ * 아직 살아 있으므로 clearUser/reset/replace 를 실행하면 안 된다.
+ * 그래서 finally가 아니라 성공(await 통과) 경로에서만 정리하고, 실패는 호출부로 전파한다.
+ */
+export const handleWithdraw = async (): Promise<void> => {
+  await deleteMember(); // 실패 시 여기서 throw → 아래 정리 단계 진입 안 함
+
+  useAuthStore.getState().clearUser(); // authStore.ts:25
+  // 🔴 hard delete라 재로그인 시 신규 회원 → 온보딩 1단계. reset 누락 시 이전 입력값이
+  //    프리필되는 버그(스펙 §3.3). handleLogout(auth.ts:70)과 동일하게 반드시 포함.
+  useOnboardingStore.getState().reset();
+
+  // 모듈 함수라 useNavigate 사용 불가 + 전체 리로드로 메모리 스토어 확실 초기화
+  // (auth.ts:71-74와 동일한 이유)
+  window.location.replace('/login');
 };
