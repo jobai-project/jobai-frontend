@@ -21,7 +21,12 @@ export default function OAuthCallback() {
         const user = await getMe();
         setUser(user); // { email, name }
         if (typeof user.onboarded === 'boolean') setOnboarded(user.onboarded);
-        navigate('/', { replace: true });
+
+        // 로그인 안 된 상태로 보호된 경로에 들어왔다가 여기로 리다이렉트된 거라면,
+        // ProtectedRoute가 sessionStorage에 저장해둔 원래 경로로 돌려보낸다.
+        const redirectTo = sessionStorage.getItem('postLoginRedirect');
+        sessionStorage.removeItem('postLoginRedirect');
+        navigate(redirectTo ?? '/', { replace: true });
       } catch {
         clearUser();
         resetOnboarding();
