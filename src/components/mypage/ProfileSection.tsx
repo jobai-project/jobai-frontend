@@ -3,6 +3,7 @@ import JobConditionsEditor from '@/components/mypage/JobConditionsEditor';
 import { useResumes, useActivateResume, useDeleteResume } from '@/hooks/useResumes';
 import { useUploadResume } from '@/hooks/useUploadResume';
 import ProfileBox from '@/components/mypage/ProfileBox';
+import { handleWithdraw } from '@/api/member';
 
 const MAX_SIZE = 5 * 1024 * 1024; // 5MB
 
@@ -77,6 +78,61 @@ function ResumeConfirmModal({
   );
 }
 
+// 회원 탈퇴 확인 모달 - ResumeConfirmModal(위) 복제. filename 배지 제거 + 안내 문구(D6) 필수.
+// isPending: 탈퇴 요청 중 확인/취소/오버레이를 모두 잠가 중복 DELETE·중도 닫힘을 막는다.
+// ESC·초기 포커스 제어는 ResumeConfirmModal과 동일하게 미지원(범위 밖).
+function WithdrawConfirmModal({
+  title,
+  description,
+  confirmLabel,
+  cancelLabel,
+  isPending,
+  onConfirm,
+  onCancel,
+}: {
+  title: string;
+  description: string;
+  confirmLabel: string;
+  cancelLabel: string;
+  isPending: boolean;
+  onConfirm: () => void;
+  onCancel: () => void;
+}) {
+  return (
+    <div
+      className="fixed inset-0 z-[200] bg-black/40 flex items-center justify-center"
+      onClick={isPending ? undefined : onCancel} // 요청 중에는 오버레이 클릭 무시
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="bg-white rounded-2xl p-6 w-[420px] shadow-xl flex flex-col items-center"
+      >
+        <h3 className="text-center text-lg font-bold text-gray-900 mb-2">
+          {title}
+        </h3>
+        <p className="text-center text-sm text-gray-500 mb-7 whitespace-pre-line">
+          {description}
+        </p>
+
+        <button
+          onClick={onConfirm}
+          disabled={isPending}
+          className="w-[324px] h-[45px] py-3 mb-2 rounded-xl bg-[#F36975] text-white font-semibold hover:opacity-90 transition-opacity disabled:opacity-50"
+        >
+          {confirmLabel}
+        </button>
+        <button
+          onClick={onCancel}
+          disabled={isPending}
+          className="w-[324px] h-[45px] py-3 rounded-xl bg-gray-100 text-app-text-muted font-semibold hover:bg-app-hover transition-colors disabled:opacity-50"
+        >
+          {cancelLabel}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function ProfileSection({
   user,
   onNameChange,
@@ -90,6 +146,25 @@ export default function ProfileSection({
 
   const [activateTargetId, setActivateTargetId] = useState<number | null>(null);
   const [deleteTargetId, setDeleteTargetId] = useState<number | null>(null);
+
+  // 회원 탈퇴 — handleWithdraw는 모듈 함수(useMutation 아님)라 pending을 자체 추적한다.
+  // 이력서 삭제는 useDeleteResume().isPending을 쓰지만, 탈퇴는 훅이 아니므로 useState로 맞춘다.
+  const [withdrawOpen, setWithdrawOpen] = useState(false);
+  const [isWithdrawing, setIsWithdrawing] = useState(false);
+
+  const handleWithdrawConfirm = async () => {
+    if (isWithdrawing) return; // 🔴 중복 클릭 = 중복 DELETE 방지
+    setIsWithdrawing(true);
+    try {
+      await handleWithdraw(); // 성공 시 페이지가 통째로 교체됨(window.location.replace)
+    } catch {
+      // 🔴 실패 = 계정이 아직 살아 있음. 화면 이동 없음, 모달 재조작 가능하게 복구.
+      setIsWithdrawing(false);
+      setWithdrawOpen(false);
+      showToast('탈퇴 처리에 실패했어요. 잠시 후 다시 시도해 주세요.');
+    }
+    // 성공 경로에서는 setIsWithdrawing(false)를 호출하지 않는다(언마운트 후 setState 경고 방지).
+  };
 
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const showToast = (message: string) => {
@@ -285,6 +360,18 @@ export default function ProfileSection({
         />
       </div>
 
+      {/* 회원 탈퇴 — 이력서 블록 바로 아래, 프로필 탭 전용(D4). 우측 정렬 텍스트 버튼(카드 없음). */}
+      <div className="w-[700px] flex justify-end">
+        <button
+          type="button"
+          onClick={() => setWithdrawOpen(true)}
+          disabled={isWithdrawing}
+          className="text-sm font-medium text-[#F36975] hover:opacity-80 transition-opacity disabled:opacity-50"
+        >
+          {isWithdrawing ? '탈퇴 처리 중...' : '회원 탈퇴'}
+        </button>
+      </div>
+
       {/* 활성 변경 확인 모달 */}
       {activateTarget && (
         <ResumeConfirmModal
@@ -316,6 +403,21 @@ export default function ProfileSection({
             setDeleteTargetId(null);
           }}
           onCancel={() => setDeleteTargetId(null)}
+        />
+      )}
+
+      {/* 회원 탈퇴 확인 모달 (D6 — 삭제 대상 안내 문구 필수) */}
+      {withdrawOpen && (
+        <WithdrawConfirmModal
+          title="탈퇴하시겠습니까?"
+          description={
+            '탈퇴하면 이력서, 스크랩, 지원 내역,\n알림 설정이 모두 삭제되며\n복구할 수 없습니다.'
+          }
+          confirmLabel="예"
+          cancelLabel="아니오"
+          isPending={isWithdrawing}
+          onConfirm={handleWithdrawConfirm}
+          onCancel={() => setWithdrawOpen(false)}
         />
       )}
 
